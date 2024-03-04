@@ -24,6 +24,7 @@ namespace Assets.Scripts
         //Constructor
         public Player(List<Card> Faction, string ID)
         {
+            //***
             PlayerDeck = Faction;
             Leader = PlayerDeck.Find(Card => Card.Type == CardType.Leader);
             Hand = AssignHand();
@@ -38,7 +39,11 @@ namespace Assets.Scripts
             
             for (int i = 0; i < 10; i++)
             {
-                Hand.Add(PlayerDeck[i]);
+                Card card = PlayerDeck[i];
+                card.Owner = this;
+                Hand.Add(card);
+                //Agregarle el owner a la carta
+                
             }
             //remove cards from the player deck
             PlayerDeck = PlayerDeck.Except(Hand).ToList();

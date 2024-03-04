@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mauri\\Documents\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\Logica del juego en consola.csproj": {}
+    "C:\\Users\\mauri\\Documents\\GitHub\\Proyecto-gwent\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\Logica del juego en consola.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mauri\\Documents\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\Logica del juego en consola.csproj": {
+    "C:\\Users\\mauri\\Documents\\GitHub\\Proyecto-gwent\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\Logica del juego en consola.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mauri\\Documents\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\Logica del juego en consola.csproj",
+        "projectUniqueName": "C:\\Users\\mauri\\Documents\\GitHub\\Proyecto-gwent\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\Logica del juego en consola.csproj",
         "projectName": "Logica del juego en consola",
-        "projectPath": "C:\\Users\\mauri\\Documents\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\Logica del juego en consola.csproj",
+        "projectPath": "C:\\Users\\mauri\\Documents\\GitHub\\Proyecto-gwent\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\Logica del juego en consola.csproj",
         "packagesPath": "C:\\Users\\mauri\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mauri\\Documents\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\obj\\",
+        "outputPath": "C:\\Users\\mauri\\Documents\\GitHub\\Proyecto-gwent\\Proyecto gwent nuevo\\Logica del juego en consola\\Logica del juego en consola\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\mauri\\AppData\\Roaming\\NuGet\\NuGet.Config",

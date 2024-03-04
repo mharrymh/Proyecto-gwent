@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 public class GameController /*: MonoBehaviour*/
 {
+    public int Rounds { get; set; }
+
     public void Play(Card card)
     {
         

@@ -11,6 +11,7 @@ namespace Logica_del_juego_en_consola
     {       
         static void Main(string[] args)
         {
+
             Deck cartas = new Deck();
             Player player1 = new Player(cartas.DarkDeck, "player1");
             Player player2 = new Player(cartas.LightDeck, "player2");
@@ -26,11 +27,13 @@ namespace Logica_del_juego_en_consola
                 Console.WriteLine(player1.Hand[i].Name);
             }
 
-            Board board = new Board(player1.ID, player2.ID);
-            board.AddCard(player1, "M", player1.Hand[1]);
-            //board.PrintBoard();
+            Board board = Board.Instance;
+            board.AddCard("M", player1.Hand[1]);
+            board.PrintBoard();
+
             
-            
+
+
         }
 
     }

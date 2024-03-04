@@ -13,7 +13,6 @@ namespace Assets.Scripts
         public List<Card> LightDeck { get; set; }
         public List<Card> DarkDeck { get; set; }
 
-
         //Constructor
         public Deck()
         {
@@ -23,93 +22,104 @@ namespace Assets.Scripts
             CreateDarkDeck();
         }
 
-
-
-        //Crear las cartas en una clase database
         //Light faction cards
-        public void CreateLigthDeck()
+        private void CreateLigthDeck()
         {
             //Carta lider
-            LightDeck.Add(new Card(1, "Zeus", null, null, CardType.Leader, CardFaction.Light));
+            LightDeck.Add(new Card.LeaderCard("Zeus", CardFaction.Light, EffectType.TieIsWin));
 
             //Cartas oro
-            LightDeck.Add(new Card(2, "Dragon Blanco", 6, "MRS", CardType.Gold, CardFaction.Light));
-            LightDeck.Add(new Card(3, "Pegaso", 5, "S", CardType.Gold, CardFaction.Light));
-            LightDeck.Add(new Card(4, "Kitsune", 6, "M", CardType.Gold, CardFaction.Light));
+            LightDeck.Add(new Card.UnityCard("Dragon Blanco", CardFaction.Light, EffectType.CleanFile, "RS", UnityType.Gold, 5));
+            LightDeck.Add(new Card.UnityCard("Pegaso", CardFaction.Light, EffectType.None, "S", UnityType.Gold, 6));
+            LightDeck.Add(new Card.UnityCard("Kitsune", CardFaction.Light, EffectType.None, "M", UnityType.Gold, 6));
 
             //Cartas plata
-            LightDeck.Add(new Card(5, "Ra", 4, "SR", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(6, "Fénix", 4, "SR", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(7, "Sirena", 3, "M", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(8, "Centauro", 3, "MR", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(9, "Yeti", 3, "R", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(10, "Unicornio", 3, "R", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(11, "Salamandra", 3, "M", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(12, "Manticora", 4, "SR", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(13, "Quimera", 3, "MS", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(14, "Sátiro", 3, "R", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(15, "Leprechaun", 3, "M", CardType.Silver, CardFaction.Light));
-            LightDeck.Add(new Card(16, "Banshee", 3, "SR", CardType.Silver, CardFaction.Light));
+            LightDeck.Add(new Card.UnityCard("Ra", CardFaction.Light, EffectType.None, "RS", UnityType.Silver, 4));
+            LightDeck.Add(new Card.UnityCard("Fénix",CardFaction.Light, EffectType.None, "RS", UnityType.Silver, 4));
+            LightDeck.Add(new Card.UnityCard("Sirena",CardFaction.Light, EffectType.AddClimateCard, "M", UnityType.Silver, 3));
+            LightDeck.Add(new Card.UnityCard("Centauro", CardFaction.Light, EffectType.DrawExtraCard, "MR", UnityType.Silver, 3));
+            LightDeck.Add(new Card.UnityCard("Yeti", CardFaction.Light, EffectType.DeleteMostPowerCard, "R", UnityType.Silver, 3));
+            LightDeck.Add(new Card.UnityCard("Unicornio", CardFaction.Light, EffectType.None, "R", UnityType.Silver, 4));
+            LightDeck.Add(new Card.UnityCard("Salamandra", CardFaction.Light, EffectType.None, "M", UnityType.Silver, 4));
+            LightDeck.Add(new Card.UnityCard("Manticora", CardFaction.Light, EffectType.None, "RS", UnityType.Silver, 4));
+            LightDeck.Add(new Card.UnityCard("Quimera", CardFaction.Light, EffectType.DeleteLessPowerCard, "MRS", UnityType.Silver, 3));
+            LightDeck.Add(new Card.UnityCard("Sátiro", CardFaction.Light, EffectType.TimesTwins, "R", UnityType.Silver, 3));
+            LightDeck.Add(new Card.UnityCard("Leprechaun", CardFaction.Light, EffectType.None, "M", UnityType.Silver, 4));
+            LightDeck.Add(new Card.UnityCard("Banshee", CardFaction.Light, EffectType.AssignProm, "MRS", UnityType.Silver, 3));
 
             //Cartas clima
-            LightDeck.Add(new Card(17, "Notos", null, "MS", CardType.Climate, CardFaction.Light));
-            LightDeck.Add(new Card(17, "Notos", null, "MS", CardType.Climate, CardFaction.Light));
-            LightDeck.Add(new Card(18, "Zéfiro", null, "R", CardType.Climate, CardFaction.Light));
-            LightDeck.Add(new Card(18, "Zéfiro", null, "R", CardType.Climate, CardFaction.Light));
-            LightDeck.Add(new Card(19, "Sol Radiante", null, "", CardType.Climate, CardFaction.Light));
-            LightDeck.Add(new Card(19, "Sol Radiante", null, "", CardType.Climate, CardFaction.Light));
+            LightDeck.Add(new Card.SpecialCard("Notos", CardFaction.Light, EffectType.Climate, SpecialType.Climate, "M"));
+            LightDeck.Add(new Card.SpecialCard("Notos", CardFaction.Light, EffectType.Climate, SpecialType.Climate, "M"));
+            LightDeck.Add(new Card.SpecialCard("Tormenta de medianoche", CardFaction.Light, EffectType.Climate, SpecialType.Climate, "R"));
+            LightDeck.Add(new Card.SpecialCard("Tormenta de medianoche", CardFaction.Light, EffectType.Climate, SpecialType.Climate, "R"));
+            LightDeck.Add(new Card.SpecialCard("Zéfiro",  CardFaction.Light, EffectType.Climate, SpecialType.Climate, "S"));
+            LightDeck.Add(new Card.SpecialCard("Zéfiro",  CardFaction.Light, EffectType.Climate, SpecialType.Climate, "S"));
+            LightDeck.Add(new Card.SpecialCard("Sol Radiante", CardFaction.Light, EffectType.Clearance,SpecialType.Clearance,""));
+            LightDeck.Add(new Card.SpecialCard("Sol Radiante", CardFaction.Light, EffectType.Clearance,SpecialType.Clearance,""));
 
             //Cartas señuelo
-            LightDeck.Add(new Card(20, "Espejismo de apolo", null, null, CardType.Decoy, CardFaction.Light));
-            LightDeck.Add(new Card(20, "Espejismo de apolo", null, null, CardType.Decoy, CardFaction.Light));
-            LightDeck.Add(new Card(21, "Reflejo de Atenea", null, null, CardType.Decoy, CardFaction.Light));
-            LightDeck.Add(new Card(21, "Reflejo de Atenea", null, null, CardType.Decoy, CardFaction.Light));
+            LightDeck.Add(new Card.SpecialCard("Espejismo de apolo", CardFaction.Light, EffectType.Decoy, SpecialType.Decoy, ""));
+            LightDeck.Add(new Card.SpecialCard("Reflejo de Atenea", CardFaction.Light, EffectType.Decoy, SpecialType.Decoy, ""));
         }
         //Dark faction cards
-        public void CreateDarkDeck()
+        private void CreateDarkDeck()
         {
             //Carta lider
-            DarkDeck.Add(new Card(31, "Hades", null, "", CardType.Leader, CardFaction.Dark));
+            DarkDeck.Add(new Card.LeaderCard("Hades", CardFaction.Dark, EffectType.KeepRandomCard));
 
             //Cartas oro
-            DarkDeck.Add(new Card(32, "Dragon Negro", 6, "SR", CardType.Gold, CardFaction.Dark));
-            DarkDeck.Add(new Card(33, "Gárgola", 5, "S", CardType.Gold, CardFaction.Dark));
-            DarkDeck.Add(new Card(34, "Cerbero", 6, "M", CardType.Gold, CardFaction.Dark));
+            DarkDeck.Add(new Card.UnityCard("Dragon Negro", CardFaction.Dark, EffectType.DeleteLessPowerCard, "RS", UnityType.Gold, 5));
+            DarkDeck.Add(new Card.UnityCard("Gárgola", CardFaction.Dark, EffectType.DrawExtraCard, "R", UnityType.Gold, 6));
+            DarkDeck.Add(new Card.UnityCard("Cerbero", CardFaction.Dark, EffectType.None, "M", UnityType.Gold, 6));
 
             //Cartas plata
-            DarkDeck.Add(new Card(35, "Medusa", 4, "SM", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(36, "Kraken", 4, "R", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(37, "Harpía", 3, "MS", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(38, "Grifo", 3, "MS", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(39, "Ciclope", 3, "SR", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(40, "Hidra", 2, "RS", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(41, "Súcubo", 3, "S", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(42, "Espectro", 3, "SR", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(43, "Basilisco", 3, "MS", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(44, "Górgona", 3, "RS", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(45, "Golem", 3, "MR", CardType.Silver, CardFaction.Dark));
-            DarkDeck.Add(new Card(46, "Minotauro", 3, "S", CardType.Silver, CardFaction.Dark));
+            DarkDeck.Add(new Card.UnityCard("Medusa",  CardFaction.Dark, EffectType.None, "RS", UnityType.Silver, 4));
+            DarkDeck.Add(new Card.UnityCard("Kraken", CardFaction.Dark, EffectType.None,"RS", UnityType.Silver, 4));
+            DarkDeck.Add(new Card.UnityCard("Harpía",  CardFaction.Dark, EffectType.IncrementFile, "M", UnityType.Silver, 3));
+            DarkDeck.Add(new Card.UnityCard("Grifo",  CardFaction.Dark, EffectType.AddClimateCard, "MR", UnityType.Silver, 3));
+            DarkDeck.Add(new Card.UnityCard("Ciclope",  CardFaction.Dark, EffectType.TimesTwins, "R", UnityType.Silver, 3));
+            DarkDeck.Add(new Card.UnityCard("Hidra",  CardFaction.Dark, EffectType.None, "R", UnityType.Silver, 4));
+            DarkDeck.Add(new Card.UnityCard("Súcubo", CardFaction.Dark, EffectType.None, "M", UnityType.Silver, 4));
+            DarkDeck.Add(new Card.UnityCard("Espectro",  CardFaction.Dark, EffectType.None, "RS", UnityType.Silver, 4));
+            DarkDeck.Add(new Card.UnityCard("Basilisco",  CardFaction.Dark, EffectType.AssignProm, "MRS", UnityType.Silver, 3));
+            DarkDeck.Add(new Card.UnityCard("Górgona", CardFaction.Dark, EffectType.DrawExtraCard, "R", UnityType.Silver, 3));
+            DarkDeck.Add(new Card.UnityCard("Golem",  CardFaction.Dark, EffectType.None, "M", UnityType.Silver, 4));
+            DarkDeck.Add(new Card.UnityCard("Minotauro", CardFaction.Dark, EffectType.AssignProm, "MRS", UnityType.Silver, 3));
 
             //Cartas clima
-            DarkDeck.Add(new Card(47, "Niebla de olvido", null, "MS", CardType.Climate, CardFaction.Dark));
-            DarkDeck.Add(new Card(47, "Niebla de olvido", null, "MS", CardType.Climate, CardFaction.Dark));
-            DarkDeck.Add(new Card(48, "Tormenta de arena", null, "R", CardType.Climate, CardFaction.Dark));
-            DarkDeck.Add(new Card(48, "Tormenta de arena", null, "R", CardType.Climate, CardFaction.Dark));
-            DarkDeck.Add(new Card(49, "Claridad de luna", null, "", CardType.Climate, CardFaction.Dark));
-            DarkDeck.Add(new Card(49, "Claridad de luna", null, "", CardType.Climate, CardFaction.Dark));
+            DarkDeck.Add(new Card.SpecialCard("Niebla de olvido", CardFaction.Dark, EffectType.Climate,SpecialType.Climate, "M"));
+            DarkDeck.Add(new Card.SpecialCard("Niebla de olvido", CardFaction.Dark, EffectType.Climate,SpecialType.Climate, "M"));
+            DarkDeck.Add(new Card.SpecialCard("Lluvia de desesperacion", CardFaction.Dark, EffectType.Climate,SpecialType.Climate, "R"));
+            DarkDeck.Add(new Card.SpecialCard("Lluvia de desesperacion", CardFaction.Dark, EffectType.Climate,SpecialType.Climate, "R"));
+            DarkDeck.Add(new Card.SpecialCard("Tormenta de arena",CardFaction.Dark, EffectType.Climate,SpecialType.Climate, "S"));
+            DarkDeck.Add(new Card.SpecialCard("Tormenta de arena",CardFaction.Dark, EffectType.Climate,SpecialType.Climate, "S"));
+            DarkDeck.Add(new Card.SpecialCard("Claridad de luna",CardFaction.Dark, EffectType.Clearance,SpecialType.Clearance, ""));
+            DarkDeck.Add(new Card.SpecialCard("Claridad de luna", CardFaction.Dark, EffectType.Clearance,SpecialType.Clearance, ""));
 
             //Cartas señuelo
-            DarkDeck.Add(new Card(50, "Eco de érebo", null, "", CardType.Decoy, CardFaction.Dark));
-            DarkDeck.Add(new Card(50, "Eco de érebo", null, "", CardType.Decoy, CardFaction.Dark));
-            DarkDeck.Add(new Card(51, "Ilusion de Nyx", null, "", CardType.Decoy, CardFaction.Dark));
-            DarkDeck.Add(new Card(51, "Ilusion de Nyx", null, "", CardType.Decoy, CardFaction.Dark));
+            DarkDeck.Add(new Card.SpecialCard("Eco de érebo", CardFaction.Dark, EffectType.Decoy,SpecialType.Decoy, ""));
+            DarkDeck.Add(new Card.SpecialCard("Ilusion de Nyx",CardFaction.Dark, EffectType.Decoy,SpecialType.Decoy, ""));
         }
+
+        public List<Card> GetLightDeck()
+        {
+            // Return a copy of the deck to prevent modification
+            return new List<Card>(LightDeck);
+        }
+
+        public List<Card> GetDarkDeck()
+        {
+            // Return a copy of the deck to prevent modification
+            return new List<Card>(DarkDeck);
+        }
+
 
         //Shuffle deck method
         public static List<Card> Shuffle(List<Card> PlayerDeck)
         {
             //Quit leader card because it has to be always in the hand
-            Card card_leader = PlayerDeck.Find(Card => Card.Type == CardType.Leader);
+            //****
+            Card card_leader = PlayerDeck.Find(Card => Card.LeaderCard);
             PlayerDeck.Remove(card_leader);
 
             Random rand = new Random();
