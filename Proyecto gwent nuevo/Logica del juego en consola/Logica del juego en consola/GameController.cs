@@ -8,10 +8,6 @@ public class GameController /*: MonoBehaviour*/
 {
     public int Rounds { get; set; }
 
-    public void Play(Card card)
-    {
-        
-    }
 }
     //Player player1;
     //Player player2;

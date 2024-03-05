@@ -11,12 +11,10 @@ namespace Logica_del_juego_en_consola
     {       
         static void Main(string[] args)
         {
+            Player player1 = new Player(CardFaction.Light, "player1");
+            Player player2 = new Player(CardFaction.Dark, "player2");
 
-            Deck cartas = new Deck();
-            Player player1 = new Player(cartas.DarkDeck, "player1");
-            Player player2 = new Player(cartas.LightDeck, "player2");
 
-            player1.PlayerDeck = Deck.Shuffle(player1.PlayerDeck);
             for (int i = 0; i < player1.PlayerDeck.Count; i++)
             {
                 Console.WriteLine(player1.PlayerDeck[i].Name);
@@ -28,12 +26,7 @@ namespace Logica_del_juego_en_consola
             }
 
             Board board = Board.Instance;
-            board.AddCard("M", player1.Hand[1]);
-            board.PrintBoard();
-
-            
-
-
+            board.PlayCard("M", player2.Hand[1]);    
         }
 
     }

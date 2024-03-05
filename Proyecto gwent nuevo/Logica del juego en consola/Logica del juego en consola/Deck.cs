@@ -7,19 +7,17 @@ using System.Threading.Tasks;
 
 namespace Assets.Scripts
 {
-    public class Deck
+    public class CardDatabase
     {
         //Create two factions
         public List<Card> LightDeck { get; set; }
         public List<Card> DarkDeck { get; set; }
 
         //Constructor
-        public Deck()
+        public CardDatabase()
         {
             LightDeck = new List<Card>();
             DarkDeck = new List<Card>();
-            CreateLigthDeck();
-            CreateDarkDeck();
         }
 
         //Light faction cards
@@ -103,27 +101,16 @@ namespace Assets.Scripts
 
         public List<Card> GetLightDeck()
         {
+            CreateLigthDeck();
             // Return a copy of the deck to prevent modification
             return new List<Card>(LightDeck);
         }
 
         public List<Card> GetDarkDeck()
         {
+            CreateDarkDeck();
             // Return a copy of the deck to prevent modification
             return new List<Card>(DarkDeck);
-        }
-
-
-        //Shuffle deck method
-        public static List<Card> Shuffle(List<Card> PlayerDeck)
-        {
-            //Quit leader card because it has to be always in the hand
-            //****
-            Card card_leader = PlayerDeck.Find(Card => Card.LeaderCard);
-            PlayerDeck.Remove(card_leader);
-
-            Random rand = new Random();
-            return PlayerDeck = PlayerDeck.OrderBy(x => rand.Next()).ToList();
         }
     }
 }

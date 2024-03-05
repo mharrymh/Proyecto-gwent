@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Logica del juego en consola")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+176c1d381e9fe7ed15403d6374dc9e52f60431d1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b656f693860e8cd3998bcff00e1e74bb2ddd4391")]
 [assembly: System.Reflection.AssemblyProductAttribute("Logica del juego en consola")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Logica del juego en consola")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

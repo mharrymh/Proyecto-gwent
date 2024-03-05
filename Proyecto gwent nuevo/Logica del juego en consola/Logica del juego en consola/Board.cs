@@ -59,11 +59,12 @@ namespace Assets.Scripts
             };
         }
 
-        public bool ValidSection(Player player, string ranges)
+        public bool ValidMove(Card card, string range)
         {
-            foreach (char range in ranges)
+            
+            foreach (char Range in range)
             {
-                if (sections[player.ID].ContainsKey(range.ToString()))
+                if (sections[card.Owner.ID].ContainsKey(range.ToString()))
                 {
                     return true;
                 }    
@@ -71,56 +72,37 @@ namespace Assets.Scripts
             return false;
         }
 
-        public void AddCard(string range /*donde el jugador suelte el mouse*/, Card card)
+        public void PlayCard(string range, Card card)
         {
-            //range = "donde el jugador suelte el mouse"
-            bool is_valid = ValidSection(card.Owner, range);
+            //range is the place where the player unclick the mouse
+            bool is_valid = ValidMove(card, range);
+
             if (is_valid && card.Owner.Hand.Contains(card))
             {
                 //Add card to board
                 sections[card.Owner.ID][range].Add(card);
                 //remove card from the hand
                 card.Owner.Hand.Remove(card);
-                //play card
-                gamecontroller.Play(card);
                 //Calculate player score
-                int player_score = SumPowerSection(card.Owner);
+                int player_score = SumPowerInSection(card);
                 card.Owner.Score = player_score;
                 Effect.Effects[card.effectType].Invoke(card);
             }
         }
 
         //Sum all the points in player section
-        //**
-        public int SumPowerSection(Player player)
+        public int SumPowerInSection(Card card)
         {
             int sum = 0;
-            foreach (var section in sections[player.ID])
+            foreach (var section in sections[card.Owner.ID])
             {
-                foreach(Card card in section.Value)
+                foreach(Card.UnityCard UnityCard in section.Value)
                 {
-                    int cardpower = card.Power ?? 0;
+                    int cardpower = UnityCard.Power;
                     sum += cardpower;
                 }
             }
             return sum;
-        }
-
-
-        public void PrintBoard()
-        {
-            foreach (var player in sections)
-            {
-                Console.WriteLine($"Jugador: {player.Key}");
-                foreach (var section in player.Value)
-                {
-                    Console.WriteLine($"  Sección: {section.Key}");
-                    foreach (var card in section.Value)
-                    {
-                        Console.WriteLine($"    Carta: {card.Name}, Poder: {card.Power}");
-                    }
-                }
-            }
         }
     }
 }
