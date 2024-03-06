@@ -23,8 +23,9 @@ namespace Assets.Scripts
         public bool Passed { get; set; }
         public int RoundsWon { get; set; }
 
+        public Board board { get; set; }
         //Constructor
-        public Player(CardFaction Faction, string ID)
+        public Player(CardFaction Faction, string ID, Board board)
         {            
             this.Faction = Faction;
             PlayerDeck = GetPlayerDeck(Faction);
@@ -36,6 +37,7 @@ namespace Assets.Scripts
             IsPlaying = false;
             HasPlayed = false;
             Passed = false;
+            this.board = board;
         }
 
         CardDatabase cartas = new CardDatabase();

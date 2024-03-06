@@ -11,8 +11,9 @@ namespace Logica_del_juego_en_consola
     {       
         static void Main(string[] args)
         {
-            Player player1 = new Player(CardFaction.Light, "player1");
-            Player player2 = new Player(CardFaction.Dark, "player2");
+            Board board = Board.Instance;
+            Player player1 = new Player(CardFaction.Light, "player1", board);
+            Player player2 = new Player(CardFaction.Dark, "player2", board);
 
 
             for (int i = 0; i < player1.PlayerDeck.Count; i++)
@@ -24,8 +25,6 @@ namespace Logica_del_juego_en_consola
             {
                 Console.WriteLine(player1.Hand[i].Name);
             }
-
-            Board board = Board.Instance;
             board.PlayCard("M", player2.Hand[1]);    
         }
 

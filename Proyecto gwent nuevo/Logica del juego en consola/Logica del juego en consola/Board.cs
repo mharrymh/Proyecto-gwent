@@ -31,7 +31,7 @@ namespace Assets.Scripts
         //The board with its sections
         public Dictionary<string, Dictionary<string, List<Card>>> sections;
         //Climate Section
-        
+        public Dictionary<string, Card.SpecialCard[]> climate_section;
         
 
         private Board()
@@ -57,6 +57,16 @@ namespace Assets.Scripts
                     }
                 }
             };
+
+            climate_section = new Dictionary<string, Card.SpecialCard[]>()
+            {
+                {
+                    "player2", new Card.SpecialCard[3]
+                },
+                {
+                    "player 1", new Card.SpecialCard[3]
+                }
+            };
         }
 
         public bool ValidMove(Card card, string range)
@@ -64,10 +74,18 @@ namespace Assets.Scripts
             
             foreach (char Range in range)
             {
-                if (sections[card.Owner.ID].ContainsKey(range.ToString()))
+                if (card is Card.UnityCard unity_card && sections[card.Owner.ID].ContainsKey(range.ToString()))
                 {
                     return true;
                 }    
+                else if (card is Card.SpecialCard special_card && special_card.Type == SpecialType.Decoy)
+                {
+                    return true;
+                }
+                else if (card is Card.SpecialCard climate_card && climate_card.Type == SpecialType.Climate)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -76,9 +94,14 @@ namespace Assets.Scripts
         {
             //range is the place where the player unclick the mouse
             bool is_valid = ValidMove(card, range);
-
             if (is_valid && card.Owner.Hand.Contains(card))
             {
+                //if (card is Card.SpecialCard climate_card && climate_card.Type == SpecialType.Climate)
+                //{
+                //    var PlayerSection = card.Owner.board.climate_section[card.Owner.ID];
+                //    if (climate_card.Range = "M")
+
+                //}
                 //Add card to board
                 sections[card.Owner.ID][range].Add(card);
                 //remove card from the hand

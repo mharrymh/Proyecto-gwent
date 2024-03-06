@@ -27,21 +27,21 @@ namespace Assets.Scripts
             LightDeck.Add(new Card.LeaderCard("Zeus", CardFaction.Light, EffectType.TieIsWin));
 
             //Cartas oro
-            LightDeck.Add(new Card.UnityCard("Dragon Blanco", CardFaction.Light, EffectType.CleanFile, "RS", UnityType.Gold, 5));
-            LightDeck.Add(new Card.UnityCard("Pegaso", CardFaction.Light, EffectType.None, "S", UnityType.Gold, 6));
+            LightDeck.Add(new Card.UnityCard("Dragon Blanco", CardFaction.Light, EffectType.CleanMeleeFile, "RS", UnityType.Gold, 5));
+            LightDeck.Add(new Card.UnityCard("Pegaso", CardFaction.Light, EffectType.TimesTwins, "S", UnityType.Gold, 6));
             LightDeck.Add(new Card.UnityCard("Kitsune", CardFaction.Light, EffectType.None, "M", UnityType.Gold, 6));
 
             //Cartas plata
             LightDeck.Add(new Card.UnityCard("Ra", CardFaction.Light, EffectType.None, "RS", UnityType.Silver, 4));
             LightDeck.Add(new Card.UnityCard("Fénix",CardFaction.Light, EffectType.None, "RS", UnityType.Silver, 4));
-            LightDeck.Add(new Card.UnityCard("Sirena",CardFaction.Light, EffectType.AddClimateCard, "M", UnityType.Silver, 3));
-            LightDeck.Add(new Card.UnityCard("Centauro", CardFaction.Light, EffectType.DrawExtraCard, "MR", UnityType.Silver, 3));
+            LightDeck.Add(new Card.UnityCard("Sirena",CardFaction.Light, EffectType.CleanSiegeFile, "M", UnityType.Silver, 3));
+            LightDeck.Add(new Card.UnityCard("Centauro", CardFaction.Light, EffectType.TakeCardFromGraveYard, "MR", UnityType.Silver, 3));
             LightDeck.Add(new Card.UnityCard("Yeti", CardFaction.Light, EffectType.DeleteMostPowerCard, "R", UnityType.Silver, 3));
             LightDeck.Add(new Card.UnityCard("Unicornio", CardFaction.Light, EffectType.None, "R", UnityType.Silver, 4));
             LightDeck.Add(new Card.UnityCard("Salamandra", CardFaction.Light, EffectType.None, "M", UnityType.Silver, 4));
             LightDeck.Add(new Card.UnityCard("Manticora", CardFaction.Light, EffectType.None, "RS", UnityType.Silver, 4));
             LightDeck.Add(new Card.UnityCard("Quimera", CardFaction.Light, EffectType.DeleteLessPowerCard, "MRS", UnityType.Silver, 3));
-            LightDeck.Add(new Card.UnityCard("Sátiro", CardFaction.Light, EffectType.TimesTwins, "R", UnityType.Silver, 3));
+            LightDeck.Add(new Card.UnityCard("Sátiro", CardFaction.Light, EffectType.None, "R", UnityType.Silver, 3));
             LightDeck.Add(new Card.UnityCard("Leprechaun", CardFaction.Light, EffectType.None, "M", UnityType.Silver, 4));
             LightDeck.Add(new Card.UnityCard("Banshee", CardFaction.Light, EffectType.AssignProm, "MRS", UnityType.Silver, 3));
 
@@ -74,13 +74,13 @@ namespace Assets.Scripts
             DarkDeck.Add(new Card.UnityCard("Medusa",  CardFaction.Dark, EffectType.None, "RS", UnityType.Silver, 4));
             DarkDeck.Add(new Card.UnityCard("Kraken", CardFaction.Dark, EffectType.None,"RS", UnityType.Silver, 4));
             DarkDeck.Add(new Card.UnityCard("Harpía",  CardFaction.Dark, EffectType.IncrementFile, "M", UnityType.Silver, 3));
-            DarkDeck.Add(new Card.UnityCard("Grifo",  CardFaction.Dark, EffectType.AddClimateCard, "MR", UnityType.Silver, 3));
-            DarkDeck.Add(new Card.UnityCard("Ciclope",  CardFaction.Dark, EffectType.TimesTwins, "R", UnityType.Silver, 3));
+            DarkDeck.Add(new Card.UnityCard("Grifo",  CardFaction.Dark, EffectType.CleanRangedFile, "MS", UnityType.Silver, 3));
+            DarkDeck.Add(new Card.UnityCard("Ciclope",  CardFaction.Dark, EffectType.None, "R", UnityType.Silver, 3));
             DarkDeck.Add(new Card.UnityCard("Hidra",  CardFaction.Dark, EffectType.None, "R", UnityType.Silver, 4));
             DarkDeck.Add(new Card.UnityCard("Súcubo", CardFaction.Dark, EffectType.None, "M", UnityType.Silver, 4));
             DarkDeck.Add(new Card.UnityCard("Espectro",  CardFaction.Dark, EffectType.None, "RS", UnityType.Silver, 4));
             DarkDeck.Add(new Card.UnityCard("Basilisco",  CardFaction.Dark, EffectType.AssignProm, "MRS", UnityType.Silver, 3));
-            DarkDeck.Add(new Card.UnityCard("Górgona", CardFaction.Dark, EffectType.DrawExtraCard, "R", UnityType.Silver, 3));
+            DarkDeck.Add(new Card.UnityCard("Górgona", CardFaction.Dark, EffectType.TakeCardFromDeck, "R", UnityType.Silver, 3));
             DarkDeck.Add(new Card.UnityCard("Golem",  CardFaction.Dark, EffectType.None, "M", UnityType.Silver, 4));
             DarkDeck.Add(new Card.UnityCard("Minotauro", CardFaction.Dark, EffectType.AssignProm, "MRS", UnityType.Silver, 3));
 

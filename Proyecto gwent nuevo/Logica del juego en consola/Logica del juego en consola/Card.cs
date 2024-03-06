@@ -12,19 +12,21 @@ namespace Assets.Scripts
     {
         //Aumenta el poder en la fila(Cartas aumento)
         IncrementFile,
-        //Anade una carta clima
-        AddClimateCard,
         //Elimina la carta con mas poder del campo(propio o del rival)
         DeleteMostPowerCard,
         //Elimina la carta mas poderosa del rival
         DeleteLessPowerCard,
-        //Roba una carta
-        TakeCard,
+        //Roba una carta del Deck
+        TakeCardFromDeck,
+        //Roba una carta del ceementerio
+        TakeCardFromGraveYard,
         //Multiplica por n su ataque siendo n la cantidad de cartas
         //iguales a ella en el campo
         TimesTwins,
         //Elimina todas las cartas de la fila(propia o del rival)
-        CleanFile,
+        CleanMeleeFile,
+        CleanRangedFile, 
+        CleanSiegeFile,
         //Calcula el promedio de todas las cartas del campo
         //y las iguala a ese poder
         AssignProm,
@@ -69,7 +71,6 @@ namespace Assets.Scripts
         public CardFaction Faction { get; private set; }
         public EffectType effectType { get; private set; }
         public Player Owner { get; set; }
-
 
         public Card(string name, CardFaction cardFaction, EffectType effectType)
         {           
