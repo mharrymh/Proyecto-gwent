@@ -12,8 +12,8 @@ namespace Logica_del_juego_en_consola
         static void Main(string[] args)
         {
             Board board = Board.Instance;
-            Player player1 = new Player(CardFaction.Light, "player1", board);
-            Player player2 = new Player(CardFaction.Dark, "player2", board);
+            Player player1 = new Player(CardFaction.Light, "player1");
+            Player player2 = new Player(CardFaction.Dark, "player2");
 
 
             for (int i = 0; i < player1.PlayerDeck.Count; i++)

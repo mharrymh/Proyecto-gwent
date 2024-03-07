@@ -19,6 +19,7 @@ namespace Logica_del_juego_en_consola
             { EffectType.Clearance, Clearance },
             { EffectType.Climate, Climate },
             { EffectType.Decoy, Decoy },
+            { EffectType.IncrementFile, IncrementFile },
             { EffectType.DeleteLessPowerCard, DeleteLessPowerCard },
             { EffectType.DeleteMostPowerCard, DeleteMostPowerCard },
             { EffectType.DrawExtraCard, DrawExtraCard },
@@ -26,11 +27,31 @@ namespace Logica_del_juego_en_consola
             { EffectType.None, None },
             { EffectType.TakeCardFromDeck, TakeCardFromDeck },
             { EffectType.TakeCardFromGraveYard, TakeCardFromGraveYard },
-            { EffectType.TieIsWin, TieIsWin },
             { EffectType.TimesTwins, TimesTwins },
             //More effects
         };
 
+        
+        public static void IncrementFile(Card card)
+        {
+            if (card is Card.SpecialCard specialCard)
+            {
+                var AllSections = specialCard.Owner.board.sections;
+                //Iterate through all board sections
+                foreach (var PlayerSection in AllSections)
+                {
+                    var CardsInSection = PlayerSection.Value[specialCard.Range];
+                    //Iterate through each card in card.Range section
+                    foreach (Card CardInSection in CardsInSection)
+                    {
+                        if (CardInSection is Card.UnityCard unity_card)
+                        {
+                            unity_card.Power++;
+                        }
+                    }
+                }
+            }
+        }
         public static void TakeCardFromGraveYard(Card card)
         {
             if (card.Owner.GraveYard.Count > 0)
@@ -45,7 +66,7 @@ namespace Logica_del_juego_en_consola
             var PlayerSection = card.Owner.board.sections[card.Owner.ID];
             foreach (var Cards in PlayerSection.Values)
             {
-                foreach(Card card1 in Cards)
+                foreach (Card card1 in Cards)
                 {
                     if (card1 is Card.UnityCard unity_card && unity_card.UnityType == UnityType.Gold)
                     {
@@ -53,10 +74,6 @@ namespace Logica_del_juego_en_consola
                     }
                 }
             }
-        }
-        public static void TieIsWin(Card card)
-        {
-
         }
         public static void TakeCardFromDeck(Card card)
         {
@@ -82,16 +99,16 @@ namespace Logica_del_juego_en_consola
         public static void DeleteMostPowerCard(Card card)
         {
             Card.UnityCard MostPowerCard = null;
-            int max_power = -1;
+            int max_power = int.MinValue;
 
             var AllSections = card.Owner.board.sections;
-            foreach(var PlayerSection in AllSections)
+            foreach (var PlayerSection in AllSections)
             {
-                foreach(var RangeSection in PlayerSection.Value)
+                foreach (var RangeSection in PlayerSection.Value)
                 {
-                    foreach(Card Card in RangeSection.Value)
+                    foreach (Card Card in RangeSection.Value)
                     {
-                         if (Card is Card.UnityCard unity_card && unity_card.Power > max_power)
+                        if (Card is Card.UnityCard unity_card && unity_card.Power > max_power)
                         {
                             MostPowerCard = unity_card;
                         }
@@ -121,7 +138,7 @@ namespace Logica_del_juego_en_consola
         public static void DeleteLessPowerCard(Card card)
         {
             Card.UnityCard LessPowerCard = null;
-            int min_power = 100;
+            int min_power = int.MaxValue;
 
             var AllSections = card.Owner.board.sections;
             foreach (var PlayerSection in AllSections)
@@ -161,6 +178,42 @@ namespace Logica_del_juego_en_consola
         {
 
         }
+
+        //public static void Decoy(Card decoyCard, Card targetCard)
+        //{
+        //    // Comprueba si la carta señuelo y la carta objetivo pertenecen al mismo jugador
+        //    if (decoyCard.Owner != targetCard.Owner)
+        //    {
+        //        throw new Exception("Decoy card and target card must belong to the same player.");
+        //    }
+
+        //    // Comprueba si la carta objetivo está en el campo
+        //    var playerSections = decoyCard.Owner.board.sections[decoyCard.Owner.ID];
+        //    bool isTargetCardOnField = playerSections.Any(section => section.Value.Contains(targetCard));
+        //    if (!isTargetCardOnField)
+        //    {
+        //        throw new Exception("Target card must be on the field.");
+        //    }
+
+        //    // Devuelve la carta objetivo a la mano del jugador
+        //    targetCard.Owner.Hand.Add(targetCard);
+
+        //    // Elimina la carta objetivo del campo
+        //    foreach (var section in playerSections)
+        //    {
+        //        section.Value.Remove(targetCard);
+        //    }
+
+        //    // Coloca la carta señuelo en el campo
+        //    // Aquí necesitarás decidir en qué sección colocar la carta señuelo
+        //    // En este ejemplo, la colocamos en la misma sección que la carta objetivo
+        //    string targetCardRange = targetCard is Card.UnityCard unityCard ? unityCard.Range : null;
+        //    if (targetCardRange != null)
+        //    {
+        //        playerSections[targetCardRange].Add(decoyCard);
+        //    }
+        //}
+
         public static void Climate(Card card)
         {
             if (card is Card.SpecialCard climate_card)
@@ -181,9 +234,60 @@ namespace Logica_del_juego_en_consola
                 }
             }
         }
+
+        public static void RestoreOriginalPower(Card card)
+        {
+            var AllSections = card.Owner.board.sections;
+            foreach (var PlayerSection in AllSections)
+            {
+                var RangeSection = PlayerSection.Value;
+                foreach (var Cards in RangeSection.Values)
+                {
+                    foreach(Card card1 in Cards)
+                    {
+                        if (card1 is Card.UnityCard unity_card)
+                        {
+                            unity_card.Power = unity_card.OriginalPower;
+                        }
+                    }
+                }
+            }
+
+            foreach(Card card2 in card.Owner.board.climate_section)
+            {
+                if (card2 != null)
+                {
+                    Climate(card2);
+                }
+            }
+        }
+
         public static void Clearance(Card card)
         {
-
+            var ClimateSection = card.Owner.board.climate_section;
+            for (int i = 0; i < ClimateSection.Length; i++)
+            {
+                if (ClimateSection[i] != null)
+                {
+                    Card.SpecialCard ClimateCard = ClimateSection[i];
+                    var AllSections = card.Owner.board.sections;
+                    //Iterate through all board sections
+                    foreach (var PlayerSection in AllSections)
+                    {
+                        var CardsInSection = PlayerSection.Value[ClimateCard.Range];
+                        //Iterate through each card in card.Range section
+                        foreach (Card CardInSection in CardsInSection)
+                        {
+                            if (CardInSection is Card.UnityCard unity_card)
+                            {
+                                unity_card.Power++;
+                            }
+                        }
+                    }
+                    ClimateCard.Owner.GraveYard.Add(ClimateCard);
+                    ClimateSection[i] = null;
+                }
+            }
         }
         public static void CleanMeleeFile(Card card)
         {
@@ -231,6 +335,7 @@ namespace Logica_del_juego_en_consola
 
         public static void AssignProm(Card card)
         {
+
         }
 
 

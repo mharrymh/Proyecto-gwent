@@ -16,60 +16,46 @@ namespace Assets.Scripts
         public List<Card> PlayerDeck { get; set; }
         public List<Card> Hand { get; set; }
         public int Score { get; set; }
-        public Card Leader { get; set; }
+        public Card.LeaderCard Leader { get; set; }
         public List<Card> GraveYard { get; set; }
-        public bool IsPlaying { get; set; }
-        public bool HasPlayed { get; set; }
         public bool Passed { get; set; }
         public int RoundsWon { get; set; }
-
         public Board board { get; set; }
-        //Constructor
-        public Player(CardFaction Faction, string ID, Board board)
+        
+        public Player(CardFaction Faction, string ID)
         {            
             this.Faction = Faction;
-            PlayerDeck = GetPlayerDeck(Faction);
-            Leader = GetLeaderCard(Faction);
-            Hand = AssignHand();
+            GetPlayerDeck(Faction);
             this.ID = ID;
             Score = 0;
             RoundsWon = 0;
-            IsPlaying = false;
-            HasPlayed = false;
             Passed = false;
-            this.board = board;
+            board = Board.Instance;
         }
 
         CardDatabase cartas = new CardDatabase();
-        
-        public Card GetLeaderCard(CardFaction faction)
-        {
-            if (faction == CardFaction.Light)
+        public void GetLeaderCard()
+        {    
+            foreach (Card card in PlayerDeck)
             {
-                Card leaderCard = PlayerDeck.Find(card => card.Name == "Zeus");
-                PlayerDeck.Remove(leaderCard);
-                return leaderCard;
-            }
-            else
-            {
-                Card leaderCard = PlayerDeck.Find(card => card.Name == "Hades");
-                PlayerDeck.Remove(leaderCard);
-                return leaderCard;
+                if (card is Card.LeaderCard leader_card)
+                {
+                    Leader = leader_card;
+                }
             }
         }
-        public List<Card> GetPlayerDeck(CardFaction Faction)
+        public void GetPlayerDeck(CardFaction Faction)
         {
             if (Faction == CardFaction.Light)
             {
-                List<Card> PlayerDeck = new List<Card>();
                 PlayerDeck = cartas.GetLightDeck();
             }
             else
             {
-                List<Card> PlayerDeck = new List<Card>();
                 PlayerDeck = cartas.GetDarkDeck();
             }
-            return PlayerDeck;
+            //Assign Leader property
+            GetLeaderCard();
         }
         public List<Card> AssignHand()
         {
@@ -90,11 +76,21 @@ namespace Assets.Scripts
         }
 
         //Shuffle deck method
-        public static List<Card> Shuffle(List<Card> playerDeck)
+        public static List<Card> Shuffle(List<Card> Cards)
         {
             Random rand = new Random();
-            return playerDeck = playerDeck.OrderBy(x => rand.Next()).ToList();
+            return Cards = Cards.OrderBy(x => rand.Next()).ToList();
         }
 
+        public void DrawCard(int n)
+        {
+            if (PlayerDeck.Count > n)
+            {
+                for (int i = 0; i <= n; i++)
+                {
+                    Hand.Add(PlayerDeck[i]);
+                }
+            }
+        }
     }
 }
