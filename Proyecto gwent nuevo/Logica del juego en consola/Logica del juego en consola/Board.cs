@@ -60,7 +60,5 @@ namespace Assets.Scripts
 
             climate_section = new Card.SpecialCard[3];
         }
-
-
     }
 }

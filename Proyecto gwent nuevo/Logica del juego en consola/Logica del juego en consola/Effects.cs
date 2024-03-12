@@ -332,13 +332,9 @@ namespace Logica_del_juego_en_consola
                 }
             }
         }
-
         public static void AssignProm(Card card)
         {
 
         }
-
-
     }
-
 }

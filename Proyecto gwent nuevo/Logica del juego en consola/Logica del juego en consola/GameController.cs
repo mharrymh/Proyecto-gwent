@@ -65,9 +65,12 @@ public class GameManager /*: MonoBehaviour*/
             player1.Hand = player1.AssignHand();
             player2.Hand = player2.AssignHand();
         }
-        CleanBoard();
-        player1.DrawCard(2);
-        player2.DrawCard(2);
+        else
+        {
+            CleanBoard();
+            player1.DrawCard(2);
+            player2.DrawCard(2);
+        }
     }
     
     public void CleanBoard()
