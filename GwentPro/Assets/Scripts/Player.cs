@@ -14,7 +14,7 @@ public class Player
     public List<Card> GraveYard { get; set; }
     public bool Passed { get; set; }
     public int RoundsWon { get; set; }
-    public Board board { get; set; }
+    public bool LeaderPlayed { get; set; }
 
     public Player(CardFaction Faction, string ID)
     {
@@ -23,67 +23,35 @@ public class Player
         this.ID = ID;
         Score = 0;
         RoundsWon = 0;
-        Passed = false;
-        board = Board.Instance;
+        Hand = new List<Card>();
     }
 
-    CardDatabase cartas = new CardDatabase();
-    public void GetLeaderCard()
-    {
-        foreach (Card card in PlayerDeck)
-        {
-            if (card is Card.LeaderCard leader_card)
-            {
-                Leader = leader_card;
-            }
-        }
-    }
+    CardDatabase cards = new CardDatabase();
+    
+    
     public void GetPlayerDeck(CardFaction Faction)
     {
         if (Faction == CardFaction.Light)
         {
-            PlayerDeck = cartas.GetLightDeck();
+            PlayerDeck = cards.GetLightDeck();
         }
         else
         {
-            PlayerDeck = cartas.GetDarkDeck();
+            PlayerDeck = cards.GetDarkDeck();
         }
         //Assign Leader property
-        GetLeaderCard();
-    }
-    public List<Card> AssignHand()
-    {
-        Hand = new List<Card>();
-        //PlayerDeck = Shuffle(PlayerDeck);
-
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < PlayerDeck.Count; i++)
         {
-            Card card = PlayerDeck[i];
-            card.Owner = this;
-            Hand.Add(card);
-            //Assign owner property to card         
-        }
-        //remove hand cards from the player deck
-        PlayerDeck = PlayerDeck.Except(Hand).ToList();
-
-        return Hand;
-    }
-
-    //Shuffle deck method
-    //public static List<Card> Shuffle(List<Card> Cards)
-    //{
-    //    Random rand = new Random();
-    //    return Cards = Cards.OrderBy(x => rand.Next()).ToList();
-    //}
-
-    public void DrawCard(int n)
-    {
-        if (PlayerDeck.Count > n)
-        {
-            for (int i = 0; i <= n; i++)
+            if (PlayerDeck[i] is Card.LeaderCard leader)
             {
-                Hand.Add(PlayerDeck[i]);
+                Leader = leader;
+                PlayerDeck.RemoveAt(i);
             }
         }
     }
+    public void AssignHand(Card card)
+    {
+        Hand.Add(card);
+    }
+    
 }

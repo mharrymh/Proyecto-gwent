@@ -35,7 +35,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 24.94, y: -52.05}
+  m_AnchoredPosition: {x: 28.9, y: -53.4}
   m_SizeDelta: {x: 11.7548, y: 5.4579}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4343137279686323342
@@ -129,7 +129,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0.056074142, w: 0}
+  m_margin: {x: 0, y: 0, z: -0.53486824, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -170,7 +170,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -7.1107, y: -28.3037}
+  m_AnchoredPosition: {x: -7.1107, y: -34.9}
   m_SizeDelta: {x: 46.9487, y: 23.3373}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5112952467248618407
@@ -307,8 +307,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0015024, y: -1.91}
-  m_SizeDelta: {x: 68.193, y: 112.37}
+  m_AnchoredPosition: {x: 0.012171, y: 0.20432}
+  m_SizeDelta: {x: 66.314, y: 107.87}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3069770794036758651
 CanvasRenderer:
@@ -360,6 +360,10 @@ GameObject:
   - component: {fileID: 1859697331872261131}
   - component: {fileID: 2822244599088716521}
   - component: {fileID: 7457274165390180769}
+  - component: {fileID: 3047136731189598562}
+  - component: {fileID: -2244596580177899807}
+  - component: {fileID: -2048080893646534998}
+  - component: {fileID: 5323189161734791023}
   m_Layer: 5
   m_Name: Card
   m_TagString: Untagged
@@ -385,9 +389,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -399.60706, y: -164.5149}
-  m_SizeDelta: {x: 67.7959, y: 108.5202}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -408.4513, y: -193.92761}
+  m_SizeDelta: {x: 66.3388, y: 108.2773}
+  m_Pivot: {x: 0.49846643, y: 0.50086}
 --- !u!222 &1859697331872261131
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -409,7 +413,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.21960786, g: 0.21960786, b: 0.21960786, a: 0}
+  m_Color: {r: 0.1509434, g: 0.114489146, b: 0.114489146, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -442,3 +446,113 @@ MonoBehaviour:
   Description: {fileID: 6548190517210185288}
   CardImage: {fileID: 1439429320625395376}
   Power: {fileID: 7146790250671575775}
+--- !u!50 &3047136731189598562
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9194607509127826207}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
+--- !u!61 &-2244596580177899807
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9194607509127826207}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0.10873413, y: -0.9477768}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 82.56888, y: 130.18822}
+  m_EdgeRadius: 0
+--- !u!114 &-2048080893646534998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9194607509127826207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3e3b910bfe3704498ef3cc802a11b03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isDragging: 0
+  isOverDropZone: 0
+  DropZone: {fileID: 0}
+  startPosition: {x: 0, y: 0}
+  card: {fileID: 0}
+  max_sections: 6
+--- !u!114 &5323189161734791023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9194607509127826207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 13
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: -2048080893646534998}
+          m_TargetAssemblyTypeName: DragAndDrop, Assembly-CSharp
+          m_MethodName: StartDrag
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 14
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: -2048080893646534998}
+          m_TargetAssemblyTypeName: DragAndDrop, Assembly-CSharp
+          m_MethodName: EndDrag
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2

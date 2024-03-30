@@ -7,13 +7,12 @@ using TMPro;
 
 public class DisplayCard : MonoBehaviour
 {
-    
-
     public Card card;
     public TMP_Text Description;
     public Image CardImage;
     public TMP_Text Power;
-    
+
+
     void Update()
     {
         CardImage.sprite = card.CardImage;
@@ -27,7 +26,7 @@ public class DisplayCard : MonoBehaviour
         }
         else
         {
-            Power.text = " ";
+            Power.text = "";
         }
     }
 }

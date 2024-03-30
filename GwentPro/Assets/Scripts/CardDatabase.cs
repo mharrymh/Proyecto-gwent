@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CardDatabase : MonoBehaviour
+public class CardDatabase
 {
     //Create two factions
     public static List<Card> LightDeck { get; set; }

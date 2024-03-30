@@ -21,6 +21,8 @@ public class Board
     public Dictionary<string, Dictionary<string, List<Card>>> sections;
     //Climate Section
     public Card.SpecialCard[] climate_section;
+    //Increment section
+    public Dictionary<string, Card.SpecialCard[]> increment_section;
     private Board()
     {
         sections = new Dictionary<string, Dictionary<string, List<Card>>>()
@@ -46,5 +48,11 @@ public class Board
             };
 
         climate_section = new Card.SpecialCard[3];
+
+        increment_section = new Dictionary<string, Card.SpecialCard[]>()
+        {
+            { "player1" , new Card.SpecialCard[3] },
+            {"player2", new Card.SpecialCard[3] }
+        };
     }
 }

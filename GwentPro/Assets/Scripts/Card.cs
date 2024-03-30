@@ -59,7 +59,7 @@ public enum UnityType
     Silver
 }
 
-[CreateAssetMenu(fileName = "New Card", menuName = "Card")]
+
 public class Card : ScriptableObject
 {
     public Sprite CardImage;
@@ -68,6 +68,7 @@ public class Card : ScriptableObject
     public CardFaction Faction { get; private set; }
     public EffectType effectType { get; private set; }
     public Player Owner { get; set; }
+    public bool IsPlayed { get; set; }
 
     public Card(string name, CardFaction cardFaction, EffectType effectType, Sprite CardImage)
     {
@@ -85,6 +86,9 @@ public class Card : ScriptableObject
             : base(name, cardFaction, effectType, CardImage)
         {
             Played = false;
+
+            //Set the is played because it wont interact with de event triggers
+            IsPlayed = true;
         }
 
     }
