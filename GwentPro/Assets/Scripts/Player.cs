@@ -15,6 +15,8 @@ public class Player
     public bool Passed { get; set; }
     public int RoundsWon { get; set; }
     public bool LeaderPlayed { get; set; }
+    //Track if the player received his hand
+    public bool Ready { get; set; }
 
     public Player(CardFaction Faction, string ID)
     {

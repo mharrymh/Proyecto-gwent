@@ -22,12 +22,16 @@ public class DragAndDrop : MonoBehaviour
         {
             {"M", 0}, {"R", 1}, {"S", 2}
         };
-    
+
     //Gets references
     Board board = Board.Instance;
     public GameManager gm;
 
-
+    private void Start()
+    {        
+        //Get the GameManagerObject
+        gm = GameObject.Find("GameManager").GetComponent<GameManager>();   
+    }
 
     void Update()
     {
@@ -40,7 +44,6 @@ public class DragAndDrop : MonoBehaviour
     //This method is called when my card collides with an object 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("Colisiono");
         isOverDropZone = true;
         DropZone = collision.gameObject;
     }
@@ -48,11 +51,10 @@ public class DragAndDrop : MonoBehaviour
     //This method is called when stops card stops colliding with an object
     private void OnTriggerExit2D(Collider2D collision)
     {
-        Debug.Log("out");
         isOverDropZone = false;
         DropZone = null;
     }
-    
+
 
     public void StartDrag()
     {
@@ -69,7 +71,6 @@ public class DragAndDrop : MonoBehaviour
             startPosition = gameObject.transform.position;
         }
     }
-
     public void EndDrag()
     {
         isDragging = false;
@@ -121,7 +122,7 @@ public class DragAndDrop : MonoBehaviour
         }
         else if (card is Card.SpecialCard climate_card && climate_card.Type is SpecialType.Climate)
         {
-            if (climate_card.Range == "M" && DropZone.name == "ClimateMeleeZone" 
+            if (climate_card.Range == "M" && DropZone.name == "ClimateMeleeZone"
                 && board.climate_section[0] == null)
             {
                 PlayCard(climate_card, "M");
@@ -144,8 +145,8 @@ public class DragAndDrop : MonoBehaviour
         }
         else if (card is Card.SpecialCard increment_card && increment_card.Type is SpecialType.Increment)
         {
-            if (increment_card.Range == "M" && increment_card.Owner.ID == "player1" 
-                && DropZone.name == "IncrementMeleePlayer1" 
+            if (increment_card.Range == "M" && increment_card.Owner.ID == "player1"
+                && DropZone.name == "IncrementMeleePlayer1"
                 && board.increment_section[card.Owner.ID][0] == null)
             {
                 PlayCard(increment_card, "M");
@@ -192,21 +193,22 @@ public class DragAndDrop : MonoBehaviour
         }
     }
 
-
-
     public void PlayCard(Card card, string range)
     {
+        //Set the card to true so that it 
+        //wont interact anymore with the drag and drop
         card.IsPlayed = true;
+        //Remove card from the player hand
+        card.Owner.Hand.Remove(card);
+        //Drop card
         transform.SetParent(DropZone.transform, false);
 
-        
-        
 
+        //Add card in backend
         if (card is Card.UnityCard unity_card)
         {
             board.sections[unity_card.Owner.ID][range].Add(unity_card);
         }
-
         else if (card is Card.SpecialCard climate_card && climate_card.Type == SpecialType.Climate)
         {
             string key = range;
@@ -216,7 +218,6 @@ public class DragAndDrop : MonoBehaviour
                 board.climate_section[value] = climate_card;
             }
         }
-
         else if (card is Card.SpecialCard increment_card && increment_card.Type == SpecialType.Increment)
         {
             string key = range;
@@ -226,12 +227,12 @@ public class DragAndDrop : MonoBehaviour
                 board.increment_section[increment_card.Owner.ID][value] = increment_card;
             }
         }
+        //Change turn
+        gm.ChangeTurn();
+        
 
-        //Sets the power
-        gm.SetPower(card.Owner);      
+
     }
-
-
 }
 
 

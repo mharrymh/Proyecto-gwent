@@ -9,6 +9,7 @@ public class PassButtonBehauvior : MonoBehaviour
     //This is called when player clicks pass button
     public void OnClickPassButton()
     {
+        //Set the property passed of the player to true
         gm.currentPlayer.Passed = true;
         gm.ChangeTurn();
     }

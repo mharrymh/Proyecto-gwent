@@ -1,13 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using TMPro;
+using UnityEditor.Timeline;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GameManager : MonoBehaviour
 {
     public GameObject GameBoard;
+    public GameObject CardZones;
+    public GameObject PassButton;
+    public GameObject ScorePlayer1;
+    public GameObject ScorePlayer2;
+
+
     public GameObject cardPrefab; // The card prefab
-    public Transform parentTransform; // The location of the object where you want to instantiate the card
+    public Transform HandPanel; 
     public Transform LeaderPlayer1;
     public Transform LeaderPlayer2;
 
@@ -32,7 +41,11 @@ public class GameManager : MonoBehaviour
         player1 = new Player(CardFaction.Dark, "player1");
         player2 = new Player(CardFaction.Light, "player2");
         currentPlayer = GetStarterPlayer();
-        StartCoroutine(InstanciarCartas(8, currentPlayer));
+        //If the starter player is player2 rotate the scene
+        if (currentPlayer == player2) RotateObjects();
+
+
+        StartCoroutine(InstanciarCartas(6, currentPlayer));
     }
 
     private void Update()
@@ -43,6 +56,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator InstanciarCartas(int n, Player player)
     {
+        player.Ready = true;
         if (player.PlayerDeck.Count < n) n = player.PlayerDeck.Count;
 
         player.PlayerDeck = Shuffle(player.PlayerDeck);
@@ -60,7 +74,7 @@ public class GameManager : MonoBehaviour
         {
             Card card = player.PlayerDeck[0];
             //Crate new instance of the card on the playerhand
-            GameObject instanciaCarta = Instantiate(cardPrefab, parentTransform);
+            GameObject instanciaCarta = Instantiate(cardPrefab, HandPanel);
             //Get the DisplayCard component of the new Card
             DisplayCard disp = instanciaCarta.GetComponent<DisplayCard>();
             //Assign the card to it
@@ -138,27 +152,80 @@ public class GameManager : MonoBehaviour
 
     public Player GetStarterPlayer()
     {
-        int n = Random.Range(0, 1);
-        return (n == 0) ? player1 : player2;
+        int n = Random.Range(0, 2);
+        return (n == 0) ? player2 : player1;
     }
 
 
     
     public void ChangeTurn()
     {
-        RotateObject(GameBoard);
+        //Rota la escena
+        RotateObjects();
 
+        
+        
+        //Change the current player
         if (currentPlayer == player1) currentPlayer = player2;
         else currentPlayer = player1;
         Debug.Log("Se cambio el turno");
+
+        //Change the hand panel to the other player
+        ChangeHandPanel();
     }
 
-    //Rotar los demas objetos
+    public void ChangeHandPanel()
+    {
+        foreach (RectTransform card in HandPanel)
+        {
+            Destroy(card.gameObject);
+        }
+
+        if (!currentPlayer.Ready)
+        {
+            StartCoroutine(InstanciarCartas(6, currentPlayer));
+        }
+        else
+        {
+            InstantiateCurrentHand();
+        }
+    }
+
+    public void InstantiateCurrentHand()
+    {
+        foreach (Card card in currentPlayer.Hand)
+        {
+            GameObject instantiateCard = Instantiate(cardPrefab, HandPanel);
+            DisplayCard disp = instantiateCard.GetComponent<DisplayCard>();
+            disp.card = card;
+        }
+
+
+
+    }
+
+    public void RotateObjects()
+    {
+        RotateObject(GameBoard);
+        RotateObject(PassButton);
+        RotateObject(ScorePlayer1);
+        RotateObject(ScorePlayer2);
+
+        //Rota a todos los objetos hijos de CardZones
+        foreach (RectTransform child in CardZones.transform)
+        {
+            RotateObject(child.gameObject);
+        }
+        
+    }
+    
+
     public void RotateObject(GameObject objectToRotate)
     {
         // Rota el objeto especificado 180 grados alrededor del eje Y
         objectToRotate.transform.Rotate(0, 0, 180);
     }
+
 
 
 
