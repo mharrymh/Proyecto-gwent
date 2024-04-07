@@ -34,23 +34,7 @@ namespace Logica_del_juego_en_consola
         
         public static void IncrementFile(Card card)
         {
-            if (card is Card.SpecialCard specialCard)
-            {
-                var AllSections = specialCard.Owner.board.sections;
-                //Iterate through all board sections
-                foreach (var PlayerSection in AllSections)
-                {
-                    var CardsInSection = PlayerSection.Value[specialCard.Range];
-                    //Iterate through each card in card.Range section
-                    foreach (Card CardInSection in CardsInSection)
-                    {
-                        if (CardInSection is Card.UnityCard unity_card)
-                        {
-                            unity_card.Power++;
-                        }
-                    }
-                }
-            }
+            
         }
         public static void TakeCardFromGraveYard(Card card)
         {

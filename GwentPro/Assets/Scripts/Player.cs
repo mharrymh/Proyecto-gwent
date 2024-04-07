@@ -26,6 +26,7 @@ public class Player
         Score = 0;
         RoundsWon = 0;
         Hand = new List<Card>();
+        GraveYard = new List<Card>();
     }
 
     CardDatabase cards = new CardDatabase();

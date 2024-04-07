@@ -6,6 +6,20 @@ using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+
+
+
+/// <summary>
+/// Hbailitar boton para apliacr efectos de carta lider
+/// Crear escenas de inicio y game over 
+/// Implementar cementerio
+/// Si el poder de la carta llega a 0 eliminarla del campo y mandarla al cementerio
+/// Crear efectos
+/// Cambiar los efectos del clima e incremento
+/// para ponerlos cuando se vaya a poner la carta
+/// 
+/// </summary>
+
 public class GameManager : MonoBehaviour
 {
     public GameObject GameBoard;
@@ -17,12 +31,13 @@ public class GameManager : MonoBehaviour
 
     public GameObject cardPrefab; // The card prefab
     public Transform HandPanel; 
+    //The leader panels
     public Transform LeaderPlayer1;
     public Transform LeaderPlayer2;
 
     public int Round;
     public Player currentPlayer;
-    public bool GameOver;
+    //public bool GameOver;
 
     //The players
     public Player player1;
@@ -33,7 +48,17 @@ public class GameManager : MonoBehaviour
 
     //References
     CardDatabase cartas = new CardDatabase();
+    Effects CardEffects = new Effects();
     Board board = Board.Instance;
+    DisplayCard disp;
+
+
+    //Relate the range with the position in climate_section 
+    // and increment_section
+    Dictionary<int, string> relate = new Dictionary<int, string>()
+        {
+            {0, "M"}, {1, "R"}, {2, "S"}
+        };
 
     void Start()
     {
@@ -52,6 +77,26 @@ public class GameManager : MonoBehaviour
     {
         SetPower(player1);
         SetPower(player2);
+
+        //Increment and climate effects
+        foreach(Card.SpecialCard[] cards in board.increment_section.Values)
+        {
+            for (int i = 0; i < cards.Length; i++)
+            {
+                if (cards[i] != null)
+                {
+                    //Invoke the effect of the incrementCard
+                    CardEffects.CardEffects[cards[i].effectType].Invoke(cards[i]);
+                }    
+            }
+        }
+        foreach (Card.SpecialCard climate_card in board.climate_section)
+        {
+            if (climate_card != null)
+            {
+                CardEffects.CardEffects[climate_card.effectType].Invoke(climate_card);
+            }
+        }
     }
 
     IEnumerator InstanciarCartas(int n, Player player)
@@ -74,31 +119,35 @@ public class GameManager : MonoBehaviour
         {
             Card card = player.PlayerDeck[0];
             //Crate new instance of the card on the playerhand
-            GameObject instanciaCarta = Instantiate(cardPrefab, HandPanel);
+            GameObject CardInstance = Instantiate(cardPrefab, HandPanel);
             //Get the DisplayCard component of the new Card
-            DisplayCard disp = instanciaCarta.GetComponent<DisplayCard>();
+            disp = CardInstance.GetComponent<DisplayCard>();
             //Assign the card to it
             disp.card = card;
             //Add card to player hand
             player.AssignHand(card);
+            //Assign owner of the card
             card.Owner = player;
+            //Assign the cardPrefab to the card
+            card.CardPrefab = CardInstance;
+            //Display card
+            disp.ShowCard();
 
             if (!player.LeaderPlayed)
             {
-                if (player == player1) instanciaCarta = Instantiate(cardPrefab, LeaderPlayer1);
-                else if (player == player2) instanciaCarta = Instantiate(cardPrefab, LeaderPlayer2);
+                if (player == player1) CardInstance = Instantiate(cardPrefab, LeaderPlayer1);
+                else if (player == player2) CardInstance = Instantiate(cardPrefab, LeaderPlayer2);
 
-                disp = instanciaCarta.GetComponent<DisplayCard>();
+                disp = CardInstance.GetComponent<DisplayCard>();
                 disp.card = player.Leader;
+                disp.ShowCard();
                 player.LeaderPlayed = true;
             }
         }
         else
         {
-            Debug.Log("El mazo esta vacio");
+            Debug.Log("Deck is empty");
         }
-
-
     }
     public void SetPower(Player player)
     {
@@ -117,7 +166,6 @@ public class GameManager : MonoBehaviour
 
     public int GetPower(Player player)
     {
-        
         int sum = 0;
         foreach (var RangeSection in board.sections[player.ID].Values)
         {
@@ -126,12 +174,24 @@ public class GameManager : MonoBehaviour
                 foreach (Card.UnityCard card in RangeSection)
                 {
                     sum += card.Power;
+
+                    //If the card power is 0
+                    //Destroy it
+                    if (card.Power <= 0)
+                    {
+                        card.Owner.GraveYard.Add(card);
+                        CardBeaten(card);
+                    }
                 }
             }
         }
-
         player.Score = sum;
         return sum;
+    }
+
+    public void CardBeaten(Card.UnityCard card)
+    {
+        Destroy(card.CardPrefab);
     }
 
     //Shuffle deck
@@ -149,22 +209,23 @@ public class GameManager : MonoBehaviour
 
         return aux;
     }
-
     public Player GetStarterPlayer()
     {
         int n = Random.Range(0, 2);
         return (n == 0) ? player2 : player1;
     }
 
-
-    
     public void ChangeTurn()
     {
-        //Rota la escena
+        //End the round if both of the players passed
+        if (player1.Passed && player2.Passed)
+        {
+            RoundOver();
+        }
+
+        //Rotate the scene
         RotateObjects();
 
-        
-        
         //Change the current player
         if (currentPlayer == player1) currentPlayer = player2;
         else currentPlayer = player1;
@@ -195,13 +256,13 @@ public class GameManager : MonoBehaviour
     {
         foreach (Card card in currentPlayer.Hand)
         {
-            GameObject instantiateCard = Instantiate(cardPrefab, HandPanel);
-            DisplayCard disp = instantiateCard.GetComponent<DisplayCard>();
+            GameObject CardInstance = Instantiate(cardPrefab, HandPanel);
+            disp = CardInstance.GetComponent<DisplayCard>();
+            //Reset the cardPrefab property to the new instance
+            card.CardPrefab = CardInstance;
             disp.card = card;
+            disp.ShowCard();
         }
-
-
-
     }
 
     public void RotateObjects()
@@ -219,15 +280,104 @@ public class GameManager : MonoBehaviour
         
     }
     
-
     public void RotateObject(GameObject objectToRotate)
     {
-        // Rota el objeto especificado 180 grados alrededor del eje Y
+        // Rotate especified object 180 degrees around Z edge
         objectToRotate.transform.Rotate(0, 0, 180);
     }
 
+    public void RoundOver()
+    {
+        //Get the winner of the round
+        Player winner = GetRoundWinner();
+        //Add the round
+        Round++;
 
+        //Add round won to player property
+        if (winner != null)
+        {
+            if (winner == player1) player1.RoundsWon++;
+            else player2.RoundsWon++;
+        }
 
+        //Check if the game is over
+        if (player1.RoundsWon == 2 || player2.RoundsWon == 2 || Round == 3)
+        {
+            GameOver();
+        }
+        else
+        {
+            CleanBoard();
+        }
+    }
+
+    public Player GetRoundWinner()
+    {
+        if (player1.Score > player2.Score) return player1;
+        else if (player2.Score > player1.Score) return player2;
+        return null;
+    }
+
+    public void GameOver()
+    {
+        //Implementar mas tarde 
+        Debug.Log("Se acabo el juego");
+    }
+
+    public void CleanBoard()
+    {
+        //Clean the backend board removing each card of the lists of cards
+        //that represents the unity zones
+        var AllSections = board.sections;
+        foreach (var PlayerSection in AllSections)
+        {
+            var RangeSection = PlayerSection.Value;
+            foreach (var Cards in RangeSection.Values)
+            {
+                for (int i = Cards.Count - 1; i >= 0; i--)
+                {
+                    //Erase card from board and add it to the player graveyard
+                    Cards[i].Owner.GraveYard.Add(Cards[i]);
+                    //Set the IsPlayed to false so it can be played again
+                    Cards[i].IsPlayed = false;
+                    //Destroy the instance (object)
+                    Destroy(Cards[i].CardPrefab);
+                    Cards.Remove(Cards[i]);
+                }
+
+            }
+        }
+
+        //Clean the backend climate section
+        for (int i = 0; i < board.climate_section.Length; i++)
+        {
+            if (board.climate_section[i] != null)
+            {
+                Card card = board.climate_section[i];
+                card.Owner.GraveYard.Add(card);
+                //Destroy the object
+                Destroy(card.CardPrefab);
+                board.climate_section[i] = null;
+            }
+        }
+
+        //Clean the increment section backend
+        var IncrementSection = board.increment_section;
+        foreach (Card[] cards in IncrementSection.Values)
+        {
+            for (int i = 0; i < cards.Length; i++)
+            {
+                if (cards[i] != null)
+                {
+                    Card card = cards[i];
+                    card.Owner.GraveYard.Add(card);
+                    //Destroy the object
+                    Destroy(cards[i].CardPrefab);
+                    cards[i] = null;
+                }
+            }
+        }
+    }
 
 
     //public Board Board { get; set; }
@@ -239,22 +389,7 @@ public class GameManager : MonoBehaviour
     //public bool GameOver { get; set; }
 
 
-    //public GameManager()
-    //{
-    //    Board = Board.Instance;
-    //    Round = 1;
-    //    player1 = new Player(CardFaction.Light, "player1");
-    //    player2 = new Player(CardFaction.Dark, "player2");
-    //    CurrentPlayer = StarterPlayer(player1, player2);
-    //    OpponentPlayer = SecondPlayer(player1, player2, CurrentPlayer);
-    //    GameOver = false;
-    //}
 
-    //public Player StarterPlayer(Player player1, Player player2)
-    //{
-    //    Random rand = new Random();
-    //    return rand.Next(2) == 0 ? player1 : player2;
-    //}
 
     //public Player SecondPlayer(Player player1, Player player2, Player CurrentPlayer)
     //{
@@ -280,46 +415,11 @@ public class GameManager : MonoBehaviour
     //    }
     //}
 
-    //public void StartRound()
-    //{
-    //    if (Round == 1)
-    //    {
-    //        player1.Hand = player1.AssignHand();
-    //        player2.Hand = player2.AssignHand();
-    //    }
-    //    else
-    //    {
-    //        CleanBoard();
-    //        player1.DrawCard(2);
-    //        player2.DrawCard(2);
-    //    }
-    //}
+
 
     //public void CleanBoard()
     //{
-    //    var AllSections = Board.sections;
-    //    foreach (var PlayerSection in AllSections)
-    //    {
-    //        var RangeSection = PlayerSection.Value;
-    //        foreach (var Cards in RangeSection.Values)
-    //        {
-    //            foreach (Card card in Cards)
-    //            {
-    //                card.Owner.GraveYard.Add(card);
-    //                Cards.Remove(card);
-    //            }
-    //        }
-    //    }
-
-    //    for (int i = 0; i < Board.climate_section.Length; i++)
-    //    {
-    //        if (Board.climate_section[i] != null)
-    //        {
-    //            Card card = Board.climate_section[i];
-    //            card.Owner.GraveYard.Add(card);
-    //            card = null;
-    //        }
-    //    }
+    //    
     //}
 
     //public void EndRound()

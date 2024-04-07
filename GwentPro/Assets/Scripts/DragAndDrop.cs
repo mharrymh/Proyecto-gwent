@@ -25,6 +25,7 @@ public class DragAndDrop : MonoBehaviour
 
     //Gets references
     Board board = Board.Instance;
+    Effects CardEffects = new Effects();
     public GameManager gm;
 
     private void Start()
@@ -73,10 +74,13 @@ public class DragAndDrop : MonoBehaviour
     }
     public void EndDrag()
     {
-        isDragging = false;
+        if (!card.IsPlayed)
+        {
+            isDragging = false;
 
-        if (isOverDropZone && DropZone != null) DropCard(card);
-        else transform.position = startPosition;
+            if (isOverDropZone && DropZone != null) DropCard(card);
+            else transform.position = startPosition;
+        }
     }
 
     public void DropCard(Card card)
@@ -120,20 +124,18 @@ public class DragAndDrop : MonoBehaviour
                 transform.position = startPosition;
             }
         }
-        else if (card is Card.SpecialCard climate_card && climate_card.Type is SpecialType.Climate)
+        else if (card is Card.SpecialCard climate_card && climate_card.Type is SpecialType.Climate 
+            && DropZone.name == "ClimateZone")
         {
-            if (climate_card.Range == "M" && DropZone.name == "ClimateMeleeZone"
-                && board.climate_section[0] == null)
+            if (climate_card.Range == "M" && board.climate_section[0] == null)
             {
                 PlayCard(climate_card, "M");
             }
-            else if (climate_card.Range == "R" && DropZone.name == "ClimateRangeZone"
-                && board.climate_section[1] == null)
+            else if (climate_card.Range == "R" && board.climate_section[1] == null)
             {
                 PlayCard(climate_card, "R");
             }
-            else if (climate_card.Range == "S" && DropZone.name == "ClimateSiegeZone"
-                && board.climate_section[2] == null)
+            else if (climate_card.Range == "S" && board.climate_section[2] == null)
             {
                 PlayCard(climate_card, "S");
             }
@@ -202,7 +204,8 @@ public class DragAndDrop : MonoBehaviour
         card.Owner.Hand.Remove(card);
         //Drop card
         transform.SetParent(DropZone.transform, false);
-
+        //Disable passed property if you play a card 
+        gm.currentPlayer.Passed = false;
 
         //Add card in backend
         if (card is Card.UnityCard unity_card)
@@ -227,11 +230,14 @@ public class DragAndDrop : MonoBehaviour
                 board.increment_section[increment_card.Owner.ID][value] = increment_card;
             }
         }
+        ////
+        ///
+        CardEffects.CardEffects[card.effectType].Invoke(card);
+
+
         //Change turn
         gm.ChangeTurn();
         
-
-
     }
 }
 

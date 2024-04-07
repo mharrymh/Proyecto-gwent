@@ -69,6 +69,7 @@ public class Card : ScriptableObject
     public EffectType effectType { get; private set; }
     public Player Owner { get; set; }
     public bool IsPlayed { get; set; }
+    public GameObject CardPrefab { get; set; }
 
     public Card(string name, CardFaction cardFaction, EffectType effectType, Sprite CardImage)
     {
@@ -76,6 +77,7 @@ public class Card : ScriptableObject
         Faction = cardFaction;
         this.effectType = effectType;
         this.CardImage = CardImage;
+        CardPrefab = null;
     }
 
     public class LeaderCard : Card

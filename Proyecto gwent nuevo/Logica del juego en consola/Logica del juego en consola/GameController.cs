@@ -203,22 +203,6 @@ public class GameManager /*: MonoBehaviour*/
             ChangeTurn();
         }
     }
-
-    //Sum all the points in player section
-    public int SumPowerInSection(Player player)
-    {
-        int sum = 0;
-        foreach (var section in Board.sections[player.ID])
-        {
-            foreach (Card.UnityCard UnityCard in section.Value)
-            {
-                int cardpower = UnityCard.Power;
-                sum += cardpower;
-            }
-        }
-        return sum;
-    }
-}
     
     
 
