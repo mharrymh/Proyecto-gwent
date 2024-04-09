@@ -10,14 +10,9 @@ using UnityEngine.UIElements;
 
 
 /// <summary>
-/// Hbailitar boton para apliacr efectos de carta lider
 /// Crear escenas de inicio y game over 
 /// Implementar cementerio
-/// Si el poder de la carta llega a 0 eliminarla del campo y mandarla al cementerio
-/// Crear efectos
-/// Cambiar los efectos del clima e incremento
-/// para ponerlos cuando se vaya a poner la carta
-/// 
+/// Quitarle el efecto clima a la carta decoy o ponerlo para que solo afecte a las cartas de unidad
 /// </summary>
 
 public class GameManager : MonoBehaviour
@@ -36,6 +31,8 @@ public class GameManager : MonoBehaviour
     public Transform LeaderPlayer2;
 
     public int Round;
+    //
+    public int RoundDraws;
     public Player currentPlayer;
     //public bool GameOver;
 
@@ -48,55 +45,28 @@ public class GameManager : MonoBehaviour
 
     //References
     CardDatabase cartas = new CardDatabase();
-    Effects CardEffects = new Effects();
+    Effects CardEffects;
     Board board = Board.Instance;
     DisplayCard disp;
 
-
-    //Relate the range with the position in climate_section 
-    // and increment_section
-    Dictionary<int, string> relate = new Dictionary<int, string>()
-        {
-            {0, "M"}, {1, "R"}, {2, "S"}
-        };
-
     void Start()
     {
-        Round = 0;
+        CardEffects = new Effects();
+
+
+        Round = 1;
         player1 = new Player(CardFaction.Dark, "player1");
         player2 = new Player(CardFaction.Light, "player2");
         currentPlayer = GetStarterPlayer();
         //If the starter player is player2 rotate the scene
         if (currentPlayer == player2) RotateObjects();
-
-
-        StartCoroutine(InstanciarCartas(6, currentPlayer));
+        StartCoroutine(InstanciarCartas(5, currentPlayer));
     }
 
     private void Update()
     {
         SetPower(player1);
         SetPower(player2);
-
-        //Increment and climate effects
-        foreach(Card.SpecialCard[] cards in board.increment_section.Values)
-        {
-            for (int i = 0; i < cards.Length; i++)
-            {
-                if (cards[i] != null)
-                {
-                    //Invoke the effect of the incrementCard
-                    CardEffects.CardEffects[cards[i].effectType].Invoke(cards[i]);
-                }    
-            }
-        }
-        foreach (Card.SpecialCard climate_card in board.climate_section)
-        {
-            if (climate_card != null)
-            {
-                CardEffects.CardEffects[climate_card.effectType].Invoke(climate_card);
-            }
-        }
     }
 
     IEnumerator InstanciarCartas(int n, Player player)
@@ -150,18 +120,17 @@ public class GameManager : MonoBehaviour
         }
     }
     public void SetPower(Player player)
-    {
+    {        
         if (player == player1)
         {
             if (GetPower(player) == 0) PowerPlayer1.text = "";
             else PowerPlayer1.text = GetPower(player).ToString();
         }
-        else
+        else if (player == player2)
         {
             if (GetPower(player) == 0) PowerPlayer2.text = "";
             else PowerPlayer2.text = GetPower(player).ToString();
         }
-        
     }
 
     public int GetPower(Player player)
@@ -171,16 +140,19 @@ public class GameManager : MonoBehaviour
         {
             if (RangeSection.Count != 0)
             {
-                foreach (Card.UnityCard card in RangeSection)
+                foreach (Card card in RangeSection)
                 {
-                    sum += card.Power;
-
-                    //If the card power is 0
-                    //Destroy it
-                    if (card.Power <= 0)
+                    if (card is Card.UnityCard unity)
                     {
-                        card.Owner.GraveYard.Add(card);
-                        CardBeaten(card);
+                        sum += unity.Power;
+
+                        //If the card power is 0
+                        //Destroy it
+                        if (unity.Power <= 0)
+                        {
+                            unity.Owner.GraveYard.Add(unity);
+                            CardBeaten(unity);
+                        }
                     }
                 }
             }
@@ -189,7 +161,7 @@ public class GameManager : MonoBehaviour
         return sum;
     }
 
-    public void CardBeaten(Card.UnityCard card)
+    public void CardBeaten(Card card)
     {
         Destroy(card.CardPrefab);
     }
@@ -244,14 +216,21 @@ public class GameManager : MonoBehaviour
 
         if (!currentPlayer.Ready)
         {
-            StartCoroutine(InstanciarCartas(6, currentPlayer));
+            if (Round == 1)
+            {
+                StartCoroutine(InstanciarCartas(5, currentPlayer));
+            }
+            else
+            {
+                StartCoroutine(InstanciarCartas(2, currentPlayer));
+                InstantiateCurrentHand();
+            }
         }
         else
         {
             InstantiateCurrentHand();
         }
     }
-
     public void InstantiateCurrentHand()
     {
         foreach (Card card in currentPlayer.Hand)
@@ -263,6 +242,16 @@ public class GameManager : MonoBehaviour
             disp.card = card;
             disp.ShowCard();
         }
+    }
+
+    public void InstantiateCard(Card card)
+    {
+        GameObject CardInstance = Instantiate(cardPrefab, HandPanel);
+        disp = CardInstance.GetComponent<DisplayCard>();
+        //Reset the cardPrefab property to the new instance
+        card.CardPrefab = CardInstance;
+        disp.card = card;
+        disp.ShowCard();
     }
 
     public void RotateObjects()
@@ -288,6 +277,8 @@ public class GameManager : MonoBehaviour
 
     public void RoundOver()
     {
+        player1.Ready = false;
+        player2.Ready = false;
         //Get the winner of the round
         Player winner = GetRoundWinner();
         //Add the round
@@ -311,6 +302,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void DrawCards(int n)
+    {
+
+    }
+
     public Player GetRoundWinner()
     {
         if (player1.Score > player2.Score) return player1;
@@ -323,7 +319,6 @@ public class GameManager : MonoBehaviour
         //Implementar mas tarde 
         Debug.Log("Se acabo el juego");
     }
-
     public void CleanBoard()
     {
         //Clean the backend board removing each card of the lists of cards

@@ -14,6 +14,8 @@ public class DisplayCard : MonoBehaviour
 
     public void ShowCard()
     {
+        //CardPrefab gets the name of the card
+        this.name = card.Name;
         CardImage.sprite = card.CardImage;
         Description.text = card.Description;
 
@@ -28,21 +30,4 @@ public class DisplayCard : MonoBehaviour
             Power.text = "";
         }
     }
-
-    //void Update()
-    //{
-    //    CardImage.sprite = card.CardImage;
-    //    Description.text = card.Description;
-
-    //    //Assign power if card is unity card type
-    //    //Else assign 0
-    //    if (card is Card.UnityCard unity_card)
-    //    {
-    //        Power.text = unity_card.Power.ToString();
-    //    }
-    //    else
-    //    {
-    //        Power.text = "";
-    //    }
-    //}
 }

@@ -367,7 +367,7 @@ GameObject:
   - component: {fileID: -5113783560501258289}
   m_Layer: 5
   m_Name: Card
-  m_TagString: Untagged
+  m_TagString: ' card'
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -602,7 +602,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3fd9af5499376a441be946cbc6cf2c2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  card: {fileID: 0}
   ShowPanel: {fileID: 0}
   cardPrefab: {fileID: 9194607509127826207}
   GreaterInstance: {fileID: 0}

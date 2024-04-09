@@ -1,6 +1,7 @@
 using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -25,13 +26,19 @@ public class DragAndDrop : MonoBehaviour
 
     //Gets references
     Board board = Board.Instance;
-    Effects CardEffects = new Effects();
+    Effects CardEffects;
     public GameManager gm;
+
+    private void Awake()
+    {
+        CardEffects = new Effects();
+        //Get the GameManagerObject
+        gm = GameObject.Find("GameManager").GetComponent<GameManager>();
+    }
 
     private void Start()
     {        
-        //Get the GameManagerObject
-        gm = GameObject.Find("GameManager").GetComponent<GameManager>();   
+           
     }
 
     void Update()
@@ -189,13 +196,25 @@ public class DragAndDrop : MonoBehaviour
                 transform.position = startPosition;
             }
         }
+        else if (card is Card.SpecialCard cleareance && cleareance.Type is SpecialType.Clearance)
+        {
+            PlayCard(cleareance);
+        }
+        else if (card is Card.SpecialCard decoy && decoy.Type is SpecialType.Decoy && DropZone.tag == "card"
+            && DropZone.transform.parent != gm.HandPanel && DropZone.transform.parent != gm.LeaderPlayer1
+            && DropZone.transform.parent != gm.LeaderPlayer2)
+        {
+            Debug.Log(DropZone.tag);
+            //Probar si se puede poner en la de lider
+            PlayCard(card);
+        }
         else
         {
             transform.position = startPosition;
         }
     }
 
-    public void PlayCard(Card card, string range)
+    public void PlayCard(Card card, string range = "")
     {
         //Set the card to true so that it 
         //wont interact anymore with the drag and drop
@@ -206,11 +225,31 @@ public class DragAndDrop : MonoBehaviour
         transform.SetParent(DropZone.transform, false);
         //Disable passed property if you play a card 
         gm.currentPlayer.Passed = false;
+        //Apply effect
+        CardEffects.CardEffects[card.effectType].Invoke(card);
+
 
         //Add card in backend
         if (card is Card.UnityCard unity_card)
         {
             board.sections[unity_card.Owner.ID][range].Add(unity_card);
+            //Check if there are special cards on the board
+            if (range == "M")
+            {
+                if (board.climate_section[0] != null) unity_card.Power--;
+                else if (board.increment_section[unity_card.Owner.ID][0] != null) unity_card.Power++;
+            }
+            else if (range == "R")
+            {
+                if (board.climate_section[1] != null) unity_card.Power--;
+                else if (board.increment_section[unity_card.Owner.ID][1] != null) unity_card.Power++;
+            }
+            else if (range == "S")
+            {
+                if (board.climate_section[2] != null) unity_card.Power--;
+                else if (board.increment_section[unity_card.Owner.ID][2] != null) unity_card.Power++;
+            }
+
         }
         else if (card is Card.SpecialCard climate_card && climate_card.Type == SpecialType.Climate)
         {
@@ -230,14 +269,64 @@ public class DragAndDrop : MonoBehaviour
                 board.increment_section[increment_card.Owner.ID][value] = increment_card;
             }
         }
-        ////
-        ///
-        CardEffects.CardEffects[card.effectType].Invoke(card);
+        else if (card is Card.SpecialCard cleareance && cleareance.Type is SpecialType.Clearance)
+        {
+            cleareance.Owner.GraveYard.Add(cleareance);
+            cleareance.IsPlayed = false;
+            gm.CardBeaten(cleareance);
+        }
+        else if (card is Card.SpecialCard decoy && decoy.Type is SpecialType.Decoy)
+        {
+            //Get the card to move
+            GameObject CardToMove = decoy.CardPrefab.transform.parent.gameObject;
+            //Move the decoy card to the parent transform
+            decoy.CardPrefab.transform.SetParent(CardToMove.transform.parent.transform, false);
 
+            string Zone = CardToMove.transform.parent.name;
+            string BackendZone = "";
+            Player PlayerZone = null;
+
+            if (Zone.Contains("Melee"))
+            {
+                BackendZone = "M";
+                if (Zone.Contains("1")) PlayerZone = gm.player1;
+                else if (Zone.Contains("2")) PlayerZone = gm.player2;
+            }
+            else if (Zone.Contains("Range"))
+            {
+                BackendZone = "R";
+                if (Zone.Contains("1")) PlayerZone = gm.player1;
+                else if (Zone.Contains("2")) PlayerZone = gm.player2;
+            }
+            else if (Zone.Contains("Siege"))
+            {
+                BackendZone = "S";
+                if (Zone.Contains("1")) PlayerZone = gm.player1;
+                else if (Zone.Contains("2")) PlayerZone = gm.player2;
+            }
+            else if (Zone.Contains("Climate"))
+            {
+                BackendZone = "Climate";
+            }
+            else if (Zone.Contains("Increment"))
+            {
+                BackendZone = "Increment";
+            }
+
+            if (BackendZone != "") CardEffects.Decoy(CardToMove.name, BackendZone, PlayerZone, decoy);
+            else
+            {
+                transform.position = startPosition;
+                decoy.IsPlayed = false;
+                //Add card to the player hand
+                decoy.Owner.Hand.Add(card);
+            }
+            //Move the card to the player hand 
+            CardToMove.transform.SetParent(gm.HandPanel.transform, false);
+        }
 
         //Change turn
-        gm.ChangeTurn();
-        
+        gm.ChangeTurn();      
     }
 }
 

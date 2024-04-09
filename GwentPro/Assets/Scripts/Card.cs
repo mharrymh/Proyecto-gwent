@@ -18,8 +18,10 @@ public enum EffectType
     //Multiplica por n su ataque siendo n la cantidad de cartas
     //iguales a ella en el campo
     TimesTwins,
-    //Elimina todas las cartas de la fila(propia o del rival)
-    CleanMeleeFile,
+    //Elimina todas las cartas de la fila con menos cartas(propia o del rival)
+    //Si filas coinciden elimina la del rival
+    CleanFile,
+
     CleanRangedFile,
     CleanSiegeFile,
     //Calcula el promedio de todas las cartas del campo
