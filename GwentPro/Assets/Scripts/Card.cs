@@ -80,6 +80,9 @@ public class Card : ScriptableObject
         this.effectType = effectType;
         this.CardImage = CardImage;
         CardPrefab = null;
+
+        //PRueba
+        Description = effectType.ToString();
     }
 
     public class LeaderCard : Card

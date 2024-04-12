@@ -211,45 +211,43 @@ public class Effects
             }
         }
     }
-    public void Decoy(string name, string range, Player player, Card.SpecialCard decoy)
+    public void Decoy(string name, string range, string player, Card.SpecialCard decoy)
     {
-        Debug.Log("Se aplico");
-        string PlayerZone = "";
         Card Taken = null;
 
-        if (player != null) PlayerZone = player.ID;
-        
         if (range == "Increment")
         {
-            foreach(Card[] cards in board.increment_section.Values)
-            {
-                for (int i = 0; i < cards.Length; i++)
+            Card[] cards = board.increment_section[player];
+            for (int i = 0; i < cards.Length; i++)
+            {         
+                if (cards[i] != null
+                    && cards[i].Name == name)
                 {
-                    if (cards[i] != null
-                        && cards[i].Name == name)
-                    {
-                        Taken = cards[i];
-                        cards[i] = decoy;
-                    }
+                    Taken = cards[i];
+                    cards[i] = decoy;
+                }
+            }
+        }
 
-                }
-            }
-        }
-        else if (range == "Climate")
-        {
-            for (int i = 0; i < board.climate_section.Length; i++)
-            {
-                if (board.climate_section[i] != null 
-                    && board.climate_section[i].Name == name)
-                {
-                    Taken = board.climate_section[i];
-                    board.climate_section[i] = decoy;
-                }
-            }
-        }
+        //  Que no afecte a las cartas clima
+
+        //else if (range == "Climate")
+        //{
+        //    for (int i = 0; i < board.climate_section.Length; i++)
+        //    {
+        //        if (board.climate_section[i] != null 
+        //            && board.climate_section[i].Name == name
+        //            && board.climate_section[i].Owner.ID == player)
+        //        {
+        //            Taken = board.climate_section[i];
+        //            board.climate_section[i] = decoy;
+        //        }
+        //    }
+        //}
+
         else
         {
-            List<Card> cards = board.sections[PlayerZone][range];
+            List<Card> cards = board.sections[player][range];
             if (cards != null)
             {
                 for (int i = cards.Count - 1; i >= 0; i--)
@@ -261,13 +259,12 @@ public class Effects
                     }
                 }
             }
-            //Anade la carta senuelo a esa zona
+            //Add decoy card to that zone
             cards.Add(decoy);
         }
 
         if (Taken != null)
         {
-            Taken.Owner = decoy.Owner;
             Taken.IsPlayed = false;
             Taken.Owner.Hand.Add(Taken);
         }
@@ -335,6 +332,7 @@ public class Effects
     {
         
     }
+
     //Clean file with less cards between both players
     private void CleanFile(Card card)
     {
@@ -373,12 +371,15 @@ public class Effects
                     if (length == 1) break;
                 }
             }
-            for (int i = length - 1; i >= 0; i--)
+            if (length != int.MaxValue)
             {
-                aux[i].Owner.GraveYard.Add(aux[i]);
-                aux[i].IsPlayed = false;
-                if (aux[i] is Card.UnityCard unity_card) gm.CardBeaten(unity_card);
-                aux.RemoveAt(i);
+                for (int i = length - 1; i >= 0; i--)
+                {
+                    aux[i].Owner.GraveYard.Add(aux[i]);
+                    aux[i].IsPlayed = false;
+                    if (aux[i] is Card.UnityCard unity_card) gm.CardBeaten(unity_card);
+                    aux.RemoveAt(i);
+                }
             }
         }
     }

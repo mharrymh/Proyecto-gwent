@@ -11,8 +11,6 @@ public class PointerOnCard : MonoBehaviour
     DragAndDrop Drag;
     DisplayCard disp;
 
-
-
     public void Start()
     {
         ShowPanel = GameObject.Find("ShowPanel");

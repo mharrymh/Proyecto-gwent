@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 
 public class DragAndDrop : MonoBehaviour
 {
+
     public bool isDragging = false;
     public bool isOverDropZone = false;
     //Gets the panels 
@@ -131,7 +132,7 @@ public class DragAndDrop : MonoBehaviour
                 transform.position = startPosition;
             }
         }
-        else if (card is Card.SpecialCard climate_card && climate_card.Type is SpecialType.Climate 
+        else if (card is Card.SpecialCard climate_card && climate_card.Type is SpecialType.Climate
             && DropZone.name == "ClimateZone")
         {
             if (climate_card.Range == "M" && board.climate_section[0] == null)
@@ -200,12 +201,10 @@ public class DragAndDrop : MonoBehaviour
         {
             PlayCard(cleareance);
         }
-        else if (card is Card.SpecialCard decoy && decoy.Type is SpecialType.Decoy && DropZone.tag == "card"
-            && DropZone.transform.parent != gm.HandPanel && DropZone.transform.parent != gm.LeaderPlayer1
-            && DropZone.transform.parent != gm.LeaderPlayer2)
+        else if (card is Card.SpecialCard decoy && decoy.Type is SpecialType.Decoy && DropZone.tag == card.Owner.ID
+            && DropZone.transform.parent != gm.HandPanel && DropZone.transform.parent.name != "ClimateZone")
         {
             Debug.Log(DropZone.tag);
-            //Probar si se puede poner en la de lider
             PlayCard(card);
         }
         else
@@ -283,37 +282,27 @@ public class DragAndDrop : MonoBehaviour
             decoy.CardPrefab.transform.SetParent(CardToMove.transform.parent.transform, false);
 
             string Zone = CardToMove.transform.parent.name;
-            string BackendZone = "";
-            Player PlayerZone = null;
+            string BackendZone = null;
+            string PlayerZone = card.Owner.ID;
 
             if (Zone.Contains("Melee"))
             {
                 BackendZone = "M";
-                if (Zone.Contains("1")) PlayerZone = gm.player1;
-                else if (Zone.Contains("2")) PlayerZone = gm.player2;
             }
             else if (Zone.Contains("Range"))
             {
                 BackendZone = "R";
-                if (Zone.Contains("1")) PlayerZone = gm.player1;
-                else if (Zone.Contains("2")) PlayerZone = gm.player2;
             }
             else if (Zone.Contains("Siege"))
             {
                 BackendZone = "S";
-                if (Zone.Contains("1")) PlayerZone = gm.player1;
-                else if (Zone.Contains("2")) PlayerZone = gm.player2;
-            }
-            else if (Zone.Contains("Climate"))
-            {
-                BackendZone = "Climate";
             }
             else if (Zone.Contains("Increment"))
             {
                 BackendZone = "Increment";
             }
 
-            if (BackendZone != "") CardEffects.Decoy(CardToMove.name, BackendZone, PlayerZone, decoy);
+            if (BackendZone != null) CardEffects.Decoy(CardToMove.name, BackendZone, PlayerZone, decoy);
             else
             {
                 transform.position = startPosition;
@@ -324,7 +313,6 @@ public class DragAndDrop : MonoBehaviour
             //Move the card to the player hand 
             CardToMove.transform.SetParent(gm.HandPanel.transform, false);
         }
-
         //Change turn
         gm.ChangeTurn();      
     }
