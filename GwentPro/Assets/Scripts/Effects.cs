@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 using UnityEngine.UIElements;
+using static Unity.Burst.Intrinsics.X86;
+using static UnityEditor.PlayerSettings;
 
 public class Effects
 {
@@ -19,8 +22,6 @@ public class Effects
         {
             { EffectType.AssignProm, AssignProm },
             { EffectType.CleanFile, CleanFile },
-            { EffectType.CleanRangedFile, CleanRangedFile },
-            { EffectType.CleanSiegeFile, CleanSiegeFile },
             { EffectType.Clearance, Clearance },
             { EffectType.Climate, Climate },
             { EffectType.IncrementFile, IncrementFile },
@@ -33,17 +34,13 @@ public class Effects
             { EffectType.TakeCardFromGraveYard, TakeCardFromGraveYard },
             { EffectType.TimesTwins, TimesTwins },
             //More effects
-            //Draw random card from graveyard
         };
 
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
-    //Multiply the power of the card for all the instances of 
-    //card "brothers" in board
-    //Ligth: Quimera, Satiro, Manticora
-    //Dark: Medusa, Gorgona, Hidra
-    private  void TimesTwins(Card card)
+    //Multiply the power of the card for all the same instances
+    private void TimesTwins(Card card)
     {
         int brothers = 1;
 
@@ -52,7 +49,7 @@ public class Effects
         {
             for (int i = 0; i < RangeSection.Count; i++)
             {
-                if (RangeSection[i].effectType == EffectType.TimesTwins 
+                if (RangeSection[i].Name == card.Name
                     && RangeSection[i] != card)
                 {
                     brothers++;
@@ -65,7 +62,7 @@ public class Effects
             unity_card.Power *= brothers;
         }
     }
-    //Draw the most powerfulcard from player graveyard
+    //Draw the most powerful card from player graveyard
     private void TakeCardFromGraveYard(Card card)
     {
         Card MostPowerfulCard = null;
@@ -75,7 +72,8 @@ public class Effects
 
         for (int i = Graveyard.Count - 1; i >= 0; i--)
         {
-            if (Graveyard[i] is Card.UnityCard unity_card && unity_card.Power > maxPower)
+            if (Graveyard[i] is Card.UnityCard unity_card && unity_card.UnityType == UnityType.Silver
+                && unity_card.Power > maxPower)
             {
                 maxPower = unity_card.Power;
                 MostPowerfulCard = unity_card;
@@ -94,26 +92,36 @@ public class Effects
         }
         Debug.Log("Se aplico el efecto");
     }
-    private  void TakeCardFromDeck(Card card)
+    //Draw extra card from deck
+    private void TakeCardFromDeck(Card card)
     {
-        
+        if (card.Owner.PlayerDeck.Count > 0)
+        {
+            //Get the card at 0 index in Player Deck
+            Card DeckCard = card.Owner.PlayerDeck[0];
+            //Add the owner to the DeckCard
+            DeckCard.Owner = card.Owner;
+            //Add card to the player hand
+            DeckCard.Owner.Hand.Add(DeckCard);
+            //Remove card from player deck
+            card.Owner.PlayerDeck.RemoveAt(0);
+            //Instantiate the card on HandPanel
+            gm.InstantiateCard(DeckCard);
+        }
     }
     private  void None(Card card)
     {
     }
-
-    private  void KeepRandomCard(Card card)
+    private void KeepRandomCard(Card card)
     {
-        
+        //This is a passive effect of the leader card
+        //that is implemented in execution time
     }
-
-    //Draw extra card in the next round 
-    //Leader effect
     private void DrawExtraCard(Card card)
     {
-        
+        //This is a passive effect of the leader card
+        //that is implemented in execution time
     }
-
     //Delete most powerful card between both players
     private void DeleteMostPowerCard(Card card)
     {
@@ -131,7 +139,8 @@ public class Effects
                 aux = RangeSection.Value;
                 for (int i = 0; i < aux.Count; i++)
                 {
-                    if (aux[i] is Card.UnityCard unity_card && unity_card.Power > maxPower)
+                    if (aux[i] is Card.UnityCard unity_card && unity_card.UnityType == UnityType.Silver
+                        && unity_card.Power > maxPower)
                     {
                         maxPower = unity_card.Power;
                         MostPowerfulCard = unity_card;
@@ -174,7 +183,8 @@ public class Effects
             aux = RangeSection.Value;
             for (int i = 0; i < aux.Count; i++)
             {
-                if (aux[i] is Card.UnityCard unity_card && unity_card.Power < minPower)
+                if (aux[i] is Card.UnityCard unity_card && unity_card.UnityType == UnityType.Silver
+                    && unity_card.Power < minPower)
                 {
                     minPower = unity_card.Power;
                     LessPowerfulCard = unity_card;
@@ -196,6 +206,7 @@ public class Effects
             gm.CardBeaten(LessPowerfulCard);
         }
     }
+    //Increment cards
     private void IncrementFile(Card card)
     {
         if (card is Card.SpecialCard incrementCard)
@@ -204,64 +215,32 @@ public class Effects
             foreach (Card Card in board.sections[incrementCard.Owner.ID][incrementCard.Range])
             {
                 //Add one point for all cards in that file
-                if (Card is Card.UnityCard unityCard)
+                if (Card is Card.UnityCard unityCard && unityCard.UnityType is UnityType.Silver)
                 {
                     unityCard.Power++;
                 }
             }
         }
     }
+    //Decoy cards
     public void Decoy(string name, string range, string player, Card.SpecialCard decoy)
     {
         Card Taken = null;
 
-        if (range == "Increment")
+        List<Card> cards = board.sections[player][range];
+        if (cards != null)
         {
-            Card[] cards = board.increment_section[player];
-            for (int i = 0; i < cards.Length; i++)
-            {         
-                if (cards[i] != null
-                    && cards[i].Name == name)
+            for (int i = cards.Count - 1; i >= 0; i--)
+            {
+                if (cards[i].Name == name)
                 {
                     Taken = cards[i];
-                    cards[i] = decoy;
+                    cards.RemoveAt(i);
                 }
             }
         }
-
-        //  Que no afecte a las cartas clima
-
-        //else if (range == "Climate")
-        //{
-        //    for (int i = 0; i < board.climate_section.Length; i++)
-        //    {
-        //        if (board.climate_section[i] != null 
-        //            && board.climate_section[i].Name == name
-        //            && board.climate_section[i].Owner.ID == player)
-        //        {
-        //            Taken = board.climate_section[i];
-        //            board.climate_section[i] = decoy;
-        //        }
-        //    }
-        //}
-
-        else
-        {
-            List<Card> cards = board.sections[player][range];
-            if (cards != null)
-            {
-                for (int i = cards.Count - 1; i >= 0; i--)
-                {
-                    if (cards[i].Name == name)
-                    {
-                        Taken = cards[i];
-                        cards.RemoveAt(i);
-                    }
-                }
-            }
-            //Add decoy card to that zone
-            cards.Add(decoy);
-        }
+        //Add decoy card to that zone
+        cards.Add(decoy);
 
         if (Taken != null)
         {
@@ -269,6 +248,7 @@ public class Effects
             Taken.Owner.Hand.Add(Taken);
         }
     }
+    //Climate cards
     private void Climate(Card card)
     {
         if (card is Card.SpecialCard climate_card)
@@ -288,7 +268,7 @@ public class Effects
             }
         }
     }
-
+    //Cleareance cards
     private void Clearance(Card card)
     {
         for (int i = 0; i < board.climate_section.Length; i++)
@@ -303,7 +283,6 @@ public class Effects
             }
         }
     }
-
     private void CleareanceAux(Card card)
     {
         if (card is Card.SpecialCard climate_card)
@@ -322,15 +301,6 @@ public class Effects
                 }
             }
         }
-    }
-    private  void CleanSiegeFile(Card card)
-    {
-        
-    }
-
-    private  void CleanRangedFile(Card card)
-    {
-        
     }
 
     //Clean file with less cards between both players
@@ -357,7 +327,7 @@ public class Effects
         {
             aux[0].Owner.GraveYard.Add(aux[0]);
             aux[0].IsPlayed = false;
-            if (aux[0] is Card.UnityCard unity_card) gm.CardBeaten(unity_card);
+            gm.CardBeaten(aux[0]);
             aux.RemoveAt(0);
         }
         else
@@ -377,15 +347,40 @@ public class Effects
                 {
                     aux[i].Owner.GraveYard.Add(aux[i]);
                     aux[i].IsPlayed = false;
-                    if (aux[i] is Card.UnityCard unity_card) gm.CardBeaten(unity_card);
+                    gm.CardBeaten(aux[i]);
                     aux.RemoveAt(i);
                 }
             }
         }
     }
+    //Assign all silver cards the prom of points in the board
     private  void AssignProm(Card card)
     {
-        
+        int Sum = gm.GetPower(gm.player1) + gm.GetPower(gm.player2);
+        int AmountOfCardsOnBoard = 60 /*Amount of cards*/ - gm.player1.PlayerDeck.Count - gm.player2.PlayerDeck.Count
+            - gm.player1.GraveYard.Count - gm.player2.GraveYard.Count - gm.player1.Hand.Count
+            - gm.player2.Hand.Count - 1 /*Card with the effect*/;
+
+        if (AmountOfCardsOnBoard != 0 && Sum != 0)
+        {
+            List<Card> aux = new List<Card>();
+
+            var AllSections = board.sections;
+            foreach (var PlayerSection in AllSections)
+            {
+                foreach (var RangeSection in PlayerSection.Value)
+                {
+                    aux = RangeSection.Value;
+                    for (int i = 0; i < aux.Count; i++)
+                    {
+                        if (aux[i] is Card.UnityCard unity && unity.UnityType is UnityType.Silver)
+                        {
+                            unity.Power = (Sum / AmountOfCardsOnBoard);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     

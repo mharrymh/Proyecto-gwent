@@ -1,10 +1,12 @@
 using JetBrains.Annotations;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class DragAndDrop : MonoBehaviour
 {
@@ -30,16 +32,14 @@ public class DragAndDrop : MonoBehaviour
     Effects CardEffects;
     public GameManager gm;
 
+    // Event Declaration
+    public event Action OnDragStart;
+
     private void Awake()
     {
         CardEffects = new Effects();
         //Get the GameManagerObject
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
-    }
-
-    private void Start()
-    {        
-           
     }
 
     void Update()
@@ -53,14 +53,12 @@ public class DragAndDrop : MonoBehaviour
     //This method is called when my card collides with an object 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        isOverDropZone = true;
         DropZone = collision.gameObject;
     }
 
     //This method is called when stops card stops colliding with an object
     private void OnTriggerExit2D(Collider2D collision)
     {
-        isOverDropZone = false;
         DropZone = null;
     }
 
@@ -73,8 +71,12 @@ public class DragAndDrop : MonoBehaviour
         {
             startPosition = gameObject.transform.position;
             isDragging = true;
+
+            // Disparar el evento cuando comienza el arrastre
+            OnDragStart?.Invoke();
         }
-        //Save the pos to the leader card
+
+        ////Save the pos to the leader card
         else if (card is Card.LeaderCard leader)
         {
             startPosition = gameObject.transform.position;
@@ -86,15 +88,24 @@ public class DragAndDrop : MonoBehaviour
         {
             isDragging = false;
 
-            if (isOverDropZone && DropZone != null) DropCard(card);
+            if (DropZone != null) DropCard(card);
             else transform.position = startPosition;
         }
     }
 
     public void DropCard(Card card)
     {
+        if (DropZone.name.Contains("Deck") && gm.Round == 1)
+        {
+            if (DropZone.name.Contains("1") && gm.currentPlayer == gm.player1 && !gm.player1.HasPlayed && gm.player1.Changes < 3
+                && gm.player1.PlayerDeck.Count > 0) gm.ChangeCard(card, gm.player1);
+            else if (DropZone.name.Contains("2") && gm.currentPlayer == gm.player2 && !gm.player2.HasPlayed && gm.player2.Changes < 3
+                && gm.player2.PlayerDeck.Count > 0) gm.ChangeCard(card, gm.player2);
+            else transform.position = startPosition;
+
+        }
         //Check for each dropable card type
-        if (card is Card.UnityCard unity_card)
+        else if (card is Card.UnityCard unity_card)
         {
             if (unity_card.Range.Contains("M") && unity_card.Owner.ID == "player1"
                 && DropZone.name == "MeleeZonePlayer1" && board.sections[card.Owner.ID]["M"].Count < max_sections)
@@ -197,12 +208,14 @@ public class DragAndDrop : MonoBehaviour
                 transform.position = startPosition;
             }
         }
-        else if (card is Card.SpecialCard cleareance && cleareance.Type is SpecialType.Clearance)
+        else if (card is Card.SpecialCard cleareance && cleareance.Type is SpecialType.Clearance
+            && DropZone.name == "ClimateZone")
         {
             PlayCard(cleareance);
         }
         else if (card is Card.SpecialCard decoy && decoy.Type is SpecialType.Decoy && DropZone.tag == card.Owner.ID
-            && DropZone.transform.parent != gm.HandPanel && DropZone.transform.parent.name != "ClimateZone")
+            && DropZone.transform.parent != gm.HandPanel && DropZone.transform.parent.name != "ClimateZone"
+            && !DropZone.transform.parent.name.Contains("Increment"))
         {
             Debug.Log(DropZone.tag);
             PlayCard(card);
@@ -215,6 +228,7 @@ public class DragAndDrop : MonoBehaviour
 
     public void PlayCard(Card card, string range = "")
     {
+        card.Owner.HasPlayed = true;
         //Set the card to true so that it 
         //wont interact anymore with the drag and drop
         card.IsPlayed = true;
@@ -227,7 +241,6 @@ public class DragAndDrop : MonoBehaviour
         //Apply effect
         CardEffects.CardEffects[card.effectType].Invoke(card);
 
-
         //Add card in backend
         if (card is Card.UnityCard unity_card)
         {
@@ -236,17 +249,20 @@ public class DragAndDrop : MonoBehaviour
             if (range == "M")
             {
                 if (board.climate_section[0] != null) unity_card.Power--;
-                else if (board.increment_section[unity_card.Owner.ID][0] != null) unity_card.Power++;
+                else if (board.increment_section[unity_card.Owner.ID][0] != null
+                    && unity_card.UnityType == UnityType.Silver) unity_card.Power++;
             }
             else if (range == "R")
             {
                 if (board.climate_section[1] != null) unity_card.Power--;
-                else if (board.increment_section[unity_card.Owner.ID][1] != null) unity_card.Power++;
+                else if (board.increment_section[unity_card.Owner.ID][1] != null
+                    && unity_card.UnityType == UnityType.Silver) unity_card.Power++;
             }
             else if (range == "S")
             {
                 if (board.climate_section[2] != null) unity_card.Power--;
-                else if (board.increment_section[unity_card.Owner.ID][2] != null) unity_card.Power++;
+                else if (board.increment_section[unity_card.Owner.ID][2] != null
+                    && unity_card.UnityType == UnityType.Silver) unity_card.Power++;
             }
 
         }
@@ -297,10 +313,6 @@ public class DragAndDrop : MonoBehaviour
             {
                 BackendZone = "S";
             }
-            else if (Zone.Contains("Increment"))
-            {
-                BackendZone = "Increment";
-            }
 
             if (BackendZone != null) CardEffects.Decoy(CardToMove.name, BackendZone, PlayerZone, decoy);
             else
@@ -313,6 +325,10 @@ public class DragAndDrop : MonoBehaviour
             //Move the card to the player hand 
             CardToMove.transform.SetParent(gm.HandPanel.transform, false);
         }
+
+        //Update the power
+        gm.SetPower(gm.player1);
+        gm.SetPower(gm.player2);
         //Change turn
         gm.ChangeTurn();      
     }

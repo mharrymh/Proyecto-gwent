@@ -8,8 +8,8 @@ public class PointerOnCard : MonoBehaviour
     public GameObject ShowPanel;
     public GameObject cardPrefab;
     public GameObject GreaterInstance;
-    DragAndDrop Drag;
     DisplayCard disp;
+    DragAndDrop Drag;
 
     public void Start()
     {
@@ -24,21 +24,28 @@ public class PointerOnCard : MonoBehaviour
             GreaterInstance.transform.localScale = new Vector2(2.5f, 2.5f);
             disp = GreaterInstance.GetComponent<DisplayCard>();
             disp.ShowCard();
+
+            // Start listening the drag event
+            Drag.OnDragStart += HandleDragStart;
         }
+
+        
     }
+
+    private void HandleDragStart()
+    {
+        // When drag start
+        Destroy(GreaterInstance);
+
+        // Stop listening Drag 
+        Drag.OnDragStart -= HandleDragStart;
+    }
+
     public void OnPointerExit()
     {
         if (!Drag.isDragging)
         {
-            foreach (RectTransform child in ShowPanel.transform)
-            {
-                Destroy(child.gameObject);
-            }
+            Destroy(GreaterInstance);
         }
     }
-
-
-    
-
-    
 }

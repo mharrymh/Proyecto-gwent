@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Player
 {
+    public string PlayerName { get; set; }
     public string ID { get; set; }
     public CardFaction Faction { get; set; }
     public List<Card> PlayerDeck { get; set; }
@@ -17,8 +18,12 @@ public class Player
     public bool LeaderPlayed { get; set; }
     //Track if the player received his hand
     public bool Ready { get; set; }
+    //Check if the player has played
+    public bool HasPlayed { get; set; }
+    //Keep track of how many changes has been done on first round
+    public int Changes { get; set; }
 
-    public Player(CardFaction Faction, string ID)
+    public Player(CardFaction Faction, string ID, string name)
     {
         this.Faction = Faction;
         GetPlayerDeck(Faction);
@@ -27,6 +32,9 @@ public class Player
         RoundsWon = 0;
         Hand = new List<Card>();
         GraveYard = new List<Card>();
+        HasPlayed = false;
+        Changes = 0;
+        PlayerName = name;
     }
 
     CardDatabase cards = new CardDatabase();
@@ -51,10 +59,6 @@ public class Player
                 PlayerDeck.RemoveAt(i);
             }
         }
-    }
-    public void AssignHand(Card card)
-    {
-        Hand.Add(card);
     }
     
 }

@@ -45,8 +45,8 @@ public enum EffectType
 }
 public enum CardFaction
 {
-    Light,
-    Dark
+    Dark,
+    Light
 }
 public enum SpecialType
 {
@@ -60,7 +60,6 @@ public enum UnityType
     Gold,
     Silver
 }
-
 
 public class Card : ScriptableObject
 {
@@ -81,7 +80,7 @@ public class Card : ScriptableObject
         this.CardImage = CardImage;
         CardPrefab = null;
 
-        //PRueba
+        //Prueba
         Description = effectType.ToString();
     }
 

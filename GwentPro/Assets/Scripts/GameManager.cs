@@ -4,30 +4,35 @@ using System.Diagnostics.CodeAnalysis;
 using TMPro;
 using UnityEditor.Timeline;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 
 
 
 /// <summary>
-/// Crear escenas de inicio y game over 
+/// 
 /// Implementar cementerio
-/// Efectos cartas lider
-/// Duplicar cartas plata
-/// Que los efectos no afecten a las cartas heroes
+///
+/// 
+/// Crear efecto jugar un clima 
+/// 
 /// Cambiar el show panel(quiza cambiar las cartas)
+/// 
+/// Me faltan botones del GameScene
+/// 
 /// 
 /// </summary>
 
 public class GameManager : MonoBehaviour
 {
-
-
     public GameObject GameBoard;
     public GameObject CardZones;
     public GameObject PassButton;
     public GameObject ScorePlayer1;
     public GameObject ScorePlayer2;
+    public GameObject LivesPlayer1;
+    public GameObject LivesPlayer2;
 
 
     public GameObject cardPrefab; // The card prefab
@@ -40,11 +45,14 @@ public class GameManager : MonoBehaviour
     public bool GivingCards = false;
     public int RoundDraws;
     public Player currentPlayer;
+    //Amount of cards to start with
+    public int StartingAmount = 8;
     //public bool GameOver;
 
     //The players
     public Player player1;
     public Player player2;
+    public Player winner = null;
     //The points in the UI
     public TMP_Text PowerPlayer1;
     public TMP_Text PowerPlayer2;
@@ -59,36 +67,46 @@ public class GameManager : MonoBehaviour
     {
         CardEffects = new Effects();
 
-
         Round = 1;
-        player1 = new Player(CardFaction.Dark, "player1");
-        player2 = new Player(CardFaction.Light, "player2");
+        player1 = new Player(PlayerData.FactionPlayer1, "player1", PlayerData.Player1Name);
+        player2 = new Player(PlayerData.FactionPlayer2, "player2",PlayerData.Player2Name);
         currentPlayer = GetStarterPlayer();
         //If the starter player is player2 rotate the scene
         if (currentPlayer == player2) RotateObjects();
-        StartCoroutine(InstanciarCartas(10, currentPlayer));
-    }
+        StartCoroutine(InstanciarCartas(StartingAmount, currentPlayer));
 
-    private void Update()
-    {
+        //Start the power at 0
         SetPower(player1);
         SetPower(player2);
     }
 
     IEnumerator InstanciarCartas(int n, Player player)
     {
+        //Leader effect
+        if (player.Leader.effectType == EffectType.DrawExtraCard && Round > 1) n++;
+
         player.Ready = true;
         if (player.PlayerDeck.Count < n) n = player.PlayerDeck.Count;
+        Shuffle(player.PlayerDeck);
 
-        player.PlayerDeck = Shuffle(player.PlayerDeck);
-
-        //Do not change turn while instantiating
+        //Do not change turns while instantiating
         GivingCards = true;
         for (int i = 0; i < n; i++)
         {
-            Instanciar(player);
-            player.PlayerDeck.RemoveAt(0);
-            yield return new WaitForSeconds(0.2f); // Wait .2 seconds before instantiate the new card
+            if (player.Hand.Count < 10)
+            {
+                Instanciar(player);
+                Debug.Log(player.Hand.Count + player.Hand[player.Hand.Count - 1].Name);
+                player.PlayerDeck.RemoveAt(0);
+                yield return new WaitForSeconds(0.2f); // Wait .2 seconds before instantiate the new card
+            }
+            else
+            {
+                //If the hand is full send the card directly to the graveyard
+                player.GraveYard.Add(player.PlayerDeck[0]);
+                Debug.Log(player.GraveYard.Count + player.GraveYard[player.GraveYard.Count - 1].Name);
+                player.PlayerDeck.RemoveAt(0);
+            }
         }
         GivingCards = false;
     }
@@ -98,20 +116,6 @@ public class GameManager : MonoBehaviour
         if (player.PlayerDeck.Count > 0)
         {
             Card card = player.PlayerDeck[0];
-
-            if (player.Hand.Count >= 10)
-            {
-                player.GraveYard.Add(card);
-
-
-                for (int i =  0; i < player.GraveYard.Count; i++)
-                {
-                    Debug.Log(player.GraveYard[i].Name);
-                }
-
-                return;
-
-            }
             //Crate new instance of the card on the playerhand
             GameObject CardInstance = Instantiate(cardPrefab, HandPanel);
             //Get the DisplayCard component of the new Card
@@ -119,7 +123,7 @@ public class GameManager : MonoBehaviour
             //Assign the card to it
             disp.card = card;
             //Add card to player hand
-            player.AssignHand(card);
+            player.Hand.Add(card);
             //Assign owner of the card
             card.Owner = player;
             //Assign tag to Instance of the card for decoy effect implementation
@@ -140,10 +144,26 @@ public class GameManager : MonoBehaviour
                 player.LeaderPlayed = true;
             }
         }
-        else
-        {
-            Debug.Log("Deck is empty");
-        }
+    }
+
+    public void ChangeCard(Card card, Player player)
+    {
+        //Destroy card prefab
+        CardBeaten(card);
+
+        //Instantiate new card
+
+        InstantiateCard(player.PlayerDeck[0]);
+        //Add new card to the player hand
+        player.Hand.Add(player.PlayerDeck[0]);
+        //Remove changed card from the player hand 
+        player.Hand.Remove(card);
+        //Remove card from player deck
+        player.PlayerDeck.RemoveAt(0);
+        //Insert changed card to the player deck in the last position 
+        player.PlayerDeck.Insert(player.PlayerDeck.Count - 1, card);
+        //Increment the property changes of the player 
+        player.Changes++;
     }
     public void SetPower(Player player)
     {
@@ -158,7 +178,6 @@ public class GameManager : MonoBehaviour
             else PowerPlayer2.text = GetPower(player).ToString();
         }
     }
-
     public int GetPower(Player player)
     {
         int sum = 0;
@@ -186,28 +205,31 @@ public class GameManager : MonoBehaviour
         player.Score = sum;
         return sum;
     }
-
+    //Destroy prefab
     public void CardBeaten(Card card)
     {
+        //Restore to the original power
+        if (card is Card.UnityCard unity) unity.Power = unity.OriginalPower;
+        card.IsPlayed = false;
+        
         Destroy(card.CardPrefab);
     }
-
     //Shuffle deck
-    public List<Card> Shuffle(List<Card> cards)
+    private void Shuffle(List<Card> cards)
     {
-        List<Card> aux = new List<Card>();
         int n = 0;
+        Card aux;
 
         for (int i = 0; i < cards.Count; i++)
         {
             n = Random.Range(0, cards.Count);
-            aux.Add(cards[n]);
-            cards.RemoveAt(n);
-        }
 
-        return aux;
+            aux = cards[n];
+            cards[n] = cards[i];
+            cards[i] = aux;
+        }
     }
-    public Player GetStarterPlayer()
+    private Player GetStarterPlayer()
     {
         int n = Random.Range(0, 2);
         return (n == 0) ? player2 : player1;
@@ -215,10 +237,7 @@ public class GameManager : MonoBehaviour
 
     public void ChangeTurn()
     {
-        if (GivingCards)
-        {
-            return;
-        }
+        if (GivingCards) return;
 
         Player perspective = currentPlayer;
         //Change the current player
@@ -238,6 +257,10 @@ public class GameManager : MonoBehaviour
         }
         //Change the hand panel to the other player
         ChangeHandPanel();
+
+        //Set Power for both players
+        SetPower(player1);
+        SetPower(player2);
     }
 
     public void ChangeHandPanel()
@@ -252,12 +275,12 @@ public class GameManager : MonoBehaviour
         {
             if (Round == 1)
             {
-                StartCoroutine(InstanciarCartas(10, currentPlayer));
+                StartCoroutine(InstanciarCartas(StartingAmount, currentPlayer));
             }
             else
             {
-                StartCoroutine(InstanciarCartas(2, currentPlayer));
                 InstantiateCurrentHand();
+                StartCoroutine(InstanciarCartas(2, currentPlayer));
             }
         }
         else
@@ -275,6 +298,8 @@ public class GameManager : MonoBehaviour
     }
     public void InstantiateCard(Card card)
     {
+        if (card.Owner == null) card.Owner = currentPlayer;
+
         GameObject CardInstance = Instantiate(cardPrefab, HandPanel);
         disp = CardInstance.GetComponent<DisplayCard>();
         //Reset the cardPrefab property to the new instance
@@ -296,7 +321,6 @@ public class GameManager : MonoBehaviour
         {
             RotateObject(child.gameObject);
         }
-
     }
     public void RotateObject(GameObject objectToRotate)
     {
@@ -307,21 +331,18 @@ public class GameManager : MonoBehaviour
     {
         player1.Ready = false;
         player2.Ready = false;
+        player1.Passed = false;
+        player2.Passed = false;
         //Get the winner of the round
-        Player winner = GetRoundWinner();
+        winner = GetRoundWinner();
         if (winner != null)
         {
+            //The winner start the next round
             currentPlayer = winner;
-        }
-        //Add the round
-        Round++;
-
-        //Add round won to player property
-        if (winner != null)
-        {
+            //Add round to the player property
             if (winner == player1) player1.RoundsWon++;
             else player2.RoundsWon++;
-        }
+        }        
 
         //Check if the game is over
         if (player1.RoundsWon == 2 || player2.RoundsWon == 2 || Round == 3)
@@ -331,9 +352,17 @@ public class GameManager : MonoBehaviour
         else
         {
             CleanBoard();
+            SetVisualWinner(winner);
+            Round++;
         }
     }
+    void SetVisualWinner(Player winner)
+    {
 
+        if (winner == player1) Destroy(LivesPlayer2);
+        else if (winner == player2) Destroy(LivesPlayer1);
+        
+    }
     public Player GetRoundWinner()
     {
         if (player1.Score > player2.Score) return player1;
@@ -343,11 +372,29 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        //Implementar mas tarde 
-        Debug.Log("Se acabo el juego");
+        PlayerData.Winner = winner.PlayerName;
+
+        if (player1.RoundsWon > player2.RoundsWon) Debug.Log("Gano 1");
+        else if (player2.RoundsWon > player1.RoundsWon) Debug.Log("Gano 2");
+        else Debug.Log("Empate");
+
+        //Change scene
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
-    public void CleanBoard()
+    void CleanBoard()
     {
+        //Effect of the leader
+        //Keep a random card on the board between rounds
+        Player KeepRandomPlayer = GetPlayerWithLeader(EffectType.KeepRandomCard);
+        Card.UnityCard Keeper = null;
+
+        if (KeepRandomPlayer != null)
+        {
+            Keeper = GetRandomUnityCardOnBoard(KeepRandomPlayer);
+            if (Keeper != null && Keeper) Keeper.Power = Keeper.OriginalPower;
+        }
+
+
         //Clean the backend board removing each card of the lists of cards
         //that represents the unity zones
         var AllSections = board.sections;
@@ -358,13 +405,16 @@ public class GameManager : MonoBehaviour
             {
                 for (int i = Cards.Count - 1; i >= 0; i--)
                 {
-                    //Erase card from board and add it to the player graveyard
-                    Cards[i].Owner.GraveYard.Add(Cards[i]);
-                    //Set the IsPlayed to false so it can be played again
-                    Cards[i].IsPlayed = false;
-                    //Destroy the instance (object)
-                    Destroy(Cards[i].CardPrefab);
-                    Cards.RemoveAt(i);
+                    if (Keeper != Cards[i])
+                    {
+                        //Erase card from board and add it to the player graveyard
+                        Cards[i].Owner.GraveYard.Add(Cards[i]);
+                        //Set the IsPlayed to false so it can be played again
+                        Cards[i].IsPlayed = false;
+                        //Destroy the instance (object)
+                        Destroy(Cards[i].CardPrefab);
+                        Cards.RemoveAt(i);
+                    }
                 }
 
             }
@@ -399,5 +449,32 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    Card.UnityCard GetRandomUnityCardOnBoard(Player player)
+    {
+        foreach (var RangeSection in board.sections[player.ID])
+        {
+            //Get a random card from that section
+            if (RangeSection.Value.Count > 0)
+            {
+                int n = Random.Range(0, RangeSection.Value.Count);
+
+                //No decoy cards
+                if (RangeSection.Value[n] is Card.UnityCard unity) return unity;
+
+                //This works because i only have two decoy cards per player
+                else if (RangeSection.Value.Count > n && RangeSection.Value[n + 1] is Card.UnityCard unity2) return unity2;
+                else if (n - 1 > 0 && RangeSection.Value[n - 1] is Card.UnityCard unity3) return unity3;
+            }
+        }
+        return null;
+    }
+    Player GetPlayerWithLeader(EffectType keepRandomCard)
+    {
+        if (player1.Leader.effectType == keepRandomCard) return player1;
+        else if (player2.Leader.effectType == keepRandomCard) return player2;
+
+        else return null;
     }
 }
