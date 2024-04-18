@@ -57,6 +57,12 @@ public class GameManager : MonoBehaviour
     public TMP_Text PowerPlayer1;
     public TMP_Text PowerPlayer2;
 
+
+    public GameObject panelChangeTurn;
+    public TMP_Text TurnOfText;
+
+
+
     //References
     CardDatabase cartas = new CardDatabase();
     Effects CardEffects;
@@ -78,6 +84,8 @@ public class GameManager : MonoBehaviour
         //Start the power at 0
         SetPower(player1);
         SetPower(player2);
+
+        StartCoroutine(VisualChangeTurn());
     }
 
     IEnumerator InstanciarCartas(int n, Player player)
@@ -153,7 +161,7 @@ public class GameManager : MonoBehaviour
 
         //Instantiate new card
 
-        InstantiateCard(player.PlayerDeck[0]);
+        InstantiateCard(player.PlayerDeck[0], HandPanel);
         //Add new card to the player hand
         player.Hand.Add(player.PlayerDeck[0]);
         //Remove changed card from the player hand 
@@ -261,8 +269,20 @@ public class GameManager : MonoBehaviour
         //Set Power for both players
         SetPower(player1);
         SetPower(player2);
+
+        StartCoroutine(VisualChangeTurn());
     }
 
+    IEnumerator VisualChangeTurn()
+    {
+        TurnOfText.text = "Turno de " + currentPlayer.PlayerName;
+        panelChangeTurn.SetActive(true);
+
+        //Wait 2 second
+        yield return new WaitForSeconds(2);
+
+        panelChangeTurn.SetActive(false);
+    }
     public void ChangeHandPanel()
     {
         foreach (RectTransform card in HandPanel)
@@ -293,20 +313,23 @@ public class GameManager : MonoBehaviour
         //Quiza pudiera set active false
         foreach (Card card in currentPlayer.Hand)
         {
-            InstantiateCard(card);
+            InstantiateCard(card, HandPanel);
         }
     }
-    public void InstantiateCard(Card card)
+    public void InstantiateCard(Card card, Transform DropZone)
     {
         if (card.Owner == null) card.Owner = currentPlayer;
 
-        GameObject CardInstance = Instantiate(cardPrefab, HandPanel);
-        disp = CardInstance.GetComponent<DisplayCard>();
-        //Reset the cardPrefab property to the new instance
-        card.CardPrefab = CardInstance;
-        CardInstance.tag = card.Owner.ID;
-        disp.card = card;
-        disp.ShowCard();
+        if (card.CardPrefab == null)
+        {
+            GameObject CardInstance = Instantiate(cardPrefab, DropZone);
+            disp = CardInstance.GetComponent<DisplayCard>();
+            //Reset the cardPrefab property to the new instance
+            card.CardPrefab = CardInstance;
+            CardInstance.tag = card.Owner.ID;
+            disp.card = card;
+            disp.ShowCard();
+        }
     }
 
     public void RotateObjects()
@@ -347,6 +370,12 @@ public class GameManager : MonoBehaviour
         //Check if the game is over
         if (player1.RoundsWon == 2 || player2.RoundsWon == 2 || Round == 3)
         {
+            if (player1.RoundsWon > player2.RoundsWon) winner = player1;
+            else if (player2.RoundsWon > player1.RoundsWon) winner = player2;
+            else
+            {
+                winner = null;
+            }
             GameOver();
         }
         else
@@ -370,14 +399,11 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
+
+    //revisar
     public void GameOver()
     {
         PlayerData.Winner = winner.PlayerName;
-
-        if (player1.RoundsWon > player2.RoundsWon) Debug.Log("Gano 1");
-        else if (player2.RoundsWon > player1.RoundsWon) Debug.Log("Gano 2");
-        else Debug.Log("Empate");
-
         //Change scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
@@ -455,21 +481,17 @@ public class GameManager : MonoBehaviour
     {
         foreach (var RangeSection in board.sections[player.ID])
         {
-            //Get a random card from that section
-            if (RangeSection.Value.Count > 0)
+            foreach (Card card in RangeSection.Value)
             {
-                int n = Random.Range(0, RangeSection.Value.Count);
-
-                //No decoy cards
-                if (RangeSection.Value[n] is Card.UnityCard unity) return unity;
-
-                //This works because i only have two decoy cards per player
-                else if (RangeSection.Value.Count > n && RangeSection.Value[n + 1] is Card.UnityCard unity2) return unity2;
-                else if (n - 1 > 0 && RangeSection.Value[n - 1] is Card.UnityCard unity3) return unity3;
+                if (card is Card.UnityCard unity && unity.UnityType is UnityType.Silver)
+                {
+                    return unity;
+                }
             }
         }
         return null;
     }
+
     Player GetPlayerWithLeader(EffectType keepRandomCard)
     {
         if (player1.Leader.effectType == keepRandomCard) return player1;

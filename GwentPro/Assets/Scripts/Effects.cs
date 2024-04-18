@@ -11,11 +11,10 @@ using static UnityEditor.PlayerSettings;
 
 public class Effects
 {
-
+    public GameObject ClimateZone;
     public Dictionary<EffectType, Action<Card>> CardEffects; 
     public Board board = Board.Instance;
     public GameManager gm;
-
     public Effects()
     {
         CardEffects = new Dictionary<EffectType, Action<Card>>
@@ -33,10 +32,14 @@ public class Effects
             { EffectType.TakeCardFromDeck, TakeCardFromDeck },
             { EffectType.TakeCardFromGraveYard, TakeCardFromGraveYard },
             { EffectType.TimesTwins, TimesTwins },
+            { EffectType.Decoy, Decoy },
+            { EffectType.AddClimateCard, AddClimateCard },
+
             //More effects
         };
 
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
+        ClimateZone = GameObject.Find("ClimateZone");
     }
 
     //Multiply the power of the card for all the same instances
@@ -65,6 +68,8 @@ public class Effects
     //Draw the most powerful card from player graveyard
     private void TakeCardFromGraveYard(Card card)
     {
+        if (card.Owner.Hand.Count >= 10) return;
+
         Card MostPowerfulCard = null;
         int maxPower = int.MinValue;
         List<Card> Graveyard = card.Owner.GraveYard;
@@ -88,14 +93,14 @@ public class Effects
             //Add card to the player hand
             MostPowerfulCard.Owner.Hand.Add(MostPowerfulCard);
             //Instantiate the card
-            gm.InstantiateCard(MostPowerfulCard);
+            gm.InstantiateCard(MostPowerfulCard, gm.HandPanel);
         }
         Debug.Log("Se aplico el efecto");
     }
     //Draw extra card from deck
     private void TakeCardFromDeck(Card card)
     {
-        if (card.Owner.PlayerDeck.Count > 0)
+        if (card.Owner.PlayerDeck.Count > 0 && card.Owner.Hand.Count < 10)
         {
             //Get the card at 0 index in Player Deck
             Card DeckCard = card.Owner.PlayerDeck[0];
@@ -106,7 +111,7 @@ public class Effects
             //Remove card from player deck
             card.Owner.PlayerDeck.RemoveAt(0);
             //Instantiate the card on HandPanel
-            gm.InstantiateCard(DeckCard);
+            gm.InstantiateCard(DeckCard, gm.HandPanel);
         }
     }
     private  void None(Card card)
@@ -383,5 +388,84 @@ public class Effects
         }
     }
 
+    //Decoy effect
+    void Decoy(Card card)
+    {
+
+    }
     
+    void AddClimateCard(Card card)
+    {
+        Card.SpecialCard aux = null;
+
+        foreach (Card Card in card.Owner.Hand)
+        {
+            if (Card is Card.SpecialCard climate && climate.Type is SpecialType.Climate)
+            {
+                climate.Owner = card.Owner;
+                aux = climate;
+                if (climate.Range == "M" && board.climate_section[0] == null)
+                {
+                    AddClimateAux(0, climate, true);
+                    break;
+                }
+                else if (climate.Range == "R" && board.climate_section[1] == null)
+                {
+                    AddClimateAux(1, climate, true);
+                    break;
+                }
+                else if (climate.Range == "S" && board.climate_section[2] == null)
+                {
+                    AddClimateAux(2, climate, true);
+                    break;
+                }
+            }
+        }
+
+        if (aux == null)
+        {
+            foreach (Card Card1 in card.Owner.PlayerDeck)
+            {
+                if (Card1 is Card.SpecialCard climate && climate.Type is SpecialType.Climate)
+                {
+                    climate.Owner = card.Owner;
+                    if (climate.Range == "M" && board.climate_section[0] == null)
+                    {
+                        AddClimateAux(0, climate, false);
+                        break;
+                    }
+                    else if (climate.Range == "R" && board.climate_section[1] == null)
+                    {
+                        AddClimateAux(1, climate, false);
+                        break;
+                    }
+                    else if (climate.Range == "S" && board.climate_section[2] == null)
+                    {
+                        AddClimateAux(2, climate, false);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    void AddClimateAux(int pos, Card.SpecialCard climate, bool IsInHand)
+    {
+        if (IsInHand)
+        {
+            board.climate_section[pos] = climate;
+            climate.CardPrefab.transform.SetParent(ClimateZone.transform, false);
+            climate.Owner.Hand.Remove(climate);
+            climate.IsPlayed = true;
+            Debug.Log("Se cogio de la mano");
+        }
+        else
+        {
+            Debug.Log("Se cogio del deck");
+            board.climate_section[pos] = climate;
+            gm.InstantiateCard(climate, ClimateZone.transform);
+            climate.Owner.PlayerDeck.Remove(climate);
+            climate.IsPlayed = true;
+        }
+    }
 }
