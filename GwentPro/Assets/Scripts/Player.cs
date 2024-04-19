@@ -22,6 +22,7 @@ public class Player
     public bool HasPlayed { get; set; }
     //Keep track of how many changes has been done on first round
     public int Changes { get; set; }
+    public GameObject GraveyardObj { get; set; }
 
     public Player(CardFaction Faction, string ID, string name)
     {

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using TMPro;
-using UnityEditor.Timeline;
+//using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -12,16 +12,9 @@ using UnityEngine.UIElements;
 
 /// <summary>
 /// 
-/// Implementar cementerio
+/// Menu de pausa
 /// 
-/// Me faltan botones del GameScene
-/// 
-/// Incremento nada mas afecta a las plata(descripcion)
-/// 
-/// 
-/// Drag and drop de las despeje
-/// 
-/// Agregar efectos de sonido
+///
 /// </summary>
 
 public class GameManager : MonoBehaviour
@@ -33,6 +26,8 @@ public class GameManager : MonoBehaviour
     public GameObject ScorePlayer2;
     public GameObject LivesPlayer1;
     public GameObject LivesPlayer2;
+    public GameObject Graveyard1;
+    public GameObject Graveyard2;
 
 
     public GameObject cardPrefab; // The card prefab
@@ -43,6 +38,7 @@ public class GameManager : MonoBehaviour
 
     public int Round;
     public bool GivingCards = false;
+    public bool RoundOverAux = false;
     public int RoundDraws;
     public Player currentPlayer;
     //Amount of cards to start with
@@ -75,7 +71,10 @@ public class GameManager : MonoBehaviour
 
         Round = 1;
         player1 = new Player(PlayerData.FactionPlayer1, "player1", PlayerData.Player1Name);
+        player1.GraveyardObj = Graveyard1;
         player2 = new Player(PlayerData.FactionPlayer2, "player2",PlayerData.Player2Name);
+        player2.GraveyardObj = Graveyard2;
+
         currentPlayer = GetStarterPlayer();
         //If the starter player is player2 rotate the scene
         if (currentPlayer == player2) RotateObjects();
@@ -112,7 +111,10 @@ public class GameManager : MonoBehaviour
             {
                 //If the hand is full send the card directly to the graveyard
                 player.GraveYard.Add(player.PlayerDeck[0]);
-                Debug.Log(player.GraveYard.Count + player.GraveYard[player.GraveYard.Count - 1].Name);
+                if (player.GraveYard.Count == 1)
+                {
+                    player.GraveyardObj.SetActive(true);
+                }
                 player.PlayerDeck.RemoveAt(0);
             }
         }
@@ -204,6 +206,10 @@ public class GameManager : MonoBehaviour
                         if (unity.Power <= 0)
                         {
                             unity.Owner.GraveYard.Add(unity);
+                            if (unity.Owner.GraveYard.Count == 1)
+                            {
+                                unity.Owner.GraveyardObj.SetActive(true);
+                            }
                             CardBeaten(unity);
                         }
                     }
@@ -259,6 +265,7 @@ public class GameManager : MonoBehaviour
         if (player1.Passed && player2.Passed)
         {
             RoundOver();
+            RoundOverAux = true;
         }
 
         //Rotate the scene if the current player changed
@@ -278,6 +285,13 @@ public class GameManager : MonoBehaviour
 
     IEnumerator VisualChangeTurn()
     {
+        if (RoundOverAux)
+        { 
+            yield return StartCoroutine(VisualSayWinner());
+            RoundOverAux = false;
+        }
+
+
         TurnOfText.text = "Turno de " + currentPlayer.PlayerName;
         panelChangeTurn.SetActive(true);
 
@@ -386,6 +400,21 @@ public class GameManager : MonoBehaviour
             SetVisualWinner(winner);
             Round++;
         }
+
+       
+    }
+
+    IEnumerator VisualSayWinner()
+    {
+        if (winner != null) TurnOfText.text = "Ganó " + winner.PlayerName;
+        else TurnOfText.text = "Empate";
+
+        panelChangeTurn.SetActive(true);
+
+        //Wait 2 second
+        yield return new WaitForSeconds(2);
+
+        panelChangeTurn.SetActive(false);
     }
     void SetVisualWinner(Player winner)
     {
@@ -443,6 +472,10 @@ public class GameManager : MonoBehaviour
                     {
                         //Erase card from board and add it to the player graveyard
                         Cards[i].Owner.GraveYard.Add(Cards[i]);
+                        if (Cards[i].Owner.GraveYard.Count == 1)
+                        {
+                            Cards[i].Owner.GraveyardObj.SetActive(true);
+                        }
                         //Set the IsPlayed to false so it can be played again
                         Cards[i].IsPlayed = false;
                         //Destroy the instance (object)
@@ -461,6 +494,10 @@ public class GameManager : MonoBehaviour
             {
                 Card card = board.climate_section[i];
                 card.Owner.GraveYard.Add(card);
+                if (card.Owner.GraveYard.Count == 1)
+                {
+                    card.Owner.GraveyardObj.SetActive(true);
+                }
                 //Destroy the object
                 Destroy(card.CardPrefab);
                 board.climate_section[i] = null;
@@ -477,6 +514,10 @@ public class GameManager : MonoBehaviour
                 {
                     Card card = cards[i];
                     card.Owner.GraveYard.Add(card);
+                    if (card.Owner.GraveYard.Count == 1)
+                    {
+                        card.Owner.GraveyardObj.SetActive(true);
+                    }
                     //Destroy the object
                     Destroy(cards[i].CardPrefab);
                     cards[i] = null;

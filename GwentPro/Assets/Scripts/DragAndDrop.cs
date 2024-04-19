@@ -6,7 +6,7 @@ using System.Runtime;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEditor.Experimental.GraphView.GraphView;
+//using static UnityEditor.Experimental.GraphView.GraphView;
 
 public class DragAndDrop : MonoBehaviour
 {
@@ -31,6 +31,7 @@ public class DragAndDrop : MonoBehaviour
     Board board = Board.Instance;
     Effects CardEffects;
     public GameManager gm;
+    public SoundManager soundM;
 
     // Event Declaration
     public event Action OnDragStart;
@@ -40,6 +41,7 @@ public class DragAndDrop : MonoBehaviour
         CardEffects = new Effects();
         //Get the GameManagerObject
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
+        soundM = GameObject.Find("AudioSourceEffects").GetComponent<SoundManager>();
     }
 
     void Update()
@@ -67,7 +69,7 @@ public class DragAndDrop : MonoBehaviour
     {
         DisplayCard disp = gameObject.GetComponent<DisplayCard>();
         card = disp.card;
-        if (!card.IsPlayed)
+        if (!card.IsPlayed && !isDragging)
         {
             startPosition = gameObject.transform.position;
             isDragging = true;
@@ -228,6 +230,10 @@ public class DragAndDrop : MonoBehaviour
 
     public void PlayCard(Card card, string range = "")
     {
+        soundM.PlayCardSound();
+
+
+
         card.Owner.HasPlayed = true;
         //Set the card to true so that it 
         //wont interact anymore with the drag and drop
@@ -329,6 +335,8 @@ public class DragAndDrop : MonoBehaviour
         //Update the power
         gm.SetPower(gm.player1);
         gm.SetPower(gm.player2);
+
+        
         //Change turn
         gm.ChangeTurn();      
     }

@@ -79,7 +79,7 @@ public class CardDatabase
         DarkDeck.Add(new Card.UnityCard("Medusa", CardFaction.Dark, EffectType.AddClimateCard, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("33")));
         DarkDeck.Add(new Card.UnityCard("Kraken", CardFaction.Dark, EffectType.DeleteMostPowerCard, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("34")));
         DarkDeck.Add(new Card.UnityCard("Kraken", CardFaction.Dark, EffectType.DeleteMostPowerCard, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("34")));
-        DarkDeck.Add(new Card.UnityCard("Harpía", CardFaction.Dark, EffectType.IncrementFile, "M", UnityType.Silver, 3, Resources.Load<Sprite>("35")));
+        DarkDeck.Add(new Card.UnityCard("Harpía", CardFaction.Dark, EffectType.CleanFile, "M", UnityType.Silver, 3, Resources.Load<Sprite>("35")));
         DarkDeck.Add(new Card.UnityCard("Grifo", CardFaction.Dark, EffectType.DeleteLessPowerCard, "MS", UnityType.Silver, 3, Resources.Load<Sprite>("36")));
         DarkDeck.Add(new Card.UnityCard("Ciclope", CardFaction.Dark, EffectType.TakeCardFromDeck, "R", UnityType.Silver, 3, Resources.Load<Sprite>("37")));
         DarkDeck.Add(new Card.UnityCard("Hidra", CardFaction.Dark, EffectType.TimesTwins, "R", UnityType.Silver, 4, Resources.Load<Sprite>("38")));

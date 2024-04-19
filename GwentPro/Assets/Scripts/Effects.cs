@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.UIElements;
 using static Unity.Burst.Intrinsics.X86;
-using static UnityEditor.PlayerSettings;
+//using static UnityEditor.PlayerSettings;
 
 public class Effects
 {
@@ -99,7 +99,6 @@ public class Effects
     }
     //Draw extra card from deck
 
-    //revisar
     private void TakeCardFromDeck(Card card)
     {
         if (card.Owner.PlayerDeck.Count > 0 && card.Owner.Hand.Count < 10)
@@ -207,6 +206,10 @@ public class Effects
             board.sections[LessPowerfulCard.Owner.ID][range].RemoveAt(position);
             //Add card to player graveyard
             LessPowerfulCard.Owner.GraveYard.Add(LessPowerfulCard);
+            if (LessPowerfulCard.Owner.GraveYard.Count == 1)
+            {
+                LessPowerfulCard.Owner.GraveyardObj.SetActive(true);
+            }
             //Unable drag and drop property
             LessPowerfulCard.IsPlayed = false;
             //Destroy card from frontend board
@@ -284,6 +287,10 @@ public class Effects
             {
                 board.climate_section[i].IsPlayed = false;
                 board.climate_section[i].Owner.GraveYard.Add(board.climate_section[i]);
+                if (board.climate_section[i].Owner.GraveYard.Count == 1)
+                {
+                    board.climate_section[i].Owner.GraveyardObj.SetActive(true);
+                }
                 CleareanceAux(board.climate_section[i]);
                 gm.CardBeaten(board.climate_section[i]);
                 board.climate_section[i] = null;
@@ -333,6 +340,10 @@ public class Effects
         if (length == 1)
         {
             aux[0].Owner.GraveYard.Add(aux[0]);
+            if (aux[0].Owner.GraveYard.Count == 1)
+            {
+                aux[0].Owner.GraveyardObj.SetActive(true);
+            }
             aux[0].IsPlayed = false;
             gm.CardBeaten(aux[0]);
             aux.RemoveAt(0);
@@ -353,6 +364,10 @@ public class Effects
                 for (int i = length - 1; i >= 0; i--)
                 {
                     aux[i].Owner.GraveYard.Add(aux[i]);
+                    if (aux[i].Owner.GraveYard.Count == 1)
+                    {
+                        aux[i].Owner.GraveyardObj.SetActive(true);
+                    }
                     aux[i].IsPlayed = false;
                     gm.CardBeaten(aux[i]);
                     aux.RemoveAt(i);
@@ -393,7 +408,7 @@ public class Effects
     //Decoy effect
     void Decoy(Card card)
     {
-
+        //Empty because is implemented in execution time
     }
     
     void AddClimateCard(Card card)

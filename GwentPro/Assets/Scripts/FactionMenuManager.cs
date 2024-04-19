@@ -13,6 +13,12 @@ public class FactionMenuManager : MonoBehaviour
     public bool Player1Chose = false;
     public bool Player2Chose = false;
 
+    public SoundManager soundM;
+
+    public void Start()
+    {
+         soundM = GameObject.Find("AudioSourceEffects").GetComponent<SoundManager>();
+    }
     public void SavePlayer1Name()
     {
         PlayerData.Player1Name = InputField1.text;
@@ -46,19 +52,24 @@ public class FactionMenuManager : MonoBehaviour
         PlayerData.FactionPlayer2 = CardFaction.Dark;
         Player2Chose = true;
     }
+
+    public void Back()
+    {
+        soundM.PlayButtonSound();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);
+    }
     public void Play()
     {
         SavePlayer1Name();
         SavePlayer2Name();
 
         if (!Player1Chose || PlayerData.Player1Name == null
-            || PlayerData.Player1Name == "") Debug.Log("Player1 has not chose faction");
-
-        else if (!Player2Chose || PlayerData.Player2Name == null
-            || PlayerData.Player2Name == "") Debug.Log("Player2 has not chose faction");
+            || PlayerData.Player1Name == "" || !Player2Chose || PlayerData.Player2Name == null
+            || PlayerData.Player2Name == "") soundM.PlayErrorSound();
 
         else
         {
+            soundM.PlayButtonSound();
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
     }
