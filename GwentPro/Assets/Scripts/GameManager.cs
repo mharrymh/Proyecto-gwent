@@ -13,15 +13,15 @@ using UnityEngine.UIElements;
 /// <summary>
 /// 
 /// Implementar cementerio
-///
-/// 
-/// Crear efecto jugar un clima 
-/// 
-/// Cambiar el show panel(quiza cambiar las cartas)
 /// 
 /// Me faltan botones del GameScene
 /// 
+/// Incremento nada mas afecta a las plata(descripcion)
 /// 
+/// 
+/// Drag and drop de las despeje
+/// 
+/// Agregar efectos de sonido
 /// </summary>
 
 public class GameManager : MonoBehaviour
@@ -221,6 +221,9 @@ public class GameManager : MonoBehaviour
         card.IsPlayed = false;
         
         Destroy(card.CardPrefab);
+
+        SetPower(player1);
+        SetPower(player2);
     }
     //Shuffle deck
     private void Shuffle(List<Card> cards)
@@ -320,16 +323,15 @@ public class GameManager : MonoBehaviour
     {
         if (card.Owner == null) card.Owner = currentPlayer;
 
-        if (card.CardPrefab == null)
-        {
-            GameObject CardInstance = Instantiate(cardPrefab, DropZone);
-            disp = CardInstance.GetComponent<DisplayCard>();
-            //Reset the cardPrefab property to the new instance
-            card.CardPrefab = CardInstance;
-            CardInstance.tag = card.Owner.ID;
-            disp.card = card;
-            disp.ShowCard();
-        }
+
+        GameObject CardInstance = Instantiate(cardPrefab, DropZone);
+        disp = CardInstance.GetComponent<DisplayCard>();
+        //Reset the cardPrefab property to the new instance
+        card.CardPrefab = CardInstance;
+        CardInstance.tag = card.Owner.ID;
+        disp.card = card;
+        disp.ShowCard();
+        
     }
 
     public void RotateObjects()
@@ -390,6 +392,11 @@ public class GameManager : MonoBehaviour
 
         if (winner == player1) Destroy(LivesPlayer2);
         else if (winner == player2) Destroy(LivesPlayer1);
+        else
+        {
+            Destroy(LivesPlayer1);
+            Destroy(LivesPlayer2);
+        }
         
     }
     public Player GetRoundWinner()
@@ -399,11 +406,12 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-
-    //revisar
     public void GameOver()
     {
-        PlayerData.Winner = winner.PlayerName;
+        if (winner != null)
+        {
+            PlayerData.Winner = winner.PlayerName;
+        }
         //Change scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
@@ -477,17 +485,28 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+    //Mejorar esto
     Card.UnityCard GetRandomUnityCardOnBoard(Player player)
     {
+        List<Card.UnityCard> aux = new List<Card.UnityCard>();
+        int n;
+
         foreach (var RangeSection in board.sections[player.ID])
         {
             foreach (Card card in RangeSection.Value)
             {
-                if (card is Card.UnityCard unity && unity.UnityType is UnityType.Silver)
+                if (card is Card.UnityCard unity)
                 {
-                    return unity;
+                    aux.Add(unity);
                 }
             }
+        }
+
+        if (aux.Count > 0)
+        {
+            n = Random.Range(0, aux.Count);
+            return aux[n];
         }
         return null;
     }

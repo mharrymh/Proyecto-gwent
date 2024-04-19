@@ -128,8 +128,7 @@ public class Card : ScriptableObject
 
     string SetDescription(EffectType efecto, Card card)
     {
-        if (efecto is EffectType.IncrementFile) return "Aumenta un punto a todas las cartas de plata propias " +
-                "de esa zona";
+        if (efecto is EffectType.IncrementFile) return "Carta incremento (afecta solo a las cartas plata)";
         else if (efecto is EffectType.DeleteMostPowerCard) return "Elimina la carta con más poder en el campo";
         else if (efecto is EffectType.DeleteLessPowerCard) return "Elimina la carta con menos poder en el campo rival";
         else if (efecto is EffectType.TakeCardFromDeck) return "Roba una carta del deck";
@@ -137,13 +136,13 @@ public class Card : ScriptableObject
         else if (efecto is EffectType.AssignProm) return "Asigna a todas las cartas del campo el promedio de poder general";
         else if (efecto is EffectType.TimesTwins) return "Multiplica su daño por la cantidad de cartas iguales a ella en el campo";
         else if (efecto is EffectType.CleanFile) return "Elimina todas las cartas de la fila con menos cartas del campo";
-        else if (efecto is EffectType.Climate) return "Disminuye uno de poder a todas la cartas del campo en esa zona";
+        else if (efecto is EffectType.Climate) return "Carta clima";
         else if (efecto is EffectType.DrawExtraCard) return "Este lider te permite robar una carta extra en el resto de rondad";
         else if (efecto is EffectType.KeepRandomCard) return "Este lider te permite mantener una carta del campo entre rondas";
-        else if (efecto is EffectType.Clearance) return "Elimina todas las cartas clima del campo";
+        else if (efecto is EffectType.Clearance) return "Carta despeje";
         else if (efecto is EffectType.Decoy) return "Se coloca sobre una carta unidad propia para regresarla" +
                 "a la mano";
-        else if (efecto is EffectType.AddClimateCard) return "Añade (si puede) una carta clima al campo";
+        else if (efecto is EffectType.AddClimateCard) return "Añade (si hay espacio, y existe) una carta clima propia al campo";
         return "Sin efecto";
     }
 }

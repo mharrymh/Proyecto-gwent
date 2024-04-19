@@ -98,6 +98,8 @@ public class Effects
         Debug.Log("Se aplico el efecto");
     }
     //Draw extra card from deck
+
+    //revisar
     private void TakeCardFromDeck(Card card)
     {
         if (card.Owner.PlayerDeck.Count > 0 && card.Owner.Hand.Count < 10)
@@ -466,6 +468,7 @@ public class Effects
             gm.InstantiateCard(climate, ClimateZone.transform);
             climate.Owner.PlayerDeck.Remove(climate);
             climate.IsPlayed = true;
+            climate.CardPrefab.tag = climate.Owner.ID;
         }
     }
 }

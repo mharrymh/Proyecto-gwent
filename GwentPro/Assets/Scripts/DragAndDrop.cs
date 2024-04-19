@@ -97,9 +97,9 @@ public class DragAndDrop : MonoBehaviour
     {
         if (DropZone.name.Contains("Deck") && gm.Round == 1)
         {
-            if (DropZone.name.Contains("1") && gm.currentPlayer == gm.player1 && !gm.player1.HasPlayed && gm.player1.Changes < 3
+            if (DropZone.name.Contains("1") && gm.currentPlayer == gm.player1 && !gm.player1.HasPlayed && gm.player1.Changes < 2
                 && gm.player1.PlayerDeck.Count > 0) gm.ChangeCard(card, gm.player1);
-            else if (DropZone.name.Contains("2") && gm.currentPlayer == gm.player2 && !gm.player2.HasPlayed && gm.player2.Changes < 3
+            else if (DropZone.name.Contains("2") && gm.currentPlayer == gm.player2 && !gm.player2.HasPlayed && gm.player2.Changes < 2
                 && gm.player2.PlayerDeck.Count > 0) gm.ChangeCard(card, gm.player2);
             else transform.position = startPosition;
 
@@ -209,7 +209,7 @@ public class DragAndDrop : MonoBehaviour
             }
         }
         else if (card is Card.SpecialCard cleareance && cleareance.Type is SpecialType.Clearance
-            && DropZone.name == "ClimateZone")
+            && (DropZone.name == "ClimateZone" || DropZone.transform.parent.gameObject.name == "ClimateZone"))
         {
             PlayCard(cleareance);
         }

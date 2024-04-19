@@ -51,8 +51,11 @@ public class FactionMenuManager : MonoBehaviour
         SavePlayer1Name();
         SavePlayer2Name();
 
-        if (!Player1Chose) Debug.Log("Player1 has not chose faction");
-        else if (!Player2Chose) Debug.Log("Player2 has not chose faction");
+        if (!Player1Chose || PlayerData.Player1Name == null
+            || PlayerData.Player1Name == "") Debug.Log("Player1 has not chose faction");
+
+        else if (!Player2Chose || PlayerData.Player2Name == null
+            || PlayerData.Player2Name == "") Debug.Log("Player2 has not chose faction");
 
         else
         {
