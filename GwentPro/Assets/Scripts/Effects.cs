@@ -535,6 +535,7 @@ public class Effects
             board.climate_section[pos] = climate;
             climate.CardPrefab.transform.SetParent(ClimateZone.transform, false);
             climate.Owner.Hand.Remove(climate);
+            CardEffects[climate.effectType].Invoke(climate);
             climate.IsPlayed = true;
             gm.StartCoroutine(gm.SetAuxText("Se añadió la carta clima " + climate.Name + " desde la mano de " + gm.currentPlayer.PlayerName));
         }
@@ -545,6 +546,7 @@ public class Effects
             gm.InstantiateCard(climate, ClimateZone.transform);
             climate.Owner.PlayerDeck.Remove(climate);
             climate.IsPlayed = true;
+            CardEffects[climate.effectType].Invoke(climate);
             climate.CardPrefab.tag = climate.Owner.ID;
         }
     }
