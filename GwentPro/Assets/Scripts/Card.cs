@@ -136,7 +136,7 @@ public class Card : ScriptableObject
         else if (efecto is EffectType.AssignProm) return "Asigna a todas las cartas plata del campo el promedio de poder general";
         else if (efecto is EffectType.TimesTwins) return "Multiplica su daño por la cantidad de cartas iguales a ella en el campo";
         else if (efecto is EffectType.CleanFile) return "Elimina todas las cartas de la fila con menos cartas del campo";
-        else if (efecto is EffectType.Climate) return "Carta clima";
+        else if (efecto is EffectType.Climate) return "Carta clima (afecta solo a las cartas plata)";
         else if (efecto is EffectType.DrawExtraCard) return "Este lider te permite robar una carta extra en el resto de rondad";
         else if (efecto is EffectType.KeepRandomCard) return "Este lider te permite mantener una carta del campo entre rondas";
         else if (efecto is EffectType.Clearance) return "Carta despeje";

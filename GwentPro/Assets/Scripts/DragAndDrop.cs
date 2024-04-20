@@ -280,6 +280,13 @@ public class DragAndDrop : MonoBehaviour
             {
                 board.climate_section[value] = climate_card;
             }
+
+            if (range == "M") range = "Melee";
+            else if (range == "R") range = "Ranged";
+            else range = "Siege";
+
+
+            gm.StartCoroutine(gm.SetAuxText("Se aplicó un clima en la zona " + range));
         }
         else if (card is Card.SpecialCard increment_card && increment_card.Type == SpecialType.Increment)
         {
@@ -289,6 +296,12 @@ public class DragAndDrop : MonoBehaviour
             {
                 board.increment_section[increment_card.Owner.ID][value] = increment_card;
             }
+
+            if (range == "M") range = "Melee";
+            else if (range == "R") range = "Ranged";
+            else range = "Siege";
+
+            gm.StartCoroutine(gm.SetAuxText("Se aplicó un incremento en la zona " + range + " de " + gm.currentPlayer.PlayerName));
         }
         else if (card is Card.SpecialCard cleareance && cleareance.Type is SpecialType.Clearance)
         {

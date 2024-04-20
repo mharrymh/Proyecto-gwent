@@ -12,7 +12,7 @@ using static Unity.Burst.Intrinsics.X86;
 public class Effects
 {
     public GameObject ClimateZone;
-    public Dictionary<EffectType, Action<Card>> CardEffects; 
+    public Dictionary<EffectType, Action<Card>> CardEffects;
     public Board board = Board.Instance;
     public GameManager gm;
     public Effects()
@@ -64,6 +64,10 @@ public class Effects
         {
             unity_card.Power *= brothers;
         }
+
+        //Visual 
+        gm.StartCoroutine(gm.SetAuxText("Existen " + brothers + " copias de esta carta en el campo" +
+            ". Su poder se multiplicó por " + brothers));
     }
     //Draw the most powerful card from player graveyard
     private void TakeCardFromGraveYard(Card card)
@@ -94,8 +98,15 @@ public class Effects
             MostPowerfulCard.Owner.Hand.Add(MostPowerfulCard);
             //Instantiate the card
             gm.InstantiateCard(MostPowerfulCard, gm.HandPanel);
+
+
+
+            //Visual
+            gm.StartCoroutine(gm.SetAuxText("Se añadió " + MostPowerfulCard.Name + " a la mano de " + gm.currentPlayer.PlayerName
+           + " desde el cementerio"));
         }
-        Debug.Log("Se aplico el efecto");
+        else gm.StartCoroutine(gm.SetAuxText("El cementerio está vacío, no se robo ninguna carta"));
+
     }
     //Draw extra card from deck
 
@@ -113,10 +124,14 @@ public class Effects
             card.Owner.PlayerDeck.RemoveAt(0);
             //Instantiate the card on HandPanel
             gm.InstantiateCard(DeckCard, gm.HandPanel);
+
+            gm.StartCoroutine(gm.SetAuxText("Se robó " + DeckCard.Name + " desde el deck de " + gm.currentPlayer.PlayerName));
         }
+        else if (card.Owner.Hand.Count >= 10) gm.StartCoroutine(gm.SetAuxText("La mano está llena, no se robaron cartas"));
     }
-    private  void None(Card card)
+    private void None(Card card)
     {
+        gm.StartCoroutine(gm.SetAuxText("No se aplicaron efectos en este turno"));
     }
     private void KeepRandomCard(Card card)
     {
@@ -140,7 +155,7 @@ public class Effects
         var AllSections = board.sections;
         foreach (var PlayerSection in AllSections)
         {
-            foreach(var RangeSection in PlayerSection.Value)
+            foreach (var RangeSection in PlayerSection.Value)
             {
                 aux = RangeSection.Value;
                 for (int i = 0; i < aux.Count; i++)
@@ -167,7 +182,11 @@ public class Effects
             MostPowerfulCard.IsPlayed = false;
             //Destroy card from frontend board
             gm.CardBeaten(MostPowerfulCard);
+
+
+            gm.StartCoroutine(gm.SetAuxText("Se eliminó  a " + MostPowerfulCard.Name + " de " + MostPowerfulCard.Owner.PlayerName));
         }
+        else gm.StartCoroutine(gm.SetAuxText("No hay cartas plata en el tablero"));
 
     }
     //Delete the less poweful card of the opponent
@@ -178,7 +197,7 @@ public class Effects
         int minPower = int.MaxValue;
         int position = 0;
         string range = "";
-        List<Card> aux = new List<Card>(); 
+        List<Card> aux = new List<Card>();
 
         if (card.Owner == gm.player1) opponent = gm.player2;
         else opponent = gm.player1;
@@ -214,7 +233,10 @@ public class Effects
             LessPowerfulCard.IsPlayed = false;
             //Destroy card from frontend board
             gm.CardBeaten(LessPowerfulCard);
+
+            gm.StartCoroutine(gm.SetAuxText("Se eliminó  a " + LessPowerfulCard.Name + " de " + LessPowerfulCard.Owner.PlayerName));
         }
+        else gm.StartCoroutine(gm.SetAuxText("No se eliminaron cartas"));
     }
     //Increment cards
     private void IncrementFile(Card card)
@@ -230,7 +252,14 @@ public class Effects
                     unityCard.Power++;
                 }
             }
+
+            
+
+
+            
         }
+
+
     }
     //Decoy cards
     public void Decoy(string name, string range, string player, Card.SpecialCard decoy)
@@ -256,6 +285,13 @@ public class Effects
         {
             Taken.IsPlayed = false;
             Taken.Owner.Hand.Add(Taken);
+
+            if (Taken is Card.UnityCard unity) unity.Power = unity.OriginalPower; 
+
+
+
+
+            gm.StartCoroutine(gm.SetAuxText("La carta " + Taken.Name + " regresó a la mano de " + gm.currentPlayer.PlayerName));
         }
     }
     //Climate cards
@@ -265,17 +301,18 @@ public class Effects
         {
             //Iterate through all cards in that range for both players
             var AllSections = board.sections;
-            foreach(var PlayerSection in AllSections)
+            foreach (var PlayerSection in AllSections)
             {
-                foreach(Card Card in PlayerSection.Value[climate_card.Range])
+                foreach (Card Card in PlayerSection.Value[climate_card.Range])
                 {
                     //One point less for all cards in those files
-                    if (Card is Card.UnityCard unityCard)
+                    if (Card is Card.UnityCard unityCard && unityCard.UnityType is UnityType.Silver)
                     {
                         unityCard.Power--;
                     }
                 }
             }
+            
         }
     }
     //Cleareance cards
@@ -296,6 +333,10 @@ public class Effects
                 board.climate_section[i] = null;
             }
         }
+
+        gm.StartCoroutine(gm.SetAuxText("Se eliminaron todas las cartas clima del campo"));
+
+
     }
     private void CleareanceAux(Card card)
     {
@@ -325,7 +366,7 @@ public class Effects
         Player opponent;
         if (card.Owner == gm.player1) opponent = gm.player2;
         else opponent = gm.player1;
-        
+
 
         foreach (List<Card> RangeSection in board.sections[opponent.ID].Values)
         {
@@ -374,6 +415,8 @@ public class Effects
                 }
             }
         }
+
+        gm.StartCoroutine(gm.SetAuxText("Se eliminó la fila con menos cartas"));
     }
     //Assign all silver cards the prom of points in the board
     private  void AssignProm(Card card)
@@ -402,7 +445,26 @@ public class Effects
                     }
                 }
             }
+            gm.StartCoroutine(gm.SetAuxText("Se le asignó " + Sum / AmountOfCardsOnBoard + " a todas las cartas platas del campo"));
         }
+        else gm.StartCoroutine(gm.SetAuxText("No hay cartas en el campo para calcular el promedio "));
+
+        //Apply climate and increment effects again
+        var IncrementSection = board.increment_section;
+
+        foreach (Card[] cards in IncrementSection.Values)
+        {
+            foreach (Card increment in cards)
+            {
+                if (increment != null) CardEffects[increment.effectType].Invoke(increment);
+            }
+        }
+
+        foreach (Card climate in board.climate_section)
+        {
+            if (climate != null) CardEffects[climate.effectType].Invoke(climate);
+        }
+
     }
 
     //Decoy effect
@@ -474,11 +536,11 @@ public class Effects
             climate.CardPrefab.transform.SetParent(ClimateZone.transform, false);
             climate.Owner.Hand.Remove(climate);
             climate.IsPlayed = true;
-            Debug.Log("Se cogio de la mano");
+            gm.StartCoroutine(gm.SetAuxText("Se añadió la carta clima " + climate.Name + " desde la mano de " + gm.currentPlayer.PlayerName));
         }
         else
         {
-            Debug.Log("Se cogio del deck");
+            gm.StartCoroutine(gm.SetAuxText("Se añadió la carta clima " + climate.Name + " desde el deck de " + gm.currentPlayer.PlayerName));
             board.climate_section[pos] = climate;
             gm.InstantiateCard(climate, ClimateZone.transform);
             climate.Owner.PlayerDeck.Remove(climate);

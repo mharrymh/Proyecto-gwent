@@ -11,13 +11,18 @@ public class DisplayCard : MonoBehaviour
     public TMP_Text Description;
     public Image CardImage;
     public TMP_Text Power;
-
+    public TextMeshProUGUI CardName;
+    public Image FactionImage;
     public void ShowCard()
     {
         //CardPrefab gets the name of the card
         this.name = card.Name;
         CardImage.sprite = card.CardImage;
         Description.text = card.Description;
+        CardName.text = card.Name;
+
+        if (card.Faction is CardFaction.Light) FactionImage.sprite = Resources.Load<Sprite>("Light");
+        else FactionImage.sprite = Resources.Load<Sprite>("Dark");
 
         //Assign power if card is unity card type
         //Else assign 0

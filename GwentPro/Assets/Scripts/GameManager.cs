@@ -7,15 +7,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
+//Escape y promedio
 
-
-
-/// <summary>
-/// 
-/// Menu de pausa
-/// 
-///
-/// </summary>
 
 public class GameManager : MonoBehaviour
 {
@@ -55,7 +48,9 @@ public class GameManager : MonoBehaviour
 
 
     public GameObject panelChangeTurn;
+    public GameObject panelAux;
     public TMP_Text TurnOfText;
+    public TMP_Text AuxText;
 
 
 
@@ -84,11 +79,25 @@ public class GameManager : MonoBehaviour
         SetPower(player1);
         SetPower(player2);
 
+        StartCoroutine(SetAuxText("Antes de jugar cualquier carta, puedes devolver " +
+            "hasta dos cartas no deseadas y cambiarlas simplemente arrastrándolas al deck"));
+
         StartCoroutine(VisualChangeTurn());
+    }
+
+    void Update()
+    {
+        if (Input.GetKey("escape"))
+        {
+            Application.Quit();
+        }
     }
 
     IEnumerator InstanciarCartas(int n, Player player)
     {
+         
+
+
         //Leader effect
         if (player.Leader.effectType == EffectType.DrawExtraCard && Round > 1) n++;
 
@@ -195,9 +204,9 @@ public class GameManager : MonoBehaviour
         {
             if (RangeSection.Count != 0)
             {
-                foreach (Card card in RangeSection)
+                for (int i = RangeSection.Count - 1; i >= 0; i--)
                 {
-                    if (card is Card.UnityCard unity)
+                    if (RangeSection[i] is Card.UnityCard unity)
                     {
                         sum += unity.Power;
 
@@ -206,12 +215,23 @@ public class GameManager : MonoBehaviour
                         if (unity.Power <= 0)
                         {
                             unity.Owner.GraveYard.Add(unity);
+                            RangeSection.RemoveAt(i);
+
                             if (unity.Owner.GraveYard.Count == 1)
                             {
                                 unity.Owner.GraveyardObj.SetActive(true);
                             }
                             CardBeaten(unity);
                         }
+                    }
+                }
+
+
+                foreach (Card card in RangeSection)
+                {
+                    if (card is Card.UnityCard unity)
+                    {
+                        
                     }
                 }
             }
@@ -300,6 +320,19 @@ public class GameManager : MonoBehaviour
 
         panelChangeTurn.SetActive(false);
     }
+
+    public IEnumerator SetAuxText(string text)
+    {
+        AuxText.text = text;
+
+        panelAux.SetActive(true);
+
+        yield return new WaitForSeconds(4);
+
+        panelAux.SetActive(false);
+    }
+
+
     public void ChangeHandPanel()
     {
         foreach (RectTransform card in HandPanel)
@@ -382,6 +415,12 @@ public class GameManager : MonoBehaviour
             if (winner == player1) player1.RoundsWon++;
             else player2.RoundsWon++;
         }        
+        else
+        {
+            player1.RoundsWon++;
+            player2.RoundsWon++;
+        }
+
 
         //Check if the game is over
         if (player1.RoundsWon == 2 || player2.RoundsWon == 2 || Round == 3)
@@ -392,6 +431,7 @@ public class GameManager : MonoBehaviour
             {
                 winner = null;
             }
+            CleanBoard();
             GameOver();
         }
         else
@@ -499,7 +539,7 @@ public class GameManager : MonoBehaviour
                     card.Owner.GraveyardObj.SetActive(true);
                 }
                 //Destroy the object
-                Destroy(card.CardPrefab);
+                CardBeaten(card);
                 board.climate_section[i] = null;
             }
         }
@@ -519,7 +559,7 @@ public class GameManager : MonoBehaviour
                         card.Owner.GraveyardObj.SetActive(true);
                     }
                     //Destroy the object
-                    Destroy(cards[i].CardPrefab);
+                    CardBeaten(cards[i]);
                     cards[i] = null;
                 }
             }
