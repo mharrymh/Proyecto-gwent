@@ -34,8 +34,6 @@ public class Effects
             { EffectType.TimesTwins, TimesTwins },
             { EffectType.Decoy, Decoy },
             { EffectType.AddClimateCard, AddClimateCard },
-
-            //More effects
         };
 
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
@@ -252,14 +250,7 @@ public class Effects
                     unityCard.Power++;
                 }
             }
-
-            
-
-
-            
         }
-
-
     }
     //Decoy cards
     public void Decoy(string name, string range, string player, Card.SpecialCard decoy)
@@ -287,10 +278,6 @@ public class Effects
             Taken.Owner.Hand.Add(Taken);
 
             if (Taken is Card.UnityCard unity) unity.Power = unity.OriginalPower; 
-
-
-
-
             gm.StartCoroutine(gm.SetAuxText("La carta " + Taken.Name + " regresó a la mano de " + gm.currentPlayer.PlayerName));
         }
     }

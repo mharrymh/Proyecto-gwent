@@ -24,11 +24,6 @@ public class EndSceneManager : MonoBehaviour
         }
     }
 
-    public void Restart()
-    {
-        soundM.PlayButtonSound();
-        SceneManager.LoadScene(0);
-    }
     public void Exit()
     {
         soundM.PlayButtonSound();

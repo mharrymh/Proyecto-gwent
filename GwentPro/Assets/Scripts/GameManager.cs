@@ -95,9 +95,6 @@ public class GameManager : MonoBehaviour
 
     IEnumerator InstanciarCartas(int n, Player player)
     {
-         
-
-
         //Leader effect
         if (player.Leader.effectType == EffectType.DrawExtraCard && Round > 1) n++;
 

@@ -74,7 +74,7 @@ public class DragAndDrop : MonoBehaviour
             startPosition = gameObject.transform.position;
             isDragging = true;
 
-            // Disparar el evento cuando comienza el arrastre
+            // Shoot the event when drag starts
             OnDragStart?.Invoke();
         }
 
@@ -233,7 +233,6 @@ public class DragAndDrop : MonoBehaviour
         soundM.PlayCardSound();
 
 
-
         card.Owner.HasPlayed = true;
         //Set the card to true so that it 
         //wont interact anymore with the drag and drop
@@ -284,7 +283,6 @@ public class DragAndDrop : MonoBehaviour
             if (range == "M") range = "Melee";
             else if (range == "R") range = "Ranged";
             else range = "Siege";
-
 
             gm.StartCoroutine(gm.SetAuxText("Se aplicó un clima en la zona " + range));
         }
