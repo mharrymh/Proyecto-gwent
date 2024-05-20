@@ -40,7 +40,7 @@ public class InitialMenu : MonoBehaviour
     }
 
     
-    //Menu opciones 
+    //Options MENU
     public void ChangeVolume(float volumen)
     {
         audioMixer.SetFloat("Volume", volumen);

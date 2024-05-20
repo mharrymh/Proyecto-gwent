@@ -18,7 +18,7 @@ public class Player
     public bool LeaderPlayed { get; set; }
     //Track if the player received his hand
     public bool Ready { get; set; }
-    //Check if the player has played
+    //Check if the player has played a card
     public bool HasPlayed { get; set; }
     //Keep track of how many changes has been done on first round
     public int Changes { get; set; }

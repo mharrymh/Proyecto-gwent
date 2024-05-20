@@ -5,39 +5,34 @@ using UnityEngine;
 
 public enum EffectType
 {
-    //Aumenta el poder en la fila(Cartas aumento)
+    //Increment file power
     IncrementFile,
-    //Elimina la carta con mas poder del campo(propio o del rival)
+    //Dekete
     DeleteMostPowerCard,
-    //Elimina la carta mas poderosa del rival
+    //Delete rival most powerful card
     DeleteLessPowerCard,
-    //Roba una carta del Deck
+    //Draw card
     TakeCardFromDeck,
-    //Roba una carta del ceementerio
+    //Draw card from graveyard
     TakeCardFromGraveYard,
-    //Multiplica por n su ataque siendo n la cantidad de cartas
-    //iguales a ella en el campo
+    //Card power multiplies by n, being n the amount of cards with the same 
+    //name on board
     TimesTwins,
-    //Elimina todas las cartas de la fila con menos cartas(propia o del rival)
-    //Si filas.count coinciden elimina la del rival
+    //Delete file with less cards
     CleanFile,
-    //Calcula el promedio de todas las cartas del campo
-    //y las iguala a ese poder
+    //Assign promedy of the power in board to all the cards
     AssignProm,
-    //Carta clima
     Climate,
-    //Despeje
     Clearance,
-    //Decoy
     Decoy,
-    //Add Climate Card
+    //Add Climate Card from hand or deck
     AddClimateCard,
     //Leader effects
-    //Mantener una carta aleatoria en el campo por ronda
+    //Keep random card between rounds
     KeepRandomCard,
-    //Robar una carta extra en la segunda ronda
+    //Draw extra card between rounds
     DrawExtraCard,
-    //Ningun efecto
+    //Without effects
     None
 }
 public enum CardFaction
@@ -77,7 +72,6 @@ public class Card : ScriptableObject
         this.CardImage = CardImage;
         CardPrefab = null;
 
-        //Prueba
         Description = SetDescription(effectType, this);
     }
 
@@ -129,20 +123,20 @@ public class Card : ScriptableObject
     string SetDescription(EffectType efecto, Card card)
     {
         if (efecto is EffectType.IncrementFile) return "Carta incremento (afecta solo a las cartas plata)";
-        else if (efecto is EffectType.DeleteMostPowerCard) return "Elimina la carta plata con más poder en el campo";
+        else if (efecto is EffectType.DeleteMostPowerCard) return "Elimina la carta plata con mï¿½s poder en el campo";
         else if (efecto is EffectType.DeleteLessPowerCard) return "Elimina la carta plata con menos poder en el campo rival";
         else if (efecto is EffectType.TakeCardFromDeck) return "Roba una carta del deck";
-        else if (efecto is EffectType.TakeCardFromGraveYard) return "Roba la carta más poderosa del cementerio";
+        else if (efecto is EffectType.TakeCardFromGraveYard) return "Roba la carta mï¿½s poderosa del cementerio";
         else if (efecto is EffectType.AssignProm) return "Asigna a todas las cartas plata del campo el promedio de poder general";
-        else if (efecto is EffectType.TimesTwins) return "Multiplica su daño por la cantidad de cartas iguales a ella en el campo";
+        else if (efecto is EffectType.TimesTwins) return "Multiplica su daï¿½o por la cantidad de cartas iguales a ella en el campo";
         else if (efecto is EffectType.CleanFile) return "Elimina todas las cartas de la fila con menos cartas del campo";
         else if (efecto is EffectType.Climate) return "Carta clima (afecta solo a las cartas plata)";
         else if (efecto is EffectType.DrawExtraCard) return "Este lider te permite robar una carta extra en el resto de rondad";
         else if (efecto is EffectType.KeepRandomCard) return "Este lider te permite mantener una carta del campo entre rondas";
         else if (efecto is EffectType.Clearance) return "Carta despeje";
-        else if (efecto is EffectType.Decoy) return "(Señuelo) Se coloca sobre una carta unidad propia para regresarla" +
+        else if (efecto is EffectType.Decoy) return "(Seï¿½uelo) Se coloca sobre una carta unidad propia para regresarla" +
                 "a la mano";
-        else if (efecto is EffectType.AddClimateCard) return "Añade (si hay espacio, y existe) una carta clima propia al campo";
+        else if (efecto is EffectType.AddClimateCard) return "Aï¿½ade (si hay espacio, y existe) una carta clima propia al campo";
         return "Sin efecto";
     }
 }

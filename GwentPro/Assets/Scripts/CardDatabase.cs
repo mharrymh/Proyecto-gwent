@@ -20,7 +20,6 @@ public class CardDatabase
     {
         //Leader card
         LightDeck.Add(new Card.LeaderCard("Zeus", CardFaction.Light, EffectType.KeepRandomCard, Resources.Load<Sprite>("0")));
-        //Mantener una carta aleatoria en el campo
 
         //Gold cards
         LightDeck.Add(new Card.UnityCard("Dragon Blanco", CardFaction.Light, EffectType.AddClimateCard, "RS", UnityType.Gold, 5, Resources.Load<Sprite>("1")));
@@ -29,7 +28,7 @@ public class CardDatabase
 
         //Silver cards
         LightDeck.Add(new Card.UnityCard("Ra", CardFaction.Light, EffectType.DeleteLessPowerCard, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("4")));
-        LightDeck.Add(new Card.UnityCard("Fénix", CardFaction.Light, EffectType.None, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("5")));
+        LightDeck.Add(new Card.UnityCard("Fï¿½nix", CardFaction.Light, EffectType.None, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("5")));
         LightDeck.Add(new Card.UnityCard("Sirena", CardFaction.Light, EffectType.DeleteLessPowerCard, "M", UnityType.Silver, 3, Resources.Load<Sprite>("6")));
         LightDeck.Add(new Card.UnityCard("Sirena", CardFaction.Light, EffectType.TakeCardFromGraveYard, "M", UnityType.Silver, 3, Resources.Load<Sprite>("6")));
         LightDeck.Add(new Card.UnityCard("Centauro", CardFaction.Light, EffectType.TakeCardFromGraveYard, "MR", UnityType.Silver, 3, Resources.Load<Sprite>("7")));
@@ -42,7 +41,7 @@ public class CardDatabase
         LightDeck.Add(new Card.UnityCard("Manticora", CardFaction.Light, EffectType.TimesTwins, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("11")));
         LightDeck.Add(new Card.UnityCard("Quimera", CardFaction.Light, EffectType.TimesTwins, "MRS", UnityType.Silver, 3, Resources.Load<Sprite>("12")));
         LightDeck.Add(new Card.UnityCard("Quimera", CardFaction.Light, EffectType.TimesTwins, "MRS", UnityType.Silver, 3, Resources.Load<Sprite>("12")));
-        LightDeck.Add(new Card.UnityCard("Sátiro", CardFaction.Light, EffectType.AddClimateCard, "R", UnityType.Silver, 3, Resources.Load<Sprite>("13")));
+        LightDeck.Add(new Card.UnityCard("Sï¿½tiro", CardFaction.Light, EffectType.AddClimateCard, "R", UnityType.Silver, 3, Resources.Load<Sprite>("13")));
         LightDeck.Add(new Card.UnityCard("Leprechaun", CardFaction.Light, EffectType.None, "M", UnityType.Silver, 4, Resources.Load<Sprite>("14")));
         LightDeck.Add(new Card.UnityCard("Banshee", CardFaction.Light, EffectType.TakeCardFromGraveYard, "MRS", UnityType.Silver, 3, Resources.Load<Sprite>("15")));
         LightDeck.Add(new Card.UnityCard("Banshee", CardFaction.Light, EffectType.None, "MRS", UnityType.Silver, 3, Resources.Load<Sprite>("15")));
@@ -50,7 +49,7 @@ public class CardDatabase
         //Climate and clearance cards
         LightDeck.Add(new Card.SpecialCard("Notos", CardFaction.Light, EffectType.Climate, SpecialType.Climate, "M", Resources.Load<Sprite>("16")));
         LightDeck.Add(new Card.SpecialCard("Tormenta de medianoche", CardFaction.Light, EffectType.Climate, SpecialType.Climate, "R", Resources.Load<Sprite>("18")));
-        LightDeck.Add(new Card.SpecialCard("Zéfiro", CardFaction.Light, EffectType.Climate, SpecialType.Climate, "S", Resources.Load<Sprite>("20")));
+        LightDeck.Add(new Card.SpecialCard("Zï¿½firo", CardFaction.Light, EffectType.Climate, SpecialType.Climate, "S", Resources.Load<Sprite>("20")));
         LightDeck.Add(new Card.SpecialCard("Sol Radiante", CardFaction.Light, EffectType.Clearance, SpecialType.Clearance, "", Resources.Load<Sprite>("22")));
 
         //Decoy cards
@@ -67,11 +66,10 @@ public class CardDatabase
     {
         //Leader card
         DarkDeck.Add(new Card.LeaderCard("Hades", CardFaction.Dark, EffectType.DrawExtraCard, Resources.Load<Sprite>("29")));
-        //Robar una carta extra entre rondas
 
         //Gold cards
         DarkDeck.Add(new Card.UnityCard("Dragon Negro", CardFaction.Dark, EffectType.AssignProm, "RS", UnityType.Gold, 5, Resources.Load<Sprite>("30")));
-        DarkDeck.Add(new Card.UnityCard("Gárgola", CardFaction.Dark, EffectType.AddClimateCard, "R", UnityType.Gold, 6, Resources.Load<Sprite>("31")));
+        DarkDeck.Add(new Card.UnityCard("Gï¿½rgola", CardFaction.Dark, EffectType.AddClimateCard, "R", UnityType.Gold, 6, Resources.Load<Sprite>("31")));
         DarkDeck.Add(new Card.UnityCard("Cerbero", CardFaction.Dark, EffectType.AddClimateCard, "M", UnityType.Gold, 6, Resources.Load<Sprite>("32")));
 
         //Silver cards
@@ -79,7 +77,7 @@ public class CardDatabase
         DarkDeck.Add(new Card.UnityCard("Medusa", CardFaction.Dark, EffectType.TakeCardFromDeck, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("33")));
         DarkDeck.Add(new Card.UnityCard("Kraken", CardFaction.Dark, EffectType.DeleteMostPowerCard, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("34")));
         DarkDeck.Add(new Card.UnityCard("Kraken", CardFaction.Dark, EffectType.DeleteMostPowerCard, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("34")));
-        DarkDeck.Add(new Card.UnityCard("Harpía", CardFaction.Dark, EffectType.CleanFile, "M", UnityType.Silver, 3, Resources.Load<Sprite>("35")));
+        DarkDeck.Add(new Card.UnityCard("Harpï¿½a", CardFaction.Dark, EffectType.CleanFile, "M", UnityType.Silver, 3, Resources.Load<Sprite>("35")));
         DarkDeck.Add(new Card.UnityCard("Grifo", CardFaction.Dark, EffectType.DeleteLessPowerCard, "MS", UnityType.Silver, 3, Resources.Load<Sprite>("36")));
         DarkDeck.Add(new Card.UnityCard("Ciclope", CardFaction.Dark, EffectType.TakeCardFromDeck, "R", UnityType.Silver, 3, Resources.Load<Sprite>("37")));
         DarkDeck.Add(new Card.UnityCard("Hidra", CardFaction.Dark, EffectType.TimesTwins, "R", UnityType.Silver, 4, Resources.Load<Sprite>("38")));
@@ -88,8 +86,8 @@ public class CardDatabase
         DarkDeck.Add(new Card.UnityCard("Leon de Nemea", CardFaction.Dark, EffectType.TakeCardFromDeck, "M", UnityType.Silver, 4, Resources.Load<Sprite>("39")));
         DarkDeck.Add(new Card.UnityCard("Espectro", CardFaction.Dark, EffectType.TakeCardFromGraveYard, "RS", UnityType.Silver, 4, Resources.Load<Sprite>("40")));
         DarkDeck.Add(new Card.UnityCard("Basilisco", CardFaction.Dark, EffectType.None, "MRS", UnityType.Silver, 3, Resources.Load<Sprite>("41")));
-        DarkDeck.Add(new Card.UnityCard("Górgona", CardFaction.Dark, EffectType.TimesTwins, "R", UnityType.Silver, 3, Resources.Load<Sprite>("42")));
-        DarkDeck.Add(new Card.UnityCard("Górgona", CardFaction.Dark, EffectType.TimesTwins, "R", UnityType.Silver, 3, Resources.Load<Sprite>("42")));
+        DarkDeck.Add(new Card.UnityCard("Gï¿½rgona", CardFaction.Dark, EffectType.TimesTwins, "R", UnityType.Silver, 3, Resources.Load<Sprite>("42")));
+        DarkDeck.Add(new Card.UnityCard("Gï¿½rgona", CardFaction.Dark, EffectType.TimesTwins, "R", UnityType.Silver, 3, Resources.Load<Sprite>("42")));
         DarkDeck.Add(new Card.UnityCard("Golem", CardFaction.Dark, EffectType.TakeCardFromDeck, "M", UnityType.Silver, 4, Resources.Load<Sprite>("43")));
         DarkDeck.Add(new Card.UnityCard("Minotauro", CardFaction.Dark, EffectType.None, "MRS", UnityType.Silver, 3, Resources.Load<Sprite>("44")));
         DarkDeck.Add(new Card.UnityCard("Minotauro", CardFaction.Dark, EffectType.None, "MRS", UnityType.Silver, 3, Resources.Load<Sprite>("44")));
@@ -101,13 +99,13 @@ public class CardDatabase
         DarkDeck.Add(new Card.SpecialCard("Claridad de luna", CardFaction.Dark, EffectType.Clearance, SpecialType.Clearance, "", Resources.Load<Sprite>("51")));
 
         //Decoy cards
-        DarkDeck.Add(new Card.SpecialCard("Eco de érebo", CardFaction.Dark, EffectType.Decoy, SpecialType.Decoy, "", Resources.Load<Sprite>("53")));
+        DarkDeck.Add(new Card.SpecialCard("Eco de ï¿½rebo", CardFaction.Dark, EffectType.Decoy, SpecialType.Decoy, "", Resources.Load<Sprite>("53")));
         DarkDeck.Add(new Card.SpecialCard("Ilusion de Nyx", CardFaction.Dark, EffectType.Decoy, SpecialType.Decoy, "", Resources.Load<Sprite>("54")));
 
         //Increment cards
         DarkDeck.Add(new Card.SpecialCard("Ares", CardFaction.Dark, EffectType.IncrementFile, SpecialType.Increment, "M", Resources.Load<Sprite>("55")));
-        DarkDeck.Add(new Card.SpecialCard("Euríale", CardFaction.Dark, EffectType.IncrementFile, SpecialType.Increment, "R", Resources.Load<Sprite>("56")));
-        DarkDeck.Add(new Card.SpecialCard("Tánatos", CardFaction.Dark, EffectType.IncrementFile, SpecialType.Increment, "S", Resources.Load<Sprite>("57")));
+        DarkDeck.Add(new Card.SpecialCard("Eurï¿½ale", CardFaction.Dark, EffectType.IncrementFile, SpecialType.Increment, "R", Resources.Load<Sprite>("56")));
+        DarkDeck.Add(new Card.SpecialCard("Tï¿½natos", CardFaction.Dark, EffectType.IncrementFile, SpecialType.Increment, "S", Resources.Load<Sprite>("57")));
     }
 
     public List<Card> GetLightDeck()

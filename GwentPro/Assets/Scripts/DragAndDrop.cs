@@ -10,7 +10,6 @@ using UnityEngine.EventSystems;
 
 public class DragAndDrop : MonoBehaviour
 {
-
     public bool isDragging = false;
     public bool isOverDropZone = false;
     //Gets the panels 
@@ -78,7 +77,7 @@ public class DragAndDrop : MonoBehaviour
             OnDragStart?.Invoke();
         }
 
-        ////Save the pos to the leader card
+        //Save the pos to the leader card
         else if (card is Card.LeaderCard leader)
         {
             startPosition = gameObject.transform.position;
@@ -284,7 +283,7 @@ public class DragAndDrop : MonoBehaviour
             else if (range == "R") range = "Ranged";
             else range = "Siege";
 
-            gm.StartCoroutine(gm.SetAuxText("Se aplicó un clima en la zona " + range));
+            gm.StartCoroutine(gm.SetAuxText("Se aplicï¿½ un clima en la zona " + range));
         }
         else if (card is Card.SpecialCard increment_card && increment_card.Type == SpecialType.Increment)
         {
@@ -299,7 +298,7 @@ public class DragAndDrop : MonoBehaviour
             else if (range == "R") range = "Ranged";
             else range = "Siege";
 
-            gm.StartCoroutine(gm.SetAuxText("Se aplicó un incremento en la zona " + range + " de " + gm.currentPlayer.PlayerName));
+            gm.StartCoroutine(gm.SetAuxText("Se aplicï¿½ un incremento en la zona " + range + " de " + gm.currentPlayer.PlayerName));
         }
         else if (card is Card.SpecialCard cleareance && cleareance.Type is SpecialType.Clearance)
         {

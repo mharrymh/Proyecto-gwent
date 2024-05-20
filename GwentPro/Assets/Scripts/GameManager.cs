@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-//Escape y promedio
+
 
 
 public class GameManager : MonoBehaviour
@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour
         SetPower(player2);
 
         StartCoroutine(SetAuxText("Antes de jugar cualquier carta, puedes devolver " +
-            "hasta dos cartas no deseadas y cambiarlas simplemente arrastrándolas al deck"));
+            "hasta dos cartas no deseadas y cambiarlas simplemente arrastrï¿½ndolas al deck"));
 
         StartCoroutine(VisualChangeTurn());
     }
@@ -443,7 +443,7 @@ public class GameManager : MonoBehaviour
 
     IEnumerator VisualSayWinner()
     {
-        if (winner != null) TurnOfText.text = "Ganó " + winner.PlayerName;
+        if (winner != null) TurnOfText.text = "Ganï¿½ " + winner.PlayerName;
         else TurnOfText.text = "Empate";
 
         panelChangeTurn.SetActive(true);
@@ -563,8 +563,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-    //Mejorar esto
     Card.UnityCard GetRandomUnityCardOnBoard(Player player)
     {
         List<Card.UnityCard> aux = new List<Card.UnityCard>();
