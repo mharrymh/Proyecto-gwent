@@ -1,0 +1,29 @@
+TRANSPILADOR
+
+Fases:
+    1-Lexer
+        Maquina de estados?
+        (Objeto token)
+        Devuelve una lista de tokens que usara el parser 
+    2-Parser
+        Analizando la logica de el orden de los tokens (Top-Down recursivo)
+        Arbol de sintaxis abstracta
+        Devuelve expresiones 
+    3-Semantic
+        Chequea que las expresiones tengan sentidos
+        Chequear variables utilizadas (declaradas en scopes padre) 
+        (**Scope**)
+        Sentido de las expresiones
+    4-Evaluate
+        Devuelve cartas o efectos
+        Buscar en unity como hacer un sistema de cargar y guardar
+.......................................
+Clase abstracta EXPRESSION
+
+lexer:
+    Numeros negativos
+    Clase error
+
+
+context es un objeto
+hacer nulo el tipo de whitespaces

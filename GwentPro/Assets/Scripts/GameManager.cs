@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using TMPro;
-//using UnityEditor.Timeline;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -337,7 +336,7 @@ public class GameManager : MonoBehaviour
             Destroy(card.gameObject);
         }
 
-        //Instancia las manos
+        //Instantiate hands
         if (!currentPlayer.Ready)
         {
             if (Round == 1)
@@ -357,7 +356,6 @@ public class GameManager : MonoBehaviour
     }
     public void InstantiateCurrentHand()
     {
-        //Quiza pudiera set active false
         foreach (Card card in currentPlayer.Hand)
         {
             InstantiateCard(card, HandPanel);
@@ -385,7 +383,7 @@ public class GameManager : MonoBehaviour
         RotateObject(ScorePlayer1);
         RotateObject(ScorePlayer2);
 
-        //Rota a todos los objetos hijos de CardZones
+        //Rotate all cardZones childs
         foreach (RectTransform child in CardZones.transform)
         {
             RotateObject(child.gameObject);
