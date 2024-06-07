@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mauri\\Desktop\\Gwent++\\Transpiler\\LexAnalyzer.csproj": {}
+    "C:\\Users\\mauri\\Documents\\Proyecto-gwent\\GwentPro\\Gwent++\\Transpiler\\LexAnalyzer.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mauri\\Desktop\\Gwent++\\Transpiler\\LexAnalyzer.csproj": {
+    "C:\\Users\\mauri\\Documents\\Proyecto-gwent\\GwentPro\\Gwent++\\Transpiler\\LexAnalyzer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mauri\\Desktop\\Gwent++\\Transpiler\\LexAnalyzer.csproj",
+        "projectUniqueName": "C:\\Users\\mauri\\Documents\\Proyecto-gwent\\GwentPro\\Gwent++\\Transpiler\\LexAnalyzer.csproj",
         "projectName": "LexAnalyzer",
-        "projectPath": "C:\\Users\\mauri\\Desktop\\Gwent++\\Transpiler\\LexAnalyzer.csproj",
+        "projectPath": "C:\\Users\\mauri\\Documents\\Proyecto-gwent\\GwentPro\\Gwent++\\Transpiler\\LexAnalyzer.csproj",
         "packagesPath": "C:\\Users\\mauri\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mauri\\Desktop\\Gwent++\\Transpiler\\obj\\",
+        "outputPath": "C:\\Users\\mauri\\Documents\\Proyecto-gwent\\GwentPro\\Gwent++\\Transpiler\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

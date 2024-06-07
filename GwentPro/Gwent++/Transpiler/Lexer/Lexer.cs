@@ -8,6 +8,7 @@ public enum TokenType
     For,
     While,
     Effect,
+    C_Effect,
     Card,
     If,
     Elif,
@@ -24,6 +25,7 @@ public enum TokenType
     OnActivation,
     Selector,
     Pow,
+    Implication,
     Increment,
     Plus,
     Minus,
@@ -51,8 +53,8 @@ public enum TokenType
     Comma,
     Boolean,
     String,
+    Num,
     Id,
-    Number,
     Params,
     Action,
     EffectCard,
@@ -61,6 +63,7 @@ public enum TokenType
     Hand,
     Deck,
     Board,
+    Targets,
     Context,
     TriggerPlayer,
     Find,
@@ -70,7 +73,12 @@ public enum TokenType
     Remove,
     Shuffle,
     NotEquals,
-    Null
+    Null, 
+
+    //Value types
+    Number, 
+    Bool, 
+    Text
 }
 public class Token {
     public string Value {get; private set;}
@@ -98,6 +106,7 @@ public class Lexer {
         {TokenType.For, @"\bfor\b"},
         {TokenType.While, @"\bwhile\b"},
         {TokenType.Effect, @"\beffect\b"},
+        {TokenType.Effect, @"\bEffect\b"},
         {TokenType.Card, @"\bcard\b"},
         {TokenType.If, @"\bif\b"},
         {TokenType.Elif, @"\belif\b"},
@@ -116,6 +125,7 @@ public class Lexer {
         {TokenType.Hand, @"\bhand\b" },
         {TokenType.Deck, @"\bdeck\b" },
         {TokenType.Board, @"\bboard\b" },
+        {TokenType.Targets, @"\btargets\b" },
         {TokenType.Context, @"\bcontext\b" },
         {TokenType.TriggerPlayer, @"\bTriggerPlayer\b" },
         {TokenType.Find, @"\bFind\b" },
@@ -129,12 +139,18 @@ public class Lexer {
         {TokenType.Range, @"\bRange\b"},
         {TokenType.OnActivation, @"\bOnActivation\b"},
         {TokenType.Selector, @"\bSelector\b"},
+        //Value Types
+        {TokenType.Bool, @"\bBool\b"},
+        {TokenType.Text, @"\bText\b"},
+        {TokenType.Number, @"\bNumber\b"},
+
         //Operators
 
         {TokenType.Pow, @"\^"},
         {TokenType.And, @"&&" },
         {TokenType.Or, @"\|\|"},
         {TokenType.NotEquals, @"!="},
+        {TokenType.Implication, @"=>"},
         {TokenType.Increment, @"\+\+"},
         {TokenType.Plus, @"\+"},
         {TokenType.Minus, @"-"},
@@ -162,7 +178,7 @@ public class Lexer {
         {TokenType.Comma, ","},
         //Types
         {TokenType.Boolean, @"\b(true|false)\b"},
-        {TokenType.Number, @"\b\d+(\.\d+)?\b"},
+        {TokenType.Num, @"\b\d+(\.\d+)?\b"},
         {TokenType.String, "\".*?\""},
         {TokenType.Id, @"\b[A-Za-z_][A-Za-z_0-9]*\b"}
     };

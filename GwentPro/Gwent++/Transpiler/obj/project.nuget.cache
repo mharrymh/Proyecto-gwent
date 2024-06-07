@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "qSyjy2Gw1i9aSjBaSJ2LQMBPyQuQs03pZ3qJhEDojD5ViX0X35s/fIunnQBvtZs/1+M3dqXvTPzMeX1M/jvqGA==",
+  "dgSpecHash": "bXNnsLGF+jN+XFZgwvJAYjGCGwECTdST4whHxR8rzcKxiCG39GTGznmk0MTb+V9TQhPGnIpJuDLZKlUYkK5i1g==",
   "success": true,
-  "projectFilePath": "C:\\Users\\mauri\\Desktop\\Gwent++\\Transpiler\\LexAnalyzer.csproj",
+  "projectFilePath": "C:\\Users\\mauri\\Documents\\Proyecto-gwent\\GwentPro\\Gwent++\\Transpiler\\LexAnalyzer.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

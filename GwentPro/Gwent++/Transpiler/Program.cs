@@ -1,7 +1,7 @@
 ﻿using System.IO;
 
 namespace Transpiler;
-internal class Program
+internal class MainProgram
 {
     static void Main(string[] args)
     {
