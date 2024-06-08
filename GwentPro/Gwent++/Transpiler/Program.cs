@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Transpiler;
+﻿namespace Transpiler;
 internal class MainProgram
 {
     static void Main(string[] args)
@@ -9,7 +7,7 @@ internal class MainProgram
 
         List<Token> tokens = new List<Token>();
         string fileContent = "";
-        string filePath = @"C:\Users\mauri\Desktop\Gwent++\Transpiler\Parser\prueba.txt";
+        string filePath = @"C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\test.txt";
 
         if (File.Exists(filePath)) {
             fileContent = File.ReadAllText(filePath);
@@ -24,11 +22,22 @@ internal class MainProgram
             Console.WriteLine($"Value: {token.Value}, Definition: {token.Definition}, Line: {token.Line}, Column: {token.Column}");
         }
 
-        ArithmeticParser parser = new ArithmeticParser(tokens);
+        Parser parser = new Parser(tokens);
 
-        var exp = parser.Parse();
-        Console.WriteLine(exp.ToString());
+        var exp = parser.Parse();       
 
-        
+        string ToDot(this Program node)
+        {
+            if (node == null) return "";
+
+            var sb = new StringBuilder();
+            sb.Append(node.GetType().Name + " [label=\"" + node.GetType() + "\"]; // Etiqueta del nodo
+
+            foreach (var child in Program.Children)
+            {
+                sb.Append(child.GetType() + " -> " + ToDot(child) + "\n");
+            }
+            return sb.ToString();
+        }
     }
 }

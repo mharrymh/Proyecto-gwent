@@ -42,9 +42,9 @@ public class Effect : Program
 
 public class NameField : Program
 {
-    string Name {get; }
+    Expression Name {get; }
 
-    public NameField(string name)
+    public NameField(Expression name)
     {
         this.Name = name;
     }
@@ -69,10 +69,50 @@ public class ActionField : Program
         this.Instruction = instruction;
     }
 }
-
-public class InstructionBlock
+public class InstructionBlock : Program
 {
+    ForLoop? ForLoop {get; }
+    WhileLoop? WhileLoop {get; }
+    Assignment? Assignments {get; }
+    InstructionBlock? Instruction {get; }
+
+    public InstructionBlock(ForLoop? forLoop, WhileLoop? whileLoop, Assignment? assignments, InstructionBlock? instruction)
+    {
+        this.ForLoop = forLoop;
+        this.WhileLoop = whileLoop;
+        this.Assignments = assignments;
+        this.Instruction = instruction;
+    } 
 }
+public class Assignment : Program
+{
+    Dictionary<string, string> AssignmentPair {get; }
+    public Assignment(Dictionary<string, string> assignmentPair)
+    {
+        this.AssignmentPair = assignmentPair;
+    } 
+}
+public class ForLoop : Program
+{
+    InstructionBlock? Instructions {get; }
+    public ForLoop(InstructionBlock? instructions)
+    {
+        this.Instructions = instructions;
+    }
+}
+
+public class WhileLoop : Program
+{
+    Expression BoolExpression {get; }
+    InstructionBlock? Instructions {get; }
+
+    public WhileLoop(Expression boolExpression, InstructionBlock? instructions)
+    {
+        this.BoolExpression = boolExpression;
+        this.Instructions = instructions;
+    }
+}
+
 
 public class CardDecBlock : Program
 {
@@ -109,9 +149,9 @@ public class Card : Program
 
 public class TypeField : Program
 {
-    string Type {get; }
+    Expression Type {get; }
 
-    public TypeField(string type)
+    public TypeField(Expression type)
     {
         this.Type = type;
     }   
@@ -119,8 +159,8 @@ public class TypeField : Program
 
 public class FactionField : Program
 {
-    string Faction {get; }
-    public FactionField(string faction)
+    Expression Faction {get; }
+    public FactionField(Expression faction)
     {
         this.Faction = faction;
     }
@@ -128,43 +168,16 @@ public class FactionField : Program
 
 public class PowerField : Program
 {
-    NumericExpression Num {get; }
-    public PowerField(NumericExpression num)
+    Expression Num {get; }
+    public PowerField(Expression num)
     {
         this.Num = num;
     }
 }
-
-public abstract class NumericExpression : Program
-{
-
-}
-public class BinaryExpression : NumericExpression
-{
-    NumericExpression Left { get; }
-    char Op {get; }
-    NumericExpression Right {get; }
-
-    public BinaryExpression(NumericExpression left, char op, NumericExpression right) {
-        this.Left = left;
-        this.Op = op;
-        this.Right = right;
-    }
-}
-
-public class LiteralExpression : NumericExpression
-{
-    int Value {get; }
-
-    public LiteralExpression(int value) {
-        this.Value = value;
-    }
-}
-
 public class RangeField : Program
 {
-    List<string> Ranges {get; }
-    public RangeField(List<string> ranges)
+    List<Expression> Ranges {get; }
+    public RangeField(List<Expression> ranges)
     {
         this.Ranges = ranges;
     }
@@ -207,10 +220,10 @@ public class EffectAllocation : Program
 
 public class Allocation : Program
 {
-    string? Name {get; }
+    Expression? Name {get; }
     NameField? NameField {get; }
     VarAllocation? VarAllocation{get; }
-    public Allocation(string? Name, NameField? NameField, VarAllocation? VarAllocation)
+    public Allocation(Expression? Name, NameField? NameField, VarAllocation? VarAllocation)
     {
         this.Name = Name;
         this.NameField = NameField;
@@ -220,6 +233,12 @@ public class Allocation : Program
 
 public class VarAllocation
 {
+    Dictionary<string, string> VarAssignment {get; }
+
+    public VarAllocation(Dictionary<string, string> vars)
+    {
+        this.VarAssignment = vars;
+    }
 }
 
 public class Selector : Program 
@@ -237,36 +256,31 @@ public class Selector : Program
 
 public class Source : Program
 {
-    string SourceValue {get; }
+    Expression SourceValue {get; }
 
-    public Source(string source)
+    public Source(Expression source)
     {
         this.SourceValue = source;
     }
 }
 public class SingleField : Program
 {
-    BooleanExpression BoolExpression{get; }
-    public SingleField(BooleanExpression boolExpression)
+    Expression BoolExpression{get; }
+    public SingleField(Expression boolExpression)
     {
         this.BoolExpression = boolExpression;
     }
 }
-
-public class BooleanExpression
-{
-}
-
 public class Predicate : Program
 {
-    PredicativeExpression PredicateExp {get;}
-    public Predicate(PredicativeExpression predicate)
+    string Id {get; }
+    Expression BoolExp {get; }
+    public Predicate(string id, Expression boolExp)
     {
-        this.PredicateExp = predicate;
+        this.Id = id;
+        this.BoolExp = boolExp;
     }
 }
-
-
 public class PostActionBlock : Program
 {
     EffectAllocationBlock EffectBlock {get; }
@@ -274,9 +288,9 @@ public class PostActionBlock : Program
     {
         this.EffectBlock = effectBlock;
     }
-}
-public class PredicativeExpression
+public class InstructionBlock
 {
+}
 }
 
 

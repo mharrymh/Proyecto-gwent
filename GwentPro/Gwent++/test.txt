@@ -1,0 +1,16 @@
+effect {
+    Name: "Draw",
+    Action: (targets, context) => {
+        for target in targets { 
+
+        }
+    }
+}
+
+card {
+    Type: "Oro",
+    Name: "Beluga",
+    Faction: "Northern" @@ "Realms",
+    Power: 5 * (1+1),
+    Range: ["Melee", "Ranged"]
+}

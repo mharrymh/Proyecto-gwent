@@ -63,6 +63,7 @@ public enum TokenType
     Hand,
     Deck,
     Board,
+    Target,
     Targets,
     Context,
     TriggerPlayer,
@@ -97,16 +98,13 @@ public class Token {
 public class Lexer {
     private readonly Dictionary<TokenType, string> TokenDefinitions = new Dictionary<TokenType, string>
     {
-        //Whitespaces
-        {TokenType.Null, @"\s+"},
-        //Comment
-        {TokenType.Null, @"\/\/.*"},
-        {TokenType.Null, @"(?s)/\*.*?\*/"},
+        //Comment and whitespaces
+        {TokenType.Null, @"\s+|\/\/.*|(?s)/\*.*?\*/"},
         //Reserved words 
         {TokenType.For, @"\bfor\b"},
         {TokenType.While, @"\bwhile\b"},
         {TokenType.Effect, @"\beffect\b"},
-        {TokenType.Effect, @"\bEffect\b"},
+        {TokenType.C_Effect, @"\bEffect\b"},
         {TokenType.Card, @"\bcard\b"},
         {TokenType.If, @"\bif\b"},
         {TokenType.Elif, @"\belif\b"},
@@ -115,9 +113,8 @@ public class Lexer {
         {TokenType.PostAction, @"\bPostAction\b"},
         {TokenType.Type, @"\bType\b"},
         {TokenType.Name, @"\bName\b"},
-        {TokenType.Params, @""},
-        {TokenType.Action, @""},
-        {TokenType.EffectCard, @""},
+        {TokenType.Params, @"\bParams\b"},
+        {TokenType.Action, @"\bAction\b"},
         {TokenType.Source, @"\bSource\b" },
         {TokenType.Single, @"\bSingle\b" },
         {TokenType.Amount, @"\bAmount\b" },
@@ -126,6 +123,7 @@ public class Lexer {
         {TokenType.Deck, @"\bdeck\b" },
         {TokenType.Board, @"\bboard\b" },
         {TokenType.Targets, @"\btargets\b" },
+        {TokenType.Target, @"\btarget\b" },
         {TokenType.Context, @"\bcontext\b" },
         {TokenType.TriggerPlayer, @"\bTriggerPlayer\b" },
         {TokenType.Find, @"\bFind\b" },
@@ -146,9 +144,6 @@ public class Lexer {
 
         //Operators
 
-        {TokenType.Pow, @"\^"},
-        {TokenType.And, @"&&" },
-        {TokenType.Or, @"\|\|"},
         {TokenType.NotEquals, @"!="},
         {TokenType.Implication, @"=>"},
         {TokenType.Increment, @"\+\+"},
