@@ -43,7 +43,6 @@ public class Effect : Program
 public class NameField : Program
 {
     Expression Name {get; }
-
     public NameField(Expression name)
     {
         this.Name = name;
@@ -52,9 +51,9 @@ public class NameField : Program
 
 public class ParamField : Program
 {
-    Dictionary<string, string> VarDeclararions {get; }
+    Dictionary<Token, Token> VarDeclararions {get; }
 
-    public ParamField(Dictionary<string, string> vars)
+    public ParamField(Dictionary<Token, Token> vars)
     {
         this.VarDeclararions = vars;
     }
@@ -73,25 +72,18 @@ public class InstructionBlock : Program
 {
     ForLoop? ForLoop {get; }
     WhileLoop? WhileLoop {get; }
-    Assignment? Assignments {get; }
+    Expression? IdExpression {get; }
     InstructionBlock? Instruction {get; }
 
-    public InstructionBlock(ForLoop? forLoop, WhileLoop? whileLoop, Assignment? assignments, InstructionBlock? instruction)
+    public InstructionBlock(ForLoop? forLoop, WhileLoop? whileLoop, Expression? idExpression, InstructionBlock? instruction)
     {
         this.ForLoop = forLoop;
         this.WhileLoop = whileLoop;
-        this.Assignments = assignments;
+        this.IdExpression = idExpression;
         this.Instruction = instruction;
     } 
 }
-public class Assignment : Program
-{
-    Dictionary<string, string> AssignmentPair {get; }
-    public Assignment(Dictionary<string, string> assignmentPair)
-    {
-        this.AssignmentPair = assignmentPair;
-    } 
-}
+
 public class ForLoop : Program
 {
     InstructionBlock? Instructions {get; }
@@ -207,10 +199,10 @@ public class EffectAllocationBlock : Program
 public class EffectAllocation : Program
 {
     Allocation Allocation {get; }
-    Selector Selector{get; }
+    Selector? Selector{get; }
     PostActionBlock? PostAction {get; }
 
-    public EffectAllocation(Allocation allocation, Selector selector, PostActionBlock? postAction)
+    public EffectAllocation(Allocation allocation, Selector? selector, PostActionBlock? postAction)
     {
         this.Allocation = allocation;
         this.Selector = selector;
@@ -233,9 +225,9 @@ public class Allocation : Program
 
 public class VarAllocation
 {
-    Dictionary<string, string> VarAssignment {get; }
+    Dictionary<Token, Expression> VarAssignment {get; }
 
-    public VarAllocation(Dictionary<string, string> vars)
+    public VarAllocation(Dictionary<Token, Expression> vars)
     {
         this.VarAssignment = vars;
     }
@@ -273,9 +265,9 @@ public class SingleField : Program
 }
 public class Predicate : Program
 {
-    string Id {get; }
+    Token Id {get; }
     Expression BoolExp {get; }
-    public Predicate(string id, Expression boolExp)
+    public Predicate(Token id, Expression boolExp)
     {
         this.Id = id;
         this.BoolExp = boolExp;
@@ -283,14 +275,11 @@ public class Predicate : Program
 }
 public class PostActionBlock : Program
 {
-    EffectAllocationBlock EffectBlock {get; }
-    public PostActionBlock(EffectAllocationBlock effectBlock)
+    EffectAllocation EffectBlock {get; }
+    public PostActionBlock(EffectAllocation effectBlock)
     {
         this.EffectBlock = effectBlock;
     }
-public class InstructionBlock
-{
-}
 }
 
 

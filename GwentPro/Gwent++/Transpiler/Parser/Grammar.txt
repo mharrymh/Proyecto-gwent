@@ -8,7 +8,7 @@ EPs := EP , EPs ;
 EP := N | P | Ac 
 N := Name : *string*
 P := Params : { Ds } | e
-Ds := D, Ds 
+Ds := D , Ds 
 D := *id* : TD
 Ac := Action : ( targets , context) => { IB }
 

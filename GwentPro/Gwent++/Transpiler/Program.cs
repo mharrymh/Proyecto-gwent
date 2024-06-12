@@ -7,7 +7,7 @@ internal class MainProgram
 
         List<Token> tokens = new List<Token>();
         string fileContent = "";
-        string filePath = @"C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\test.txt";
+        string filePath = @"C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\Parser\example.txt";
 
         if (File.Exists(filePath)) {
             fileContent = File.ReadAllText(filePath);
@@ -24,20 +24,6 @@ internal class MainProgram
 
         Parser parser = new Parser(tokens);
 
-        var exp = parser.Parse();       
-
-        string ToDot(this Program node)
-        {
-            if (node == null) return "";
-
-            var sb = new StringBuilder();
-            sb.Append(node.GetType().Name + " [label=\"" + node.GetType() + "\"]; // Etiqueta del nodo
-
-            foreach (var child in Program.Children)
-            {
-                sb.Append(child.GetType() + " -> " + ToDot(child) + "\n");
-            }
-            return sb.ToString();
-        }
+        var exp = parser.ParseNumericExpression();  
     }
 }

@@ -3,84 +3,36 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Transpiler;
+
 public enum TokenType
 {
-    For,
-    While,
-    Effect,
-    C_Effect,
-    Card,
-    If,
-    Elif,
-    Else,
-    Source,
-    Single,
-    Predicate,
-    PostAction,
-    Type,
-    Name,
-    Faction,
-    Power,
-    Range,
-    OnActivation,
-    Selector,
-    Pow,
-    Implication,
-    Increment,
-    Plus,
-    Minus,
-    Division, 
-    Multip,
-    And,
-    Or,
-    Less,
-    More,
-    Equal,
-    LessEq,
-    MoreEq,
-    SpaceConcatenation,
-    Concatenation,
-    Assign,
-    LParen,
-    RParen,
-    LBracket,
-    RBracket,
-    LCurly,
-    RCurly,
-    Semicolon,
-    Colon, 
-    Point, 
-    Comma,
-    Boolean,
-    String,
-    Num,
-    Id,
-    Params,
-    Action,
-    EffectCard,
-    Amount,
-    In,
-    Hand,
-    Deck,
-    Board,
-    Target,
-    Targets,
-    Context,
-    TriggerPlayer,
-    Find,
-    Push,
-    SendBottom,
-    Pop,
-    Remove,
-    Shuffle,
-    NotEquals,
-    Null, 
+    // Reserved words
+    For, While, Effect, C_Effect, Card, Source, Single, 
+    Predicate, PostAction, Type, Name, Faction, Power, Range, OnActivation, 
+    Selector, Implication, In, Hand, Deck, Board, Target, Targets, 
+    Context, TriggerPlayer, Find, Push, SendBottom, Pop, Remove, Shuffle,
 
-    //Value types
-    Number, 
-    Bool, 
-    Text
+    // Operators
+    Increment, Decrement, Plus, Minus, Division, Multip, And, 
+    Or, Less, More, Equal, LessEq, MoreEq, SpaceConcatenation, 
+    Concatenation, Assign, MinusAssign, MoreAssign, NotEquals,
+
+    // Brackets
+    LParen, RParen, LBracket, RBracket, LCurly, RCurly,
+
+    // Punctuation
+    Semicolon, Colon, Point, Comma,
+
+    // Types
+    Boolean, String, Num, Id, Params, Action,
+
+    // Comment and whitespaces
+    Null,
+
+    // Value types
+    Number, Bool, Text
 }
+
 public class Token {
     public string Value {get; private set;}
     public TokenType Definition {get; private set;}
@@ -93,89 +45,82 @@ public class Token {
         this.Line = line;
         this.Column = column;
     }
-    
 }
 public class Lexer {
     private readonly Dictionary<TokenType, string> TokenDefinitions = new Dictionary<TokenType, string>
     {
-        //Comment and whitespaces
+        // Comment and whitespaces
         {TokenType.Null, @"\s+|\/\/.*|(?s)/\*.*?\*/"},
-        //Reserved words 
-        {TokenType.For, @"\bfor\b"},
-        {TokenType.While, @"\bwhile\b"},
-        {TokenType.Effect, @"\beffect\b"},
+
+        // Reserved words
+        {TokenType.For, @"\bfor\b"}, 
+        {TokenType.While, @"\bwhile\b"}, 
+        {TokenType.Effect, @"\beffect\b"}, 
         {TokenType.C_Effect, @"\bEffect\b"},
         {TokenType.Card, @"\bcard\b"},
-        {TokenType.If, @"\bif\b"},
-        {TokenType.Elif, @"\belif\b"},
-        {TokenType.Else, @"\belse\b"},
         {TokenType.Predicate, @"\bPredicate\b"},
         {TokenType.PostAction, @"\bPostAction\b"},
-        {TokenType.Type, @"\bType\b"},
-        {TokenType.Name, @"\bName\b"},
-        {TokenType.Params, @"\bParams\b"},
-        {TokenType.Action, @"\bAction\b"},
-        {TokenType.Source, @"\bSource\b" },
-        {TokenType.Single, @"\bSingle\b" },
-        {TokenType.Amount, @"\bAmount\b" },
-        {TokenType.In, @"\bin\b" },
-        {TokenType.Hand, @"\bhand\b" },
-        {TokenType.Deck, @"\bdeck\b" },
-        {TokenType.Board, @"\bboard\b" },
-        {TokenType.Targets, @"\btargets\b" },
-        {TokenType.Target, @"\btarget\b" },
-        {TokenType.Context, @"\bcontext\b" },
-        {TokenType.TriggerPlayer, @"\bTriggerPlayer\b" },
-        {TokenType.Find, @"\bFind\b" },
-        {TokenType.Push, @"\bPush\b" },
-        {TokenType.SendBottom, @"\bSendBottom\b" },
-        {TokenType.Pop, @"\bPop\b" },
-        {TokenType.Remove, @"\bRemove\b" },
-        {TokenType.Shuffle, @"\bShuffle\b" },
-        {TokenType.Faction, @"\bFaction\b"},
-        {TokenType.Power, @"\bPower\b"},
-        {TokenType.Range, @"\bRange\b"},
-        {TokenType.OnActivation, @"\bOnActivation\b"},
+        {TokenType.Type, @"\bType\b"}, 
+        {TokenType.Name, @"\bName\b"}, 
+        {TokenType.Params, @"\bParams\b"}, 
+        {TokenType.Action, @"\bAction\b"}, 
+        {TokenType.Source, @"\bSource\b" }, 
+        {TokenType.Single, @"\bSingle\b" }, 
+        {TokenType.In, @"\bin\b" }, 
+        {TokenType.Hand, @"\bhand\b" }, 
+        {TokenType.Deck, @"\bdeck\b" }, 
+        {TokenType.Board, @"\bboard\b" }, 
+        {TokenType.Targets, @"\btargets\b" }, 
+        {TokenType.Target, @"\btarget\b" }, 
+        {TokenType.Context, @"\bcontext\b" }, 
+        {TokenType.TriggerPlayer, @"\bTriggerPlayer\b" }, 
+        {TokenType.Find, @"\bFind\b" }, 
+        {TokenType.Push, @"\bPush\b" }, 
+        {TokenType.SendBottom, @"\bSendBottom\b" }, 
+        {TokenType.Pop, @"\bPop\b" }, 
+        {TokenType.Remove, @"\bRemove\b" }, 
+        {TokenType.Shuffle, @"\bShuffle\b" }, 
+        {TokenType.Faction, @"\bFaction\b"}, 
+        {TokenType.Power, @"\bPower\b"}, 
+        {TokenType.Range, @"\bRange\b"}, 
+        {TokenType.OnActivation, @"\bOnActivation\b"}, 
         {TokenType.Selector, @"\bSelector\b"},
-        //Value Types
-        {TokenType.Bool, @"\bBool\b"},
-        {TokenType.Text, @"\bText\b"},
-        {TokenType.Number, @"\bNumber\b"},
 
-        //Operators
-
-        {TokenType.NotEquals, @"!="},
-        {TokenType.Implication, @"=>"},
-        {TokenType.Increment, @"\+\+"},
-        {TokenType.Plus, @"\+"},
-        {TokenType.Minus, @"-"},
-        {TokenType.Multip, @"\*"},
-        {TokenType.Division, @"\/"},
-        {TokenType.And, @"\&\&"},
+        // Operators
+        {TokenType.MinusAssign, @"\-="}, 
+        {TokenType.MoreAssign, @"\+="}, 
+        {TokenType.NotEquals, @"!="}, 
+        {TokenType.Implication, @"=>"}, 
+        {TokenType.Increment, @"\+\+"}, 
+        {TokenType.Decrement, @"--"}, 
+        {TokenType.Plus, @"\+"}, 
+        {TokenType.Minus, @"-"}, 
+        {TokenType.Multip, @"\*"}, 
+        {TokenType.Division, @"\/"}, 
+        {TokenType.And, @"\&\&"}, 
         {TokenType.Or, @"\|\|"},
-        {TokenType.Less, "<"},
-        {TokenType.More, ">"},
-        {TokenType.Equal, "=="},
-        {TokenType.LessEq, "<="},
-        {TokenType.MoreEq, ">="},
-        {TokenType.SpaceConcatenation, "@@"},
-        {TokenType.Concatenation, "@"},
+        {TokenType.Less, "<"}, 
+        {TokenType.More, ">"}, 
+        {TokenType.Equal, "=="}, 
+        {TokenType.LessEq, "<="}, 
+        {TokenType.MoreEq, ">="}, 
+        {TokenType.SpaceConcatenation, "@@"}, 
+        {TokenType.Concatenation, "@"}, 
         {TokenType.Assign, "="},
-        {TokenType.LParen, @"\("},
-        {TokenType.RParen, @"\)"},
-        {TokenType.LBracket, @"\["},
-        {TokenType.RBracket, @"\]"},
-        {TokenType.LCurly, @"\{"},
-        {TokenType.RCurly, @"\}"},
-        {TokenType.Semicolon, ";"},
-        {TokenType.Colon, @":"},
-        {TokenType.Point, @"\."},
-        {TokenType.Comma, ","},
+
+        // Brackets
+        {TokenType.LParen, @"\("}, {TokenType.RParen, @"\)"}, 
+        {TokenType.LBracket, @"\["}, {TokenType.RBracket, @"\]"}, 
+        {TokenType.LCurly, @"\{"}, {TokenType.RCurly, @"\}"},
+
+        // Punctuation
+        {TokenType.Semicolon, ";"}, {TokenType.Colon, @":"}, 
+        {TokenType.Point, @"\."}, {TokenType.Comma, ","},
         //Types
-        {TokenType.Boolean, @"\b(true|false)\b"},
-        {TokenType.Num, @"\b\d+(\.\d+)?\b"},
-        {TokenType.String, "\".*?\""},
-        {TokenType.Id, @"\b[A-Za-z_][A-Za-z_0-9]*\b"}
+        {TokenType.Number, @"\bNumber\b"}, {TokenType.Text, @"\bText\b"}, {TokenType.Bool, @"\bBool\b" },
+        // Value Types
+        {TokenType.Boolean, @"\b(true|false)\b"}, {TokenType.Num, @"\b\d+(\.\d+)?\b"}, 
+        {TokenType.String, "\".*?\""}, {TokenType.Id, @"\b[A-Za-z_][A-Za-z_0-9]*\b"}
     };
     public List<Token> Tokenize(string input)
     {

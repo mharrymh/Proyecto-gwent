@@ -7,7 +7,7 @@ effect {
         for target in targets {
             i = 0;
             while (i++ < Amount)
-                target.Power -=1;
+                target.Power+=1;
         };
     }
 }
@@ -52,10 +52,10 @@ card {
                 Predicate: (unit) => unit.Faction == "Northern" @@ "Realms"
             },
             PostAction: {
-                Type: "ReturnToDeck",
+                Effect: "ReturnToDeck",
                 Selector: {
                     Source: "parent",
-                    Single: 3 == cinco;
+                    Single: 3 == cinco,
                     Predicate: (unit) => unit.Power < 1
                 },
             },
