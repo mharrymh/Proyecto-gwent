@@ -1,5 +1,5 @@
 namespace Transpiler;
-public abstract class Expression {}
+public abstract class Expression : DSL_Object {}
 public class BinaryExpression : Expression
 {
     Expression Left { get; }
@@ -25,7 +25,6 @@ public class UnaryExpression : Expression
     Expression ID { get; }
     Token op {get; }
     bool AtTheEnd { get; }
-
     public UnaryExpression(Expression id, Token op, bool atTheEnd) {
         this.ID = id;
         this.op = op;

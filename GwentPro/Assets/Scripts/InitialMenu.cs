@@ -30,15 +30,12 @@ public class InitialMenu : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
-    
-
     public void Exit()
     {
         soundM.PlayButtonSound();
         Debug.Log("Salir...");
         Application.Quit();
     }
-
     
     //Options MENU
     public void ChangeVolume(float volumen)

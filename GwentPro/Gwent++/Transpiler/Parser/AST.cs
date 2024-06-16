@@ -1,38 +1,25 @@
 namespace Transpiler;
-public abstract class Program
+public abstract class DSL_Object
 {}
 
-public class DecBlock : Program
+//Root of all classes
+public class DecBlock : DSL_Object
 {
-    EffDecBlock EffBlock {get; }
-    CardDecBlock CardBlock {get; }
-
-    public DecBlock(EffDecBlock eff, CardDecBlock card)
+    List<Effect> Effects {get; set;}
+    List<Card> Cards{get; set;}
+    public DecBlock(List<Effect> eff, List<Card> card)
     {
-        this.EffBlock = eff;
-        this.CardBlock = card;
+        this.Effects = eff;
+        this.Cards = card;
     }
 }
 
-public class EffDecBlock : Program
+public class Effect : DSL_Object
 {
-    Effect Effect {get; }
-    EffDecBlock? EffBlock {get ; }
-
-    public EffDecBlock(Effect eff, EffDecBlock? effBlock)
-    {
-        this.Effect = eff;
-        this.EffBlock = effBlock;
-    }
-}
-
-public class Effect : Program
-{
-    NameField Name {get; }
-    ParamField? Param {get; }
-    ActionField Action {get; }
-
-    public Effect(NameField name, ParamField? param, ActionField action)
+    Expression Name {get; }
+    Dictionary<Token, Token>? Param {get; }
+    InstructionBlock Action {get; }
+    public Effect(Expression name, Dictionary<Token, Token>? param, InstructionBlock action)
     {
         this.Name = name;
         this.Param = param;
@@ -40,95 +27,50 @@ public class Effect : Program
     }
 }
 
-public class NameField : Program
+public class InstructionBlock : DSL_Object
 {
-    Expression Name {get; }
-    public NameField(Expression name)
+    List<ForLoop> ForLoops {get; }
+    List<WhileLoop> WhileLoops {get; }
+    List<Expression> IdExpressions {get; }
+    public InstructionBlock(List<ForLoop> forLoops, List<WhileLoop> whileLoops, List<Expression> idExpressions)
     {
-        this.Name = name;
-    }
-}
-
-public class ParamField : Program
-{
-    Dictionary<Token, Token> VarDeclararions {get; }
-
-    public ParamField(Dictionary<Token, Token> vars)
-    {
-        this.VarDeclararions = vars;
-    }
-}
-
-public class ActionField : Program
-{
-    InstructionBlock Instruction {get; }
-
-    public ActionField(InstructionBlock instruction)
-    {
-        this.Instruction = instruction;
-    }
-}
-public class InstructionBlock : Program
-{
-    ForLoop? ForLoop {get; }
-    WhileLoop? WhileLoop {get; }
-    Expression? IdExpression {get; }
-    InstructionBlock? Instruction {get; }
-
-    public InstructionBlock(ForLoop? forLoop, WhileLoop? whileLoop, Expression? idExpression, InstructionBlock? instruction)
-    {
-        this.ForLoop = forLoop;
-        this.WhileLoop = whileLoop;
-        this.IdExpression = idExpression;
-        this.Instruction = instruction;
+        this.ForLoops = forLoops;
+        this.WhileLoops = whileLoops;
+        this.IdExpressions = idExpressions;
     } 
 }
 
-public class ForLoop : Program
+public class ForLoop : DSL_Object
 {
-    InstructionBlock? Instructions {get; }
-    public ForLoop(InstructionBlock? instructions)
+    InstructionBlock Instructions {get; }
+    public ForLoop(InstructionBlock instructions)
     {
         this.Instructions = instructions;
     }
 }
 
-public class WhileLoop : Program
+public class WhileLoop : DSL_Object
 {
     Expression BoolExpression {get; }
-    InstructionBlock? Instructions {get; }
+    InstructionBlock Instructions {get; }
 
-    public WhileLoop(Expression boolExpression, InstructionBlock? instructions)
+    public WhileLoop(Expression boolExpression, InstructionBlock instructions)
     {
         this.BoolExpression = boolExpression;
         this.Instructions = instructions;
     }
 }
-
-
-public class CardDecBlock : Program
+public class Card : DSL_Object
 {
-    Card Card {get; }
-    CardDecBlock? CardDeckBlock {get ; }
+    Expression Name {get; }
+    Expression Type {get; }
+    Expression Faction {get; }
+    Expression? Power {get; }
+    List<Expression>? Range {get; }
+    List<EffectAllocation> Activation {get; }
 
-    public CardDecBlock(Card card, CardDecBlock? cardDecBlock)
-    {
-        this.Card = card;
-        this.CardDeckBlock = cardDecBlock;
-    }
-}
-
-public class Card : Program
-{
-    NameField Name {get; }
-    TypeField Type {get; }
-    FactionField Faction{get; }
-    PowerField? Power{get; }
-    RangeField Range{get; }
-    ActivationField Activation{get; }
-
-    public Card(NameField name, TypeField type, FactionField faction, PowerField? power,
-    RangeField range, ActivationField activation)
+    public Card(Expression name, Expression type, Expression faction, Expression? power,
+    List<Expression>? range, List<EffectAllocation> activation)
     {
         this.Name = name;
         this.Type = type;
@@ -139,64 +81,7 @@ public class Card : Program
     }
 }
 
-public class TypeField : Program
-{
-    Expression Type {get; }
-
-    public TypeField(Expression type)
-    {
-        this.Type = type;
-    }   
-}
-
-public class FactionField : Program
-{
-    Expression Faction {get; }
-    public FactionField(Expression faction)
-    {
-        this.Faction = faction;
-    }
-}
-
-public class PowerField : Program
-{
-    Expression Num {get; }
-    public PowerField(Expression num)
-    {
-        this.Num = num;
-    }
-}
-public class RangeField : Program
-{
-    List<Expression> Ranges {get; }
-    public RangeField(List<Expression> ranges)
-    {
-        this.Ranges = ranges;
-    }
-}
-
-public class ActivationField : Program
-{
-    EffectAllocationBlock EffBlock {get; }
-    public ActivationField(EffectAllocationBlock effBlock)
-    {
-        this.EffBlock = effBlock;
-    } 
-}
-
-public class EffectAllocationBlock : Program
-{
-    EffectAllocation Effect {get; }
-    EffectAllocationBlock? EffectBlock {get; }
-
-    public EffectAllocationBlock(EffectAllocation effect, EffectAllocationBlock? effBlock)
-    {
-        this.Effect = effect;
-        this.EffectBlock = effBlock;
-    }
-}
-
-public class EffectAllocation : Program
+public class EffectAllocation : DSL_Object
 {
     Allocation Allocation {get; }
     Selector? Selector{get; }
@@ -210,35 +95,23 @@ public class EffectAllocation : Program
     }
 }
 
-public class Allocation : Program
+public class Allocation : DSL_Object
 {
-    Expression? Name {get; }
-    NameField? NameField {get; }
-    VarAllocation? VarAllocation{get; }
-    public Allocation(Expression? Name, NameField? NameField, VarAllocation? VarAllocation)
+    Expression Name {get; }
+    Dictionary<Token, Expression>? VarAllocation {get; }
+    public Allocation(Expression name, Dictionary<Token, Expression>? varAllocation)
     {
-        this.Name = Name;
-        this.NameField = NameField;
-        this.VarAllocation = VarAllocation;
+        this.Name = name;
+        this.VarAllocation = varAllocation;
     }
 }
 
-public class VarAllocation
+public class Selector : DSL_Object 
 {
-    Dictionary<Token, Expression> VarAssignment {get; }
-
-    public VarAllocation(Dictionary<Token, Expression> vars)
-    {
-        this.VarAssignment = vars;
-    }
-}
-
-public class Selector : Program 
-{
-    Source Source {get; }
-    SingleField? Single {get; }
+    Expression Source {get; }
+    Expression? Single {get; }
     Predicate Predicate {get; }
-    public Selector(Source source, SingleField? single, Predicate predicate)
+    public Selector(Expression source, Expression? single, Predicate predicate)
     {
         this.Source = source;
         this.Single = single;
@@ -246,24 +119,7 @@ public class Selector : Program
     }
 }
 
-public class Source : Program
-{
-    Expression SourceValue {get; }
-
-    public Source(Expression source)
-    {
-        this.SourceValue = source;
-    }
-}
-public class SingleField : Program
-{
-    Expression BoolExpression{get; }
-    public SingleField(Expression boolExpression)
-    {
-        this.BoolExpression = boolExpression;
-    }
-}
-public class Predicate : Program
+public class Predicate : DSL_Object
 {
     Token Id {get; }
     Expression BoolExp {get; }
@@ -273,7 +129,7 @@ public class Predicate : Program
         this.BoolExp = boolExp;
     }
 }
-public class PostActionBlock : Program
+public class PostActionBlock : DSL_Object
 {
     EffectAllocation EffectBlock {get; }
     public PostActionBlock(EffectAllocation effectBlock)
@@ -281,9 +137,3 @@ public class PostActionBlock : Program
         this.EffectBlock = effectBlock;
     }
 }
-
-
-
-
-
-

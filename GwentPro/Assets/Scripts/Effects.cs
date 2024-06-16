@@ -65,7 +65,7 @@ public class Effects
 
         //Visual 
         gm.StartCoroutine(gm.SetAuxText("Existen " + brothers + " copias de esta carta en el campo" +
-            ". Su poder se multiplicó por " + brothers));
+            ". Su poder se multiplicï¿½ por " + brothers));
     }
     //Draw the most powerful card from player graveyard
     private void TakeCardFromGraveYard(Card card)
@@ -100,10 +100,10 @@ public class Effects
 
 
             //Visual
-            gm.StartCoroutine(gm.SetAuxText("Se añadió " + MostPowerfulCard.Name + " a la mano de " + gm.currentPlayer.PlayerName
+            gm.StartCoroutine(gm.SetAuxText("Se aï¿½adiï¿½ " + MostPowerfulCard.Name + " a la mano de " + gm.currentPlayer.PlayerName
            + " desde el cementerio"));
         }
-        else gm.StartCoroutine(gm.SetAuxText("El cementerio está vacío, no se robo ninguna carta"));
+        else gm.StartCoroutine(gm.SetAuxText("El cementerio estï¿½ vacï¿½o, no se robo ninguna carta"));
 
     }
     //Draw extra card from deck
@@ -123,9 +123,9 @@ public class Effects
             //Instantiate the card on HandPanel
             gm.InstantiateCard(DeckCard, gm.HandPanel);
 
-            gm.StartCoroutine(gm.SetAuxText("Se robó " + DeckCard.Name + " desde el deck de " + gm.currentPlayer.PlayerName));
+            gm.StartCoroutine(gm.SetAuxText("Se robï¿½ " + DeckCard.Name + " desde el deck de " + gm.currentPlayer.PlayerName));
         }
-        else if (card.Owner.Hand.Count >= 10) gm.StartCoroutine(gm.SetAuxText("La mano está llena, no se robaron cartas"));
+        else if (card.Owner.Hand.Count >= 10) gm.StartCoroutine(gm.SetAuxText("La mano estï¿½ llena, no se robaron cartas"));
     }
     private void None(Card card)
     {
@@ -182,7 +182,7 @@ public class Effects
             gm.CardBeaten(MostPowerfulCard);
 
 
-            gm.StartCoroutine(gm.SetAuxText("Se eliminó  a " + MostPowerfulCard.Name + " de " + MostPowerfulCard.Owner.PlayerName));
+            gm.StartCoroutine(gm.SetAuxText("Se eliminï¿½  a " + MostPowerfulCard.Name + " de " + MostPowerfulCard.Owner.PlayerName));
         }
         else gm.StartCoroutine(gm.SetAuxText("No hay cartas plata en el tablero"));
 
@@ -232,7 +232,7 @@ public class Effects
             //Destroy card from frontend board
             gm.CardBeaten(LessPowerfulCard);
 
-            gm.StartCoroutine(gm.SetAuxText("Se eliminó  a " + LessPowerfulCard.Name + " de " + LessPowerfulCard.Owner.PlayerName));
+            gm.StartCoroutine(gm.SetAuxText("Se eliminï¿½  a " + LessPowerfulCard.Name + " de " + LessPowerfulCard.Owner.PlayerName));
         }
         else gm.StartCoroutine(gm.SetAuxText("No se eliminaron cartas"));
     }
@@ -261,7 +261,7 @@ public class Effects
         if (cards != null)
         {
             for (int i = cards.Count - 1; i >= 0; i--)
-            {
+            {                                                         
                 if (cards[i].Name == name)
                 {
                     Taken = cards[i];
@@ -278,7 +278,7 @@ public class Effects
             Taken.Owner.Hand.Add(Taken);
 
             if (Taken is Card.UnityCard unity) unity.Power = unity.OriginalPower; 
-            gm.StartCoroutine(gm.SetAuxText("La carta " + Taken.Name + " regresó a la mano de " + gm.currentPlayer.PlayerName));
+            gm.StartCoroutine(gm.SetAuxText("La carta " + Taken.Name + " regresï¿½ a la mano de " + gm.currentPlayer.PlayerName));
         }
     }
     //Climate cards
@@ -299,7 +299,6 @@ public class Effects
                     }
                 }
             }
-            
         }
     }
     //Cleareance cards
@@ -322,8 +321,6 @@ public class Effects
         }
 
         gm.StartCoroutine(gm.SetAuxText("Se eliminaron todas las cartas clima del campo"));
-
-
     }
     private void CleareanceAux(Card card)
     {
@@ -403,7 +400,7 @@ public class Effects
             }
         }
 
-        gm.StartCoroutine(gm.SetAuxText("Se eliminó la fila con menos cartas"));
+        gm.StartCoroutine(gm.SetAuxText("Se eliminï¿½ la fila con menos cartas"));
     }
     //Assign all silver cards the prom of points in the board
     private  void AssignProm(Card card)
@@ -432,7 +429,7 @@ public class Effects
                     }
                 }
             }
-            gm.StartCoroutine(gm.SetAuxText("Se le asignó " + Sum / AmountOfCardsOnBoard + " a todas las cartas platas del campo"));
+            gm.StartCoroutine(gm.SetAuxText("Se le asignï¿½ " + Sum / AmountOfCardsOnBoard + " a todas las cartas platas del campo"));
         }
         else gm.StartCoroutine(gm.SetAuxText("No hay cartas en el campo para calcular el promedio "));
 
@@ -524,11 +521,11 @@ public class Effects
             climate.Owner.Hand.Remove(climate);
             CardEffects[climate.effectType].Invoke(climate);
             climate.IsPlayed = true;
-            gm.StartCoroutine(gm.SetAuxText("Se añadió la carta clima " + climate.Name + " desde la mano de " + gm.currentPlayer.PlayerName));
+            gm.StartCoroutine(gm.SetAuxText("Se aï¿½adiï¿½ la carta clima " + climate.Name + " desde la mano de " + gm.currentPlayer.PlayerName));
         }
         else
         {
-            gm.StartCoroutine(gm.SetAuxText("Se añadió la carta clima " + climate.Name + " desde el deck de " + gm.currentPlayer.PlayerName));
+            gm.StartCoroutine(gm.SetAuxText("Se aï¿½adiï¿½ la carta clima " + climate.Name + " desde el deck de " + gm.currentPlayer.PlayerName));
             board.climate_section[pos] = climate;
             gm.InstantiateCard(climate, ClimateZone.transform);
             climate.Owner.PlayerDeck.Remove(climate);

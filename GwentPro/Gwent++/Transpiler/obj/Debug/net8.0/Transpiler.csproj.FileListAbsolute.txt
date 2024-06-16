@@ -1,0 +1,15 @@
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\bin\Debug\net8.0\Transpiler.exe
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\bin\Debug\net8.0\Transpiler.deps.json
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\bin\Debug\net8.0\Transpiler.runtimeconfig.json
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\bin\Debug\net8.0\Transpiler.dll
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\bin\Debug\net8.0\Transpiler.pdb
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\Transpiler.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\Transpiler.AssemblyInfoInputs.cache
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\Transpiler.AssemblyInfo.cs
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\Transpiler.csproj.CoreCompileInputs.cache
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\Transpiler.sourcelink.json
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\Transpiler.dll
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\refint\Transpiler.dll
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\Transpiler.pdb
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\Transpiler.genruntimeconfig.cache
+C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\obj\Debug\net8.0\ref\Transpiler.dll

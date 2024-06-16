@@ -7,7 +7,7 @@ internal class MainProgram
 
         List<Token> tokens = new List<Token>();
         string fileContent = "";
-        string filePath = @"C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\Parser\example.txt";
+        string filePath = @"C:\Users\mauri\Documents\Proyecto-gwent\GwentPro\Gwent++\Transpiler\Parser\DSL_example.txt";
 
         if (File.Exists(filePath)) {
             fileContent = File.ReadAllText(filePath);
@@ -24,6 +24,6 @@ internal class MainProgram
 
         Parser parser = new Parser(tokens);
 
-        var exp = parser.ParseNumericExpression();  
+        var exp = parser.Parse();  
     }
 }

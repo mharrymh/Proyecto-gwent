@@ -6,9 +6,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-
-
-
 public class GameManager : MonoBehaviour
 {
     public GameObject GameBoard;
@@ -108,7 +105,6 @@ public class GameManager : MonoBehaviour
             if (player.Hand.Count < 10)
             {
                 Instanciar(player);
-                Debug.Log(player.Hand.Count + player.Hand[player.Hand.Count - 1].Name);
                 player.PlayerDeck.RemoveAt(0);
                 yield return new WaitForSeconds(0.2f); // Wait .2 seconds before instantiate the new card
             }
@@ -223,13 +219,6 @@ public class GameManager : MonoBehaviour
                 }
 
 
-                foreach (Card card in RangeSection)
-                {
-                    if (card is Card.UnityCard unity)
-                    {
-                        
-                    }
-                }
             }
         }
         player.Score = sum;

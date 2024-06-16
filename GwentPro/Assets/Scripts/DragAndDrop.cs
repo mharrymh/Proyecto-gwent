@@ -218,7 +218,6 @@ public class DragAndDrop : MonoBehaviour
             && DropZone.transform.parent != gm.HandPanel && DropZone.transform.parent.name != "ClimateZone"
             && !DropZone.transform.parent.name.Contains("Increment"))
         {
-            Debug.Log(DropZone.tag);
             PlayCard(card);
         }
         else
@@ -346,7 +345,6 @@ public class DragAndDrop : MonoBehaviour
         gm.SetPower(gm.player1);
         gm.SetPower(gm.player2);
 
-        
         //Change turn
         gm.ChangeTurn();      
     }
