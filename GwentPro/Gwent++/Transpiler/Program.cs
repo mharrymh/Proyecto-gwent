@@ -24,6 +24,6 @@ internal class MainProgram
 
         Parser parser = new Parser(tokens);
 
-        var exp = parser.Parse();  
+        DecBlock exp = parser.Parse();  
     }
 }

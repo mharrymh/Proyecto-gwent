@@ -1,0 +1,6 @@
+Reglas semánticas: 
+
+1- Names of variables can only be defined once in the whole program
+
+2- Toda variable tiene que haber sido definida antes de usarla
+

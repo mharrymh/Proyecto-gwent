@@ -1,22 +1,42 @@
-namespace Transpiler;
-public abstract class DSL_Object
-{}
 
-//Root of all classes
+using System.Runtime.CompilerServices;
+using System.Security.Principal;
+
+namespace Transpiler;
+//Abstract root of all classes
+public abstract class DSL_Object
+{
+    public abstract bool Validate(IContext context);
+}
+
 public class DecBlock : DSL_Object
 {
-    List<Effect> Effects {get; set;}
-    List<Card> Cards{get; set;}
+    public List<Effect> Effects {get; set;}
+    public List<Card> Cards{get; set;}
     public DecBlock(List<Effect> eff, List<Card> card)
     {
         this.Effects = eff;
         this.Cards = card;
     }
+
+    //Validates all the effects and cards creating a new subyacent context for each one
+    public override bool Validate(IContext context)
+    {
+        foreach(Effect effect in Effects)
+        {
+            if(!effect.Validate(context.CreateChildContext())) return false;
+        }
+        foreach(Card card in Cards)
+        {
+            if (!card.Validate(context.CreateChildContext())) return false;
+        }
+        return true;
+    }
 }
 
 public class Effect : DSL_Object
 {
-    Expression Name {get; }
+    Expression Name {get;}
     Dictionary<Token, Token>? Param {get; }
     InstructionBlock Action {get; }
     public Effect(Expression name, Dictionary<Token, Token>? param, InstructionBlock action)
@@ -25,6 +45,15 @@ public class Effect : DSL_Object
         this.Param = param;
         this.Action = action;
     }
+
+    public override bool Validate(IContext context)
+    {
+        if (!Name.Validate(context)) return false;
+
+        //TODO: NAME DEBE SER UN STRING YA 
+        return Action.Validate(context) && (Param == null || context.Define(Name.Convert(), Param));
+    }
+
 }
 
 public class InstructionBlock : DSL_Object
@@ -37,7 +66,24 @@ public class InstructionBlock : DSL_Object
         this.ForLoops = forLoops;
         this.WhileLoops = whileLoops;
         this.IdExpressions = idExpressions;
-    } 
+    }
+
+    public override bool Validate(IContext context)
+    {
+        foreach (ForLoop forLoop in ForLoops)
+        {
+            if (!forLoop.Validate(context)) return false;
+        }
+        foreach (WhileLoop whileLoop in WhileLoops)
+        {
+            if (!whileLoop.Validate(context)) return false;
+        }
+        foreach (Expression exp in IdExpressions)
+        {
+            if(!exp.Validate(context)) return false;
+        }
+        return true;
+    }
 }
 
 public class ForLoop : DSL_Object
@@ -46,6 +92,11 @@ public class ForLoop : DSL_Object
     public ForLoop(InstructionBlock instructions)
     {
         this.Instructions = instructions;
+    }
+
+    public override bool Validate(IContext context)
+    {
+        return Instructions.Validate(context.CreateChildContext());
     }
 }
 
@@ -58,6 +109,10 @@ public class WhileLoop : DSL_Object
     {
         this.BoolExpression = boolExpression;
         this.Instructions = instructions;
+    }
+    public override bool Validate(IContext context)
+    {
+        return Instructions.Validate(context.CreateChildContext());
     }
 }
 public class Card : DSL_Object
@@ -79,6 +134,21 @@ public class Card : DSL_Object
         this.Range = range;
         this.Activation = activation;
     }
+
+    public override bool Validate(IContext context)
+    {
+        if (Range != null)
+            foreach(Expression exp in Range)
+            {
+                    if (!exp.Validate(context)) return false;
+            }
+        foreach(EffectAllocation effect in Activation)
+        {
+            if (!effect.Validate(context)) return false;
+        }
+        return Name.Validate(context) && Type.Validate(context) && Faction.Validate(context)
+        && (Power == null || Power.Validate(context));
+    }
 }
 
 public class EffectAllocation : DSL_Object
@@ -93,6 +163,13 @@ public class EffectAllocation : DSL_Object
         this.Selector = selector;
         this.PostAction = postAction;
     }
+
+    public override bool Validate(IContext context)
+    {
+        return Allocation.Validate(context) && 
+        (Selector == null || Selector.Validate(context)) && 
+        (PostAction == null || PostAction.Validate(context));
+    }
 }
 
 public class Allocation : DSL_Object
@@ -103,6 +180,17 @@ public class Allocation : DSL_Object
     {
         this.Name = name;
         this.VarAllocation = varAllocation;
+    }
+
+    public override bool Validate(IContext context)
+    {
+        return Name.Validate(context) && (VarAllocation == null || ValidateVarAllocation(VarAllocation, context));
+    }
+
+    //TODO:
+    private bool ValidateVarAllocation(Dictionary<Token, Expression> varAllocation, IContext context)
+    {
+        throw new NotImplementedException();
     }
 }
 
@@ -117,6 +205,13 @@ public class Selector : DSL_Object
         this.Single = single;
         this.Predicate = predicate;
     }
+
+    public override bool Validate(IContext context)
+    {
+        return Source.Validate(context) 
+        && (Single == null || Single.Validate(context)) 
+        && Predicate.Validate(context);
+    }
 }
 
 public class Predicate : DSL_Object
@@ -128,6 +223,12 @@ public class Predicate : DSL_Object
         this.Id = id;
         this.BoolExp = boolExp;
     }
+
+    public override bool Validate(IContext context)
+    {
+        //TODO: CONTEXT IS DEFINED??
+        return context.IsDefined(Id) && BoolExp.Validate(context);
+    }
 }
 public class PostActionBlock : DSL_Object
 {
@@ -135,5 +236,10 @@ public class PostActionBlock : DSL_Object
     public PostActionBlock(EffectAllocation effectBlock)
     {
         this.EffectBlock = effectBlock;
+    }
+
+    public override bool Validate(IContext context)
+    {
+        return EffectBlock.Validate(context);
     }
 }

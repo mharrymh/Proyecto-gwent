@@ -1,13 +1,15 @@
 effect {
-    Name: "Damage",
+    Name: "Dam" @ "ag" @@ "e",
     Params: {
         Amount: Number
     },
     Action: (targets, context) => {
         for target in targets {
             i = 0;
-            while (i++ < Amount)
+            while (i++ < Amount) 
+            {
                 target.Power+=1;
+            }
         };
     }
 }
@@ -22,7 +24,7 @@ effect {
 }
 
 effect {
-    Name: "Return to deck",
+    Name: "Return"@@"to"@@ "44",
     Action: (targets, context) => {
         for target in targets {
             owner = target.Owner;
@@ -38,7 +40,7 @@ card {
     Type: "Oro",
     Name: "Beluga",
     Faction: "Northern Realms",
-    Power: 5 * (1+1),
+    Power: 5 / (1-1),
     Range: ["Melee", "Ranged"],
     OnActivation: [
         {

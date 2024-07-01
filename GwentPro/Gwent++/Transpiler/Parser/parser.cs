@@ -1,14 +1,19 @@
 namespace Transpiler;
 public class Parser
 {
-    List<Token> Tokens {get; }
+    // List of tokens to be parsed
+    List<Token> Tokens { get; }
+    // Current position in the token list
     int Pos {get; set;}
+    // The next token to be parsed
     Token NextToken {get; set;}
 
+    // Look ahead to the next token and check if it matches the expected token type
     void LookAhead(TokenType tokenType)
     {
         if (Pos+1 >= Tokens.Count) 
         {
+            // If we've reached the end of the token list, throw an exception
             Token last = Tokens[^1];
             UnexpectedEndOfInput error = new UnexpectedEndOfInput(last.Line, last.Column, last);
             throw new Exception(error.ToString());
@@ -18,44 +23,55 @@ public class Parser
         }
         else 
         {
+            // If the next token doesn't match the expected type, throw an exception
             Token token = Tokens[Pos+1];
             UnexpectedToken error = new UnexpectedToken(token.Line, token.Column, token);
             throw new Exception(error.ToString());
         }
     }
+    // Look ahead to the next token and check if it matches any of the expected token types
     void LookAhead(List<TokenType>? expected = null)
     {
         if (Pos+1 >= Tokens.Count) 
         {
+            // If we've reached the end of the token list, throw an exception
             Token last = Tokens[^1];
             UnexpectedEndOfInput error = new UnexpectedEndOfInput(last.Line, last.Column, last);
             throw new Exception(error.ToString());
         }
 
         if(expected == null) 
-        {NextToken = Tokens[Pos+1]; return;}
+        { 
+            // If no expected token types are provided, just move to the next token
+            NextToken = Tokens[Pos+1]; 
+            return; 
+        }
 
         if (expected.Contains(Tokens[Pos+1].Definition)) {
             NextToken = Tokens[Pos+1];
         }
         else 
         {
+            // If the next token doesn't match any of the expected types, throw an exception
             Token token = Tokens[Pos+1];
             UnexpectedToken error = new UnexpectedToken(token.Line, token.Column, token);
             throw new Exception(error.ToString());
         }
     }
 
+    // Consume the next token if it matches the expected token type
     void Consume(TokenType tokenType)
     {
         if (Tokens[Pos+1].Definition == tokenType) Pos++;
         else {
+            // If the next token doesn't match the expected type, throw an exception
             Token token = Tokens[Pos+1];
             UnexpectedToken error = new UnexpectedToken(token.Line, token.Column, token);
             throw new Exception(error.ToString());
         }
     }
 
+    // Constructor to initialize the parser with a list of tokens
     public Parser(List<Token> tokens)
     {
         this.Tokens = tokens;
@@ -63,18 +79,22 @@ public class Parser
         this.NextToken = Tokens[0];
     }
 
-    public DSL_Object Parse()
+    // Parse the entire input and return a DSL object
+    public DecBlock Parse()
     {
         var aux = ParseDecBlock();
         return aux;
     }
 
+    // Parse a declaration block
     DecBlock ParseDecBlock()
     {
         return new DecBlock(ParseEffDecBlock(), ParseCardDecBlock());
     }
 
     #region EffectNodes
+
+    // Parse a list of effect declarations
     List<Effect> ParseEffDecBlock()
     {
         var effects = new List<Effect>();
@@ -88,6 +108,7 @@ public class Parser
         return effects;
     }
 
+    // Parse a single effect declaration
     Effect ParseEffect()
     {
         Consume(TokenType.Effect);
@@ -137,6 +158,7 @@ public class Parser
         {
             return new Effect(name, param, action);
         }
+        //FIXME:
         throw new Exception("Implementar excepcion"); //name y action no pueden ser nulos
     }
 
@@ -222,6 +244,17 @@ public class Parser
         Consume(TokenType.LParen);
         var exp = ParseBoolExpression();
         Consume(TokenType.RParen);
+        LookAhead();
+
+        //Check if the while instruction is inside brackets
+        if (NextToken.Definition is TokenType.LCurly)
+        {
+            Consume(TokenType.LCurly);
+            var instruction = ParseInstruction();
+            Consume(TokenType.RCurly);
+            return new WhileLoop(exp, ParseInstruction());
+        }
+        //Parse the instruction line
         return new WhileLoop(exp, ParseInstruction());
     }
 
