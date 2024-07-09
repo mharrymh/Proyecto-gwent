@@ -20,6 +20,8 @@ effect {
         topCard = context.Deck.Pop();
         context.Hand.Add(topCard);
         context.Hand.Shuffle();
+        topCard = context.Hand[1+2];
+        bottomCard = context.Hand.Shuffle()[0];
     }
 }
 

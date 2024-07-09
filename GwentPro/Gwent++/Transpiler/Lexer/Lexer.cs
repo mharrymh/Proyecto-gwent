@@ -4,13 +4,19 @@ using System.Text.RegularExpressions;
 
 namespace Transpiler;
 
+//string pattern = @"^([a-zA-Z_][a-zA-Z0-9_]*)(\.[a-zA-Z_][a-zA-Z0-9_]*|\.[a-zA-Z_][a-zA-Z0-9_]*\([a-zA-Z_][a-zA-Z0-9_]*\))*$";
+
+
 public enum TokenType
 {
     // Reserved words
     For, While, Effect, C_Effect, Card, Source, Single, 
     Predicate, PostAction, Type, Name, Faction, Power, Range, OnActivation, 
-    Selector, Implication, In, Hand, Deck, Board, Target, Targets, 
-    Context, TriggerPlayer, Find, Push, SendBottom, Pop, Remove, Shuffle,
+    Selector, Implication, In, 
+
+    //FIXME: ELIMINAR (QUIZA DEJAR EL FIND)
+    // Hand, Deck, Board,
+    // TriggerPlayer, Find, Push, SendBottom, Pop, Remove, Shuffle,
 
     // Operators
     Increment, Decrement, Plus, Minus, Division, Multip, And, 
@@ -33,7 +39,7 @@ public enum TokenType
     Number, Bool, Text
 }
 
-public class Token {
+public struct Token {
     public string Value {get; private set;}
     public TokenType Definition {get; private set;}
     public int Line {get; private set;}
@@ -49,6 +55,11 @@ public class Token {
 public class Lexer {
     private readonly Dictionary<TokenType, string> TokenDefinitions = new Dictionary<TokenType, string>
     {
+        // // Access to properties and functions with one or none parameters
+        // {TokenType.IdCall, 
+        // @"([a-zA-Z_][a-zA-Z0-9_]*)(\.[a-zA-Z_][a-zA-Z0-9_]*)(\(\)|\([a-zA-Z_][a-zA-Z0-9_]*\))?(\.[a-zA-Z_][a-zA-Z0-9_]*(\(\)|\([a-zA-Z_][a-zA-Z0-9_]*\)))*"},
+
+
         // Comment and whitespaces
         {TokenType.Null, @"\s+|\/\/.*|(?s)/\*.*?\*/"},
 
@@ -67,19 +78,6 @@ public class Lexer {
         {TokenType.Source, @"\bSource\b" }, 
         {TokenType.Single, @"\bSingle\b" }, 
         {TokenType.In, @"\bin\b" }, 
-        {TokenType.Hand, @"\bhand\b" }, 
-        {TokenType.Deck, @"\bdeck\b" }, 
-        {TokenType.Board, @"\bboard\b" }, 
-        {TokenType.Targets, @"\btargets\b" }, 
-        {TokenType.Target, @"\btarget\b" }, 
-        {TokenType.Context, @"\bcontext\b" }, 
-        {TokenType.TriggerPlayer, @"\bTriggerPlayer\b" }, 
-        {TokenType.Find, @"\bFind\b" }, 
-        {TokenType.Push, @"\bPush\b" }, 
-        {TokenType.SendBottom, @"\bSendBottom\b" }, 
-        {TokenType.Pop, @"\bPop\b" }, 
-        {TokenType.Remove, @"\bRemove\b" }, 
-        {TokenType.Shuffle, @"\bShuffle\b" }, 
         {TokenType.Faction, @"\bFaction\b"}, 
         {TokenType.Power, @"\bPower\b"}, 
         {TokenType.Range, @"\bRange\b"}, 
@@ -108,6 +106,9 @@ public class Lexer {
         {TokenType.Concatenation, "@"}, 
         {TokenType.Assign, "="},
 
+
+
+
         // Brackets
         {TokenType.LParen, @"\("}, {TokenType.RParen, @"\)"}, 
         {TokenType.LBracket, @"\["}, {TokenType.RBracket, @"\]"}, 
@@ -120,7 +121,8 @@ public class Lexer {
         {TokenType.Number, @"\bNumber\b"}, {TokenType.Text, @"\bText\b"}, {TokenType.Bool, @"\bBool\b" },
         // Value Types
         {TokenType.Boolean, @"\b(true|false)\b"}, {TokenType.Num, @"\b\d+(\.\d+)?\b"}, 
-        {TokenType.String, "\".*?\""}, {TokenType.Id, @"\b[A-Za-z_][A-Za-z_0-9]*\b"}
+        {TokenType.String, "\".*?\""}, 
+        {TokenType.Id, @"\b[A-Za-z_][A-Za-z_0-9]*\b"}
     };
     public List<Token> Tokenize(string input)
     {

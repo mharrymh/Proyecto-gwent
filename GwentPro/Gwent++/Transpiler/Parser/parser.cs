@@ -1,3 +1,6 @@
+using System.Data.Common;
+using System.Linq.Expressions;
+
 namespace Transpiler;
 public class Parser
 {
@@ -11,23 +14,7 @@ public class Parser
     // Look ahead to the next token and check if it matches the expected token type
     void LookAhead(TokenType tokenType)
     {
-        if (Pos+1 >= Tokens.Count) 
-        {
-            // If we've reached the end of the token list, throw an exception
-            Token last = Tokens[^1];
-            UnexpectedEndOfInput error = new UnexpectedEndOfInput(last.Line, last.Column, last);
-            throw new Exception(error.ToString());
-        }
-        if (tokenType == Tokens[Pos+1].Definition) {
-            NextToken = Tokens[Pos+1];
-        }
-        else 
-        {
-            // If the next token doesn't match the expected type, throw an exception
-            Token token = Tokens[Pos+1];
-            UnexpectedToken error = new UnexpectedToken(token.Line, token.Column, token);
-            throw new Exception(error.ToString());
-        }
+        LookAhead([tokenType]);
     }
     // Look ahead to the next token and check if it matches any of the expected token types
     void LookAhead(List<TokenType>? expected = null)
@@ -46,7 +33,6 @@ public class Parser
             NextToken = Tokens[Pos+1]; 
             return; 
         }
-
         if (expected.Contains(Tokens[Pos+1].Definition)) {
             NextToken = Tokens[Pos+1];
         }
@@ -56,6 +42,13 @@ public class Parser
             Token token = Tokens[Pos+1];
             UnexpectedToken error = new UnexpectedToken(token.Line, token.Column, token);
             throw new Exception(error.ToString());
+        }
+    }
+    void Consume(List<TokenType> tokenTypes)
+    {
+        foreach (TokenType type in tokenTypes)
+        {
+            Consume(type);
         }
     }
 
@@ -80,7 +73,7 @@ public class Parser
     }
 
     // Parse the entire input and return a DSL object
-    public DecBlock Parse()
+    public DSL_Object Parse()
     {
         var aux = ParseDecBlock();
         return aux;
@@ -89,11 +82,11 @@ public class Parser
     // Parse a declaration block
     DecBlock ParseDecBlock()
     {
+        //Parse effects and parse cards
         return new DecBlock(ParseEffDecBlock(), ParseCardDecBlock());
     }
 
     #region EffectNodes
-
     // Parse a list of effect declarations
     List<Effect> ParseEffDecBlock()
     {
@@ -111,8 +104,7 @@ public class Parser
     // Parse a single effect declaration
     Effect ParseEffect()
     {
-        Consume(TokenType.Effect);
-        Consume(TokenType.LCurly);
+        Consume([TokenType.Effect, TokenType.LCurly]);
 
         Expression? name = null;
         Dictionary<Token, Token>? param = null;
@@ -123,35 +115,27 @@ public class Parser
         LookAhead(expected);
         while(expected.Contains(NextToken.Definition))
         {
+            TokenType tokenType = NextToken.Definition;
             //Check nextToken
             //Break if it is a semicolon
-            if (NextToken.Definition is TokenType.Name)
+            if (tokenType is TokenType.Name)
             {
                 name = ParseName();
-                LookAhead(colons);
-                if (NextToken.Definition is TokenType.Comma) Consume(TokenType.Comma);
-                else break;
-                expected.Remove(TokenType.Name);
-                LookAhead(expected);
+                
             }
-            else if (NextToken.Definition is TokenType.Params)
+            else if (tokenType is TokenType.Params)
             {
                 param = ParseParam();
-                LookAhead(colons);
-                if (NextToken.Definition is TokenType.Comma) Consume(TokenType.Comma);
-                else break;
-                expected.Remove(TokenType.Params);
-                LookAhead(expected);
             }
             else
             {
                 action = ParseAction();
-                LookAhead(colons);
-                if (NextToken.Definition is TokenType.Comma) Consume(TokenType.Comma);
-                else break;
-                expected.Remove(TokenType.Action);
-                LookAhead(expected);
             }
+            LookAhead(colons);
+            if (NextToken.Definition is TokenType.Comma) Consume(TokenType.Comma);
+            else break;
+            expected.Remove(tokenType);
+            LookAhead(expected);
         }
         Consume(TokenType.RCurly);
         if (name != null && action != null)
@@ -164,32 +148,31 @@ public class Parser
 
     Expression ParseName()
     {
-        Consume(TokenType.Name);
-        Consume(TokenType.Colon);
+        Consume([TokenType.Name, TokenType.Colon]);
         LookAhead(TokenType.String);
         return ParseStringExpression();
     }
     public Dictionary<Token, Token> ParseParam()
     {
-        Consume(TokenType.Params);
-        Consume(TokenType.Colon);
-        Consume(TokenType.LCurly);
+        Consume([TokenType.Params, TokenType.Colon, TokenType.LCurly]);
 
+        //Create a dictionary to save the id related with its type declared
         Dictionary<Token, Token> id_type = new Dictionary<Token, Token>();
+        //Create an id token to use it inside the while statement
         Token id;
         var expected = new List<TokenType>{TokenType.RCurly, TokenType.Id};
         LookAhead(expected);
         while(NextToken.Definition != TokenType.RCurly)
         {
             id = NextToken;
-            Consume(NextToken.Definition);
-            Consume(TokenType.Colon);
-            LookAhead(new List<TokenType>{TokenType.Number, TokenType.Bool, TokenType.Text});
+            Consume([NextToken.Definition, TokenType.Colon]);
+            LookAhead([TokenType.Number, TokenType.Bool, TokenType.Text]);
             //Add pair to the dictionary
             id_type.Add(id, NextToken);
             Consume(NextToken.Definition);
-            LookAhead(new List<TokenType>{TokenType.RCurly, TokenType.Comma});
-            if (NextToken.Definition == TokenType.Comma) Consume(TokenType.Comma);
+            LookAhead([TokenType.RCurly, TokenType.Comma]);
+            if (NextToken.Definition == TokenType.Comma) 
+                Consume(TokenType.Comma);
             LookAhead(expected);
         }
         Consume(TokenType.RCurly);
@@ -198,27 +181,29 @@ public class Parser
 
     InstructionBlock ParseAction()
     {
-        Consume(TokenType.Action);
-        Consume(TokenType.Colon);
-        Consume(TokenType.LParen);
-        Consume(TokenType.Targets);
-        Consume(TokenType.Comma);
-        Consume(TokenType.Context);
-        Consume(TokenType.RParen);
-        Consume(TokenType.Implication);
-        Consume(TokenType.LCurly);
+        Consume([TokenType.Action, TokenType.Colon, TokenType.LParen]);
 
-        var instruction = ParseInstruction();
+        LookAhead(TokenType.Id);
+        //Saves the targets and the context id
+        Expression targets = ParseExpression();
+        Consume([TokenType.Comma]);
+        LookAhead(TokenType.Id);
+        Expression context = ParseExpression();
+
+        Consume([TokenType.RParen, TokenType.Implication, TokenType.LCurly]);
+
+
+        var instruction = ParseInstruction(targets, context);
         Consume(TokenType.RCurly);
         return instruction;
     }
-    InstructionBlock ParseInstruction()
+    InstructionBlock ParseInstruction(Expression targets, Expression context)
     {
-        List<ForLoop> forLoops = new List<ForLoop>();
-        List<WhileLoop> whileLoops = new List<WhileLoop>();
-        List<Expression> allocations = new List<Expression>();
+        List<ForLoop> forLoops = [];
+        List<WhileLoop> whileLoops = [];
+        List<Expression> allocations = [];
 
-        var expected = new List<TokenType>{TokenType.For, TokenType.While, TokenType.Id, TokenType.RCurly, TokenType.Context, TokenType.Targets};
+        var expected = new List<TokenType>{TokenType.For, TokenType.While, TokenType.Id, TokenType.RCurly};
         LookAhead();
         while(NextToken.Definition != TokenType.RCurly)
         {
@@ -226,22 +211,21 @@ public class Parser
                 Consume(TokenType.Semicolon);
             }
             else if (NextToken.Definition == TokenType.For) {
-                forLoops.Add(ParseForLoop());
+                forLoops.Add(ParseForLoop(targets, context));
             }
             else if (NextToken.Definition == TokenType.While) {
-                whileLoops.Add(ParseWhileLoop());
+                whileLoops.Add(ParseWhileLoop(targets, context));
             }
             else {
-                allocations.Add(ParseIdExpression());
+                allocations.Add(ParseExpression());
             }
             LookAhead();
         }
-        return new InstructionBlock(forLoops, whileLoops, allocations);
+        return new InstructionBlock(forLoops, whileLoops, allocations, targets, context);
     }
-    WhileLoop ParseWhileLoop()
+    WhileLoop ParseWhileLoop(Expression targets, Expression context)
     {
-        Consume(TokenType.While);
-        Consume(TokenType.LParen);
+        Consume([TokenType.While, TokenType.LParen]);
         var exp = ParseBoolExpression();
         Consume(TokenType.RParen);
         LookAhead();
@@ -250,24 +234,28 @@ public class Parser
         if (NextToken.Definition is TokenType.LCurly)
         {
             Consume(TokenType.LCurly);
-            var instruction = ParseInstruction();
+            var instruction = ParseInstruction(targets, context);
             Consume(TokenType.RCurly);
-            return new WhileLoop(exp, ParseInstruction());
+            return new WhileLoop(exp, ParseInstruction(targets, context));
         }
         //Parse the instruction line
-        return new WhileLoop(exp, ParseInstruction());
+        return new WhileLoop(exp, ParseInstruction(targets, context));
     }
 
-    ForLoop ParseForLoop()
+    ForLoop ParseForLoop(Expression targets, Expression context)
     {
         Consume(TokenType.For);
-        Consume(TokenType.Target);
+        LookAhead(TokenType.Id);
+        //Saves the iterator and the collection
+        Expression iterator = ParseExpression();
         Consume(TokenType.In);
-        Consume(TokenType.Targets);
+        LookAhead(TokenType.Id);
+        Expression collection = ParseExpression();
         Consume(TokenType.LCurly);
-        var instruction = ParseInstruction();
+
+        var instruction = ParseInstruction(targets, context);
         Consume(TokenType.RCurly);
-        return new ForLoop(instruction);
+        return new ForLoop(instruction, iterator, collection);
     }
     
     #endregion
@@ -286,8 +274,7 @@ public class Parser
     }
     Card ParseCard()
     {
-        Consume(TokenType.Card);
-        Consume(TokenType.LCurly);
+        Consume([TokenType.Card, TokenType.LCurly]);
 
         Expression? name = null;
         Expression? type = null;
@@ -335,9 +322,7 @@ public class Parser
 
     List<EffectAllocation> ParseActivation()
     {
-        Consume(TokenType.OnActivation);
-        Consume(TokenType.Colon);
-        Consume(TokenType.LBracket);
+        Consume([TokenType.OnActivation, TokenType.Colon, TokenType.LBracket]);
         LookAhead();
         var effBlock = ParseEffBlock();
         Consume(TokenType.RBracket);
@@ -353,8 +338,7 @@ public class Parser
         LookAhead(new List<TokenType>{TokenType.Comma, TokenType.RCurly});
         while (NextToken.Definition is TokenType.Comma)
         {
-            Consume(TokenType.Comma);
-            Consume(TokenType.LCurly);
+            Consume([TokenType.Comma, TokenType.LCurly]);
             effects.Add(ParseEffAllocation());
             Consume(TokenType.RCurly);
         }
@@ -400,32 +384,26 @@ public class Parser
     }
     Expression ParseType()
     {
-        Consume(TokenType.Type);
-        Consume(TokenType.Colon);
+        Consume([TokenType.Type, TokenType.Colon]);
         LookAhead(TokenType.String);
         return ParseStringExpression();
     }
 
     Expression ParseFaction()
     {
-        Consume(TokenType.Faction);
-        Consume(TokenType.Colon);
+        Consume([TokenType.Faction, TokenType.Colon]);
         LookAhead(TokenType.String);
         return ParseStringExpression();
     }
 
     Expression ParsePower()
     {
-        Consume(TokenType.Power);
-        Consume(TokenType.Colon);
-
+        Consume([TokenType.Power, TokenType.Colon]);
         return ParseNumericExpression();
     }
     List<Expression> ParseRange()
     {
-        Consume(TokenType.Range);
-        Consume(TokenType.Colon);
-        Consume(TokenType.LBracket);
+        Consume([TokenType.Range, TokenType.Colon, TokenType.LBracket]);
         List<Expression> ranges = new List<Expression>();
         var expected = new List<TokenType>{TokenType.RBracket, TokenType.String};
         LookAhead(expected);
@@ -441,16 +419,12 @@ public class Parser
     }
     PostActionBlock ParsePostAction()
     {
-        Consume(TokenType.PostAction);
-        Consume(TokenType.Colon);
-        Consume(TokenType.LCurly);
+        Consume([TokenType.PostAction, TokenType.Colon, TokenType.LCurly]);
         return new PostActionBlock(ParseEffAllocation());
     }
     Selector ParseSelector()
     {
-        Consume(TokenType.Selector);
-        Consume(TokenType.Colon);
-        Consume(TokenType.LCurly);
+        Consume([TokenType.Selector, TokenType.Colon, TokenType.LCurly]);
 
         Expression? source = null;
         Expression? single = null;
@@ -488,6 +462,7 @@ public class Parser
     }
     Predicate ParsePredicate()
     {
+        //FIXME:
         Consume(TokenType.Predicate);
         Consume(TokenType.Colon);
         Consume(TokenType.LParen);
@@ -500,21 +475,18 @@ public class Parser
     }
     Expression ParseSingle()
     {
-        Consume(TokenType.Single);
-        Consume(TokenType.Colon);
+        Consume([TokenType.Single, TokenType.Colon]);
         return ParseBoolExpression();
     }
     Expression ParseSource()
     {
-        Consume(TokenType.Source);
-        Consume(TokenType.Colon);
+        Consume([TokenType.Source, TokenType.Colon]);
         LookAhead(TokenType.String);
         return ParseStringExpression();
     }
     Allocation ParseAllocation()
     {
-        Consume(TokenType.C_Effect);
-        Consume(TokenType.Colon);
+        Consume([TokenType.C_Effect, TokenType.Colon]);
         LookAhead(new List<TokenType>{TokenType.String, TokenType.LCurly});
         if (NextToken.Definition is TokenType.String)
         {
@@ -594,66 +566,46 @@ public class Parser
             return left;
         }
         else {
-            var left = ParseIdExpression();
+            var left = ParseIdLiteral();
+
+            List<TokenType> BinOperators = [TokenType.Plus, TokenType.Minus, TokenType.Multip, TokenType.Division, TokenType.And, TokenType.Or
+            , TokenType.Equal, TokenType.Less, TokenType.LessEq, TokenType.MoreEq, TokenType.Concatenation
+            , TokenType.SpaceConcatenation, TokenType.Point, TokenType.Assign, TokenType.MoreAssign, TokenType.MinusAssign];
             LookAhead();
             if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement) {
                 Token op = NextToken;
                 Consume(NextToken.Definition);
                 left = new UnaryExpression(left, op, true);
             }
-            else if (NextToken.Definition is TokenType.Plus || NextToken.Definition is TokenType.Minus
-            || NextToken.Definition is TokenType.Multip || NextToken.Definition is TokenType.Division)
-            {
+            else if(BinOperators.Contains(NextToken.Definition)) {
+                //Save the id operator and continue parsing the right part of the expression
                 Token op = NextToken;
                 Consume(NextToken.Definition);
-                left = new BinaryExpression(left, op, ParseNumericExpression());
+                left = new BinaryExpression(left, op, ParseExpression());
             }
-            else if (NextToken.Definition is TokenType.And || NextToken.Definition is TokenType.Or || NextToken.Definition is TokenType.Equal
-            || NextToken.Definition is TokenType.Less || NextToken.Definition is TokenType.LessEq
-            || NextToken.Definition is TokenType.More || NextToken.Definition is TokenType.MoreEq)
+            else if(NextToken.Definition is TokenType.LParen)
             {
-                Token op = NextToken;
                 Consume(NextToken.Definition);
-                left = new BinaryExpression(left, op, ParseBoolExpression());
+                LookAhead();
+                if (NextToken.Definition is TokenType.RParen) {
+                    left = new FunctionCall(left, null);
+                }
+                else {
+                    left = new FunctionCall(left, ParseExpression());
+                }
+                Consume(TokenType.RParen);
+                LookAhead();
             }
-            else if(NextToken.Definition is TokenType.Concatenation || NextToken.Definition is TokenType.SpaceConcatenation)
+            //It is just an if because indexer can be placed after a function
+            if (NextToken.Definition is TokenType.LBracket)
             {
-                Token op = NextToken;
                 Consume(NextToken.Definition);
-                left = new BinaryExpression(left, op, ParseStringExpression());
+                left = new Indexer(left, ParseNumericExpression());
+                Consume(TokenType.RBracket);
             }
             return left;
         }
 
-    }
-    Expression ParseIdExpression()
-    {
-        var left = ParseIdLiteral();
-        LookAhead();
-        if (NextToken.Definition is TokenType.Point || NextToken.Definition is TokenType.Assign
-        || NextToken.Definition is TokenType.MoreAssign || NextToken.Definition is TokenType.MinusAssign)
-        {
-            Token op = NextToken;
-            Consume(NextToken.Definition);
-            LookAhead();
-            var right = ParseExpression();
-            left = new BinaryExpression(left, op, right);
-        }
-        else if (NextToken.Definition is TokenType.LParen)
-        {
-            Token op = NextToken;
-            Consume(TokenType.LParen);
-            LookAhead();
-            if (NextToken.Definition is TokenType.RParen) {
-                Consume(TokenType.RParen); 
-            }
-            else {
-                var right = ParseIdExpression();
-                Consume(TokenType.RParen);
-                left = new BinaryExpression(left, op, right);
-            }
-        }
-        return left;
     }
     Expression ParseIdLiteral()
     {
@@ -661,7 +613,7 @@ public class Parser
         {
             Token op = NextToken;
             Consume(NextToken.Definition);
-            Expression id = ParseIdExpression();
+            Expression id = ParseIdLiteral();
             return new UnaryExpression(id, op, false);
         }
         var value = NextToken;
@@ -728,7 +680,7 @@ public class Parser
         }
         if (NextToken.Definition is TokenType.Id)
         {
-            return ParseIdExpression();
+            return ParseExpression();
         }
         if (NextToken.Definition is TokenType.LParen)
         {
@@ -740,6 +692,7 @@ public class Parser
         Token op = NextToken;
         Consume(TokenType.Minus);
         var right = ParseSumExp();
+        //TODO: LINEA Y COLUMNA 0?
         return new BinaryExpression(new LiteralExpression(new Token("0", TokenType.Num, 0,0)), op, right);
     }
     Expression ParseStringExpression()
@@ -760,7 +713,7 @@ public class Parser
         //Can be an id
         //Can be an open parenthesis
         //Can be an string
-        LookAhead(new List<TokenType>{TokenType.String, TokenType.LCurly, TokenType.Id});
+        LookAhead([TokenType.String, TokenType.LCurly, TokenType.Id]);
         if (NextToken.Definition is TokenType.String)
         {
             var literal = NextToken;
@@ -769,7 +722,7 @@ public class Parser
         }
         if (NextToken.Definition is TokenType.Id)
         {
-            return ParseIdExpression();
+            return ParseExpression();
         }
         Consume(TokenType.LCurly);
         var exp = ParseStringExpression();

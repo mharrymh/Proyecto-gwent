@@ -29,3 +29,9 @@ context es un objeto
 hacer nulo el tipo de whitespaces
 
 
+puede una variable ser null en el dsl? puedo declarar variables sueltas?
+error de division por cero es del evaluate o de la semantica?
+
+parsear indexado en lista
+Se aceptan operadores aritmeticos,implementar pow^^^^^
+implementar numeros con coma??
