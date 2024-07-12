@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Transpiler;
 
@@ -36,15 +37,18 @@ Remove(card)
 Shuffle()
 */
 
+//An enumerable with the different types of id
 public enum IdType {
     Number, 
     String,
     Boolean,
-    Collection,
-    Function,
-    FunctionParameter,
     Context,
-    Targets
+    Targets, 
+    Card,
+    Player,
+    CardCollection,
+    Predicate,
+    Null
 
 }
 public struct Variable {
@@ -58,14 +62,16 @@ public struct Variable {
 public interface IContext {
     //Actions
     //Receives the effect name and the dictionary with the tokens and the types declared
-    bool DefineParams(Expression name, Dictionary<Token, Token> param);
+    bool DefineParams(string name, Dictionary<Token, Token> param);
     //Variables
     //Returns if an id is already defined
-    bool IsDefined(Expression idName);
+    bool IsDefined(string idName);
+    //Check if its defined and returns the context where it is defined
+    bool IsDefinedInContext(string idName, ref Context contextOf);
     //Define the id with its name, its token type and its expression value
-    bool Define(Expression idName, Variable value);
+    bool Define(string idName, Variable value);
     //Returns the type of the id
-    IdType GetIdType(Expression id);
+    IdType GetIdType(string id);
     //Creates a subyacent context
     IContext CreateChildContext();
 }
@@ -76,11 +82,11 @@ public class Context : IContext
 {
     IContext? parent;
     //Saves each variable with its names and its values
-    Dictionary<Expression, Variable> variables = [];
+    Dictionary<string, Variable> variables = [];
     //Create the context child
     public IContext CreateChildContext() => new Context {parent = this};
     //Add each variable to the dictionary with its name and its type and its value(expression) 
-    public bool Define(Expression variable, Variable value)
+    public bool Define(string variable, Variable value)
     {
         //If the variable is not defined add it to the dictionary
         if (!IsDefined(variable)) {
@@ -96,7 +102,7 @@ public class Context : IContext
 
     //Define a new action with its parameters using the static dictionary 
     //in DefinedActions.cs
-    public bool DefineParams(Expression name, Dictionary<Token, Token> param)
+    public bool DefineParams(string name, Dictionary<Token, Token> param)
     {
         //Relate the token type of the reserved words to defined variables
         //to the actual type that the variable should have
@@ -109,31 +115,42 @@ public class Context : IContext
         //Cant exist two effects with the same name
         if (DefinedActions.Actions.ContainsKey(name)) return false;
         //Create the new effect with its params
-        DefinedActions.Actions.Add(name, new Dictionary<Token, IdType>());
+        DefinedActions.Actions.Add(name, new Dictionary<string, IdType>());
+        
         //Add parameters
         foreach (Token token in param.Keys)
         {
             //Check that there there are not varaiables with the name repeated
-            if (DefinedActions.Actions[name].ContainsKey(token)) {
+            if (DefinedActions.Actions[name].ContainsKey(token.Value)) {
                 return false;
             }
             else {
                 //Add the token with the respective type changed using the types dictionary and the params dictionary
-                DefinedActions.Actions[name].Add(token, types[param[token].Definition]);
+                DefinedActions.Actions[name].Add(token.Value, types[param[token].Definition]);
+                //Define the variables in the scope
+                this.Define(token.Value, new Variable(null, types[param[token].Definition]));
             }
         }
         return true;
     }
-
     //Returns the id type using the variables dictionary 
-    public IdType GetIdType(Expression idName)
+    public IdType GetIdType(string idName)
     {
         //If the variable is not defined throw error
         //TODO:
-        if (!IsDefined(idName)) throw new Exception();
+        //Get the context in the hierarchy where it is declared the variable
+        Context contextOf = this;
+        //Context is passed by reference so it returns modified 
+        //TODO:
+        if (!IsDefinedInContext(idName, ref contextOf)) throw new Exception();
         //else return the type of the variable
-        return variables[idName].IdType;
+        return contextOf.variables[idName].IdType;
     }
-
-    public bool IsDefined(Expression variable) => variables.ContainsKey(variable) || (parent != null && parent.IsDefined(variable));
+    public bool IsDefinedInContext(string idName, ref Context contextOf) {
+        contextOf = this;
+        return variables.ContainsKey(idName) || (parent != null && parent.IsDefinedInContext(idName, ref contextOf));
+    }
+    public bool IsDefined(string variable) {
+        return variables.ContainsKey(variable) || (parent != null && parent.IsDefined(variable));
+    }
 }

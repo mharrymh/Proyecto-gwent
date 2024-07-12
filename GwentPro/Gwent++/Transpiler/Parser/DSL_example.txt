@@ -1,5 +1,18 @@
+
 effect {
-    Name: "Dam" @ "ag" @@ "e",
+    Name: "Draw",
+    Action: (targets, context) => {
+        topCard = context.Deck.Pop();
+        context.Hand.Add(topCard);
+        context.Hand.Shuffle();
+        topCard = context.Hand[1+2];
+        bottomCard = context.Hand.Shuffle()[0];
+    }
+}
+
+
+effect {
+    Name: "Damage",
     Params: {
         Amount: Number
     },
@@ -11,17 +24,6 @@ effect {
                 target.Power+=1;
             }
         };
-    }
-}
-
-effect {
-    Name: "Draw",
-    Action: (targets, context) => {
-        topCard = context.Deck.Pop();
-        context.Hand.Add(topCard);
-        context.Hand.Shuffle();
-        topCard = context.Hand[1+2];
-        bottomCard = context.Hand.Shuffle()[0];
     }
 }
 
@@ -59,7 +61,7 @@ card {
                 Effect: "ReturnToDeck",
                 Selector: {
                     Source: "parent",
-                    Single: 3 == cinco,
+                    Single: 3 - 5,
                     Predicate: (unit) => unit.Power < 1
                 },
             },
@@ -69,81 +71,3 @@ card {
         }
     ]
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -75,8 +75,8 @@ public class Parser
     // Parse the entire input and return a DSL object
     public DSL_Object Parse()
     {
-        var aux = ParseDecBlock();
-        return aux;
+        var obj = ParseDecBlock();
+        return obj;
     }
 
     // Parse a declaration block
@@ -199,9 +199,7 @@ public class Parser
     }
     InstructionBlock ParseInstruction(Expression targets, Expression context)
     {
-        List<ForLoop> forLoops = [];
-        List<WhileLoop> whileLoops = [];
-        List<Expression> allocations = [];
+        List<Statement> statements = [];
 
         var expected = new List<TokenType>{TokenType.For, TokenType.While, TokenType.Id, TokenType.RCurly};
         LookAhead();
@@ -211,17 +209,18 @@ public class Parser
                 Consume(TokenType.Semicolon);
             }
             else if (NextToken.Definition == TokenType.For) {
-                forLoops.Add(ParseForLoop(targets, context));
+                statements.Add(ParseForLoop(targets, context));
             }
             else if (NextToken.Definition == TokenType.While) {
-                whileLoops.Add(ParseWhileLoop(targets, context));
+                statements.Add(ParseWhileLoop(targets, context));
             }
             else {
-                allocations.Add(ParseExpression());
+                statements.Add(ParseExpression());
             }
             LookAhead();
         }
-        return new InstructionBlock(forLoops, whileLoops, allocations, targets, context);
+        //TODO: CHEQUEAR POLIMORFISMO
+        return new InstructionBlock(statements, (LiteralExpression)targets, (LiteralExpression)context);
     }
     WhileLoop ParseWhileLoop(Expression targets, Expression context)
     {
@@ -247,10 +246,14 @@ public class Parser
         Consume(TokenType.For);
         LookAhead(TokenType.Id);
         //Saves the iterator and the collection
-        Expression iterator = ParseExpression();
+        LiteralExpression iterator = (LiteralExpression)ParseExpression();
+        //TODO:
+        if (iterator == null) throw new Exception();
         Consume(TokenType.In);
         LookAhead(TokenType.Id);
-        Expression collection = ParseExpression();
+        LiteralExpression collection = (LiteralExpression)ParseExpression();
+        //TODO:
+        if (collection == null) throw new Exception();
         Consume(TokenType.LCurly);
 
         var instruction = ParseInstruction(targets, context);
@@ -259,7 +262,6 @@ public class Parser
     }
     
     #endregion
-
     #region CardNodes
     List<Card> ParseCardDecBlock()
     {
@@ -548,6 +550,8 @@ public class Parser
         return id_allocation;
     }
     
+    #endregion
+    #region Expressions
     Expression ParseExpression()
     {
         LookAhead();
@@ -567,10 +571,9 @@ public class Parser
         }
         else {
             var left = ParseIdLiteral();
-
-            List<TokenType> BinOperators = [TokenType.Plus, TokenType.Minus, TokenType.Multip, TokenType.Division, TokenType.And, TokenType.Or
-            , TokenType.Equal, TokenType.Less, TokenType.LessEq, TokenType.MoreEq, TokenType.Concatenation
-            , TokenType.SpaceConcatenation, TokenType.Point, TokenType.Assign, TokenType.MoreAssign, TokenType.MinusAssign];
+            //FIXME: le quite el tokentype.point
+            List<TokenType> BinOperators = [TokenType.Plus, TokenType.Minus, TokenType.Multip, TokenType.Division, TokenType.Concatenation
+            , TokenType.SpaceConcatenation,TokenType.Assign, TokenType.MoreAssign, TokenType.MinusAssign, TokenType.Point];
             LookAhead();
             if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement) {
                 Token op = NextToken;
@@ -588,7 +591,13 @@ public class Parser
                 Consume(NextToken.Definition);
                 LookAhead();
                 if (NextToken.Definition is TokenType.RParen) {
-                    left = new FunctionCall(left, null);
+                    left = new FunctionCall(left, null);                    
+                }
+                //Find is an special function
+                //because it has inside a predicate
+                else if (NextToken.Value == "Find")
+                {
+                    left = new FindFunction(left, ParsePredicate());
                 }
                 else {
                     left = new FunctionCall(left, ParseExpression());
@@ -611,13 +620,14 @@ public class Parser
     {
         if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement)
         {
-            Token op = NextToken;
+            Token oper = NextToken;
             Consume(NextToken.Definition);
             Expression id = ParseIdLiteral();
-            return new UnaryExpression(id, op, false);
+            return new UnaryExpression(id, oper, false);
         }
         var value = NextToken;
         Consume(NextToken.Definition);
+        LookAhead();
         return new LiteralExpression(value);
     }
     Expression ParseBoolExpression()

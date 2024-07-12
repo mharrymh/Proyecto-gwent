@@ -24,6 +24,8 @@ internal class MainProgram
 
         Parser parser = new Parser(tokens);
 
-        DecBlock exp = (DecBlock)parser.Parse();  
+        DSL_Object program = parser.Parse();  
+
+        Console.WriteLine(program.Validate(new Context()));
     }
 }

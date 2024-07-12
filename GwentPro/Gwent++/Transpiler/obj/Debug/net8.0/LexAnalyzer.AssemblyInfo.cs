@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LexAnalyzer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f3e981cf5a447a311a0edc937483133fdff4be45")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9a4f3eba8b5dbd147179a21acf5388d2968b8fda")]
 [assembly: System.Reflection.AssemblyProductAttribute("LexAnalyzer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LexAnalyzer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

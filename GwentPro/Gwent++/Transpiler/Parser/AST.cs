@@ -19,6 +19,7 @@ FORMAS DE VALIDAR ACCESO A PROPIEDADES Y FUNCIONES
 
 */
 
+using System.Data;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
 
@@ -28,7 +29,6 @@ public abstract class DSL_Object
 {
     public abstract bool Validate(IContext context);
 }
-
 public class DecBlock : DSL_Object
 {
     public List<Effect> Effects {get; set;}
@@ -42,6 +42,7 @@ public class DecBlock : DSL_Object
     //Validates all the effects and cards creating a new subyacent context for each one
     public override bool Validate(IContext context)
     {
+        //Effects has to be declared before cards
         foreach(Effect effect in Effects)
         {
             if(!effect.Validate(context.CreateChildContext())) return false;
@@ -53,7 +54,7 @@ public class DecBlock : DSL_Object
         return true;
     }
 }
-
+#region EffectNodes
 public class Effect : DSL_Object
 {
     Expression Name {get;}
@@ -69,23 +70,21 @@ public class Effect : DSL_Object
     public override bool Validate(IContext context)
     {
         if (!Name.Validate(context)) return false;
-        return (Param == null || context.DefineParams(Name, Param)) && Action.Validate(context);
+        //TODO: Pasar name evaluando y quitar el casteo de la expresion literal
+        return (Param == null || context.DefineParams(((LiteralExpression)Name).Value.Value, Param)) && Action.Validate(context.CreateChildContext());
     }
 }
 
 public class InstructionBlock : DSL_Object
 {
     //Target and context are defined always in the OnActivation
-    Expression Targets {get;}
-    Expression Context {get;}
-    List<ForLoop> ForLoops {get; }
-    List<WhileLoop> WhileLoops {get; }
-    List<Expression> IdExpressions {get; }
-    public InstructionBlock(List<ForLoop> forLoops, List<WhileLoop> whileLoops, List<Expression> idExpressions, Expression targets, Expression context)
+    LiteralExpression Targets {get;}
+    LiteralExpression Context {get;}
+    //Statements: ForLoops, WhileLoops, Expressions
+    List<Statement> Statements {get;}
+    public InstructionBlock(List<Statement> statements, LiteralExpression targets, LiteralExpression context)
     {
-        this.ForLoops = forLoops;
-        this.WhileLoops = whileLoops;
-        this.IdExpressions = idExpressions;
+        this.Statements = statements;
         this.Targets = targets;
         this.Context = context;
     }
@@ -93,32 +92,27 @@ public class InstructionBlock : DSL_Object
     public override bool Validate(IContext context)
     {
         //Check that targets and context are correct, just id types
-        if (Targets is LiteralExpression targets && targets.Value.Definition is TokenType.Id
-        && Context is LiteralExpression contextExp && contextExp.Value.Definition is TokenType.Id)
+        if (Targets.Value.Definition is TokenType.Id && Context.Value.Definition is TokenType.Id)
         {
             //The value is defined after in the selector
-            context.Define(targets, new Variable(null, IdType.Targets));
+            context.Define(Targets.Value.Value, new Variable(null, IdType.CardCollection));
             //It has no value, context define all context in the game
-            context.Define(contextExp, new Variable(null, IdType.Context));
+            context.Define(Context.Value.Value, new Variable(null, IdType.Context));
         }
+        //TODO:
+        else throw new Exception();
         
-        foreach (ForLoop forLoop in ForLoops)
+        foreach (Statement statement in Statements)
         {
-            if (!forLoop.Validate(context.CreateChildContext())) return false;
-        }
-        foreach (WhileLoop whileLoop in WhileLoops)
-        {
-            if (!whileLoop.Validate(context.CreateChildContext())) return false;
-        }
-        foreach (Expression exp in IdExpressions)
-        {
-            if(!exp.Validate(context.CreateChildContext())) return false;
+            if (!statement.Validate(context)) return false;
         }
         return true;
     }
 }
 
-public class ForLoop : DSL_Object
+public abstract class Statement : DSL_Object {}
+
+public class ForLoop : Statement
 {
     Expression Iterator {get; }
     Expression Collection {get;}
@@ -131,28 +125,22 @@ public class ForLoop : DSL_Object
     }
     public override bool Validate(IContext context)
     {
-        //TODO: ISITERATOR Y ISCOLLECTION PREGUNTAN SI YA ES UN ITERADOR O UNA COLECCION DE LOS YA CONOCIDOS
-        //puede ser targets o otra coleccion
-        //se hace con get type
+        //Define the iterator and the collection 
+        context.Define(((LiteralExpression)Iterator).Value.Value, new Variable(null, IdType.Card));
 
-
-        //FIXME:
-        // if (Iterator.GetType != Type.iterator || Collection.GetType != Type.collection) return false;
+        //Collection has to be already defined
 
         //Create a new scope
         IContext child = context.CreateChildContext();
-        //Define the iterator and the collection 
-        //TODO:UNCOMMENT
-        // child.Define(Iterator, new Variable(null, IdType.Iterator));
-        // child.Define(Collection, new Variable(null, IdType.Collection));
 
+        if (!(Iterator.GetType(child) == IdType.Card && Collection.GetType(child) == IdType.CardCollection)) return false;
 
         //Validate instructions inside the for
         return Instructions.Validate(child);
     }
 }
 
-public class WhileLoop : DSL_Object
+public class WhileLoop : Statement
 {
     Expression BoolExpression {get; }
     InstructionBlock Instructions {get; }
@@ -169,6 +157,8 @@ public class WhileLoop : DSL_Object
         return BoolExpression.Validate(child) && Instructions.Validate(child);
     }
 }
+#endregion
+#region Card
 public class Card : DSL_Object
 {
     Expression Name {get; }
@@ -239,7 +229,9 @@ public class Allocation : DSL_Object
 
     public override bool Validate(IContext context)
     {
-        return Name.Validate(context) && DefinedActions.CheckValidParameters(Name, VarAllocation, context);
+        //TODO:
+        //Quitar el casteo y hacerlo evaluando la ezpresion de string
+        return Name.Validate(context) && DefinedActions.CheckValidParameters(((LiteralExpression)Name).Value.Value, VarAllocation, context);
     }
 }
 
@@ -254,11 +246,10 @@ public class Selector : DSL_Object
         this.Single = single;
         this.Predicate = predicate;
     }
-
     public override bool Validate(IContext context)
     {
         return Source.Validate(context) && Source.GetType(context) == IdType.String
-        && (Single == null || (Single.Validate(context) && Single.GetType(context) == IdType.Boolean))
+        && (Single == null || Single.Validate(context))
         && Predicate.Validate(context);
     }
 }
@@ -277,9 +268,10 @@ public class Predicate : DSL_Object
     public override bool Validate(IContext context)
     {
         //TODO: CONTEXT IS DEFINED??
-        return context.IsDefined(new LiteralExpression(Id)) && BoolExp.Validate(context) && BoolExp.GetType(context) == IdType.Boolean;
+        context.Define(Id.Value, new Variable(null, IdType.Card));
+        return BoolExp.Validate(context);
     }
-}
+}   
 public class PostActionBlock : DSL_Object
 {
     EffectAllocation EffectBlock {get; }
@@ -293,3 +285,4 @@ public class PostActionBlock : DSL_Object
         return EffectBlock.Validate(context);
     }
 }
+#endregion
