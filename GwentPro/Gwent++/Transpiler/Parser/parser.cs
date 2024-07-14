@@ -571,9 +571,9 @@ public class Parser
         }
         else {
             var left = ParseIdLiteral();
-            //FIXME: le quite el tokentype.point
-            List<TokenType> BinOperators = [TokenType.Plus, TokenType.Minus, TokenType.Multip, TokenType.Division, TokenType.Concatenation
-            , TokenType.SpaceConcatenation,TokenType.Assign, TokenType.MoreAssign, TokenType.MinusAssign, TokenType.Point];
+            List<TokenType> BinOperators = [TokenType.Plus, TokenType.Minus, TokenType.Multip, TokenType.Division, TokenType.Concatenation,
+            TokenType.SpaceConcatenation,TokenType.Assign, TokenType.MoreAssign, TokenType.MinusAssign, 
+            TokenType.MultipAssign, TokenType.DivisionAssign, TokenType.Point];
             LookAhead();
             if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement) {
                 Token op = NextToken;
@@ -664,13 +664,25 @@ public class Parser
     }
     Expression ParseTerm()
     {
-        Expression left = ParseFactor();
+        Expression left = ParsePow();
         LookAhead();
         if (NextToken.Definition is TokenType.Multip || NextToken.Definition is TokenType.Division)
         {
             Token op = NextToken;
             Consume(NextToken.Definition);
             Expression right = ParseTerm();
+            left = new BinaryExpression(left, op, right);
+        }
+        return left;
+    }
+    Expression ParsePow() {
+        Expression left = ParseFactor();
+        LookAhead();
+        if (NextToken.Definition is TokenType.Pow)
+        {
+            Token op = NextToken;
+            Consume(NextToken.Definition);
+            Expression right = ParsePow();
             left = new BinaryExpression(left, op, right);
         }
         return left;

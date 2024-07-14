@@ -26,6 +26,6 @@ internal class MainProgram
 
         DSL_Object program = parser.Parse();  
 
-        Console.WriteLine(program.Validate(new Context()));
+        program.Validate(new Scope());
     }
 }

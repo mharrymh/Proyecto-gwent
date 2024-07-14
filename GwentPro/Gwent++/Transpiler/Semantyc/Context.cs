@@ -3,63 +3,7 @@ using System.Globalization;
 
 namespace Transpiler;
 
-/*
-
-Agregar /= y *= 
-
-
-
-
-
-
-
-
-Propiedades de context:
-TriggerPlayer
-Board
-
-Que reciben como parametro un player: 
-HandOfPlayer(player) => Se acepta context.Hand como diminutivo de context.HandOfPLayer(context.TriggerPlayer)
-// LO MISMO PARA LAS DEMAS
-FieldOfPlayer(player)
-GraveyardOfPlayer(player)
-DeckOfPlayer(player)
-
-Propiedades de carta: 
-Owner
-
-Metodos que tienen cada una de las listas de cartas accesibles desde el contexto
-Find(predicate)
-Push(card)
-SendBottom(card)
-Pop()
-Remove(card)
-Shuffle()
-*/
-
-//An enumerable with the different types of id
-public enum IdType {
-    Number, 
-    String,
-    Boolean,
-    Context,
-    Targets, 
-    Card,
-    Player,
-    CardCollection,
-    Predicate,
-    Null
-
-}
-public struct Variable {
-    public Expression? Value {get; }
-    public IdType IdType {get;}
-    public Variable(Expression? value, IdType idType) {
-        Value = value;
-        IdType = idType;
-    }
-}
-public interface IContext {
+public interface IScope {
     //Actions
     //Receives the effect name and the dictionary with the tokens and the types declared
     bool DefineParams(string name, Dictionary<Token, Token> param);
@@ -67,24 +11,24 @@ public interface IContext {
     //Returns if an id is already defined
     bool IsDefined(string idName);
     //Check if its defined and returns the context where it is defined
-    bool IsDefinedInContext(string idName, ref Context contextOf);
+    bool IsDefinedInContext(string idName, ref Scope scopeOf);
     //Define the id with its name, its token type and its expression value
     bool Define(string idName, Variable value);
     //Returns the type of the id
     IdType GetIdType(string id);
     //Creates a subyacent context
-    IContext CreateChildContext();
+    IScope CreateChildContext();
 }
 
 
 //TODO: DIFINE PARAMETERS
-public class Context : IContext
+public class Scope : IScope
 {
-    IContext? parent;
+    IScope? parent;
     //Saves each variable with its names and its values
     Dictionary<string, Variable> variables = [];
     //Create the context child
-    public IContext CreateChildContext() => new Context {parent = this};
+    public IScope CreateChildContext() => new Scope {parent = this};
     //Add each variable to the dictionary with its name and its type and its value(expression) 
     public bool Define(string variable, Variable value)
     {
@@ -139,16 +83,16 @@ public class Context : IContext
         //If the variable is not defined throw error
         //TODO:
         //Get the context in the hierarchy where it is declared the variable
-        Context contextOf = this;
+        Scope scopeOf = this;
         //Context is passed by reference so it returns modified 
         //TODO:
-        if (!IsDefinedInContext(idName, ref contextOf)) throw new Exception();
+        if (!IsDefinedInContext(idName, ref scopeOf)) throw new Exception();
         //else return the type of the variable
-        return contextOf.variables[idName].IdType;
+        return scopeOf.variables[idName].IdType;
     }
-    public bool IsDefinedInContext(string idName, ref Context contextOf) {
-        contextOf = this;
-        return variables.ContainsKey(idName) || (parent != null && parent.IsDefinedInContext(idName, ref contextOf));
+    public bool IsDefinedInContext(string idName, ref Scope scopeOf) {
+        scopeOf = this;
+        return variables.ContainsKey(idName) || (parent != null && parent.IsDefinedInContext(idName, ref scopeOf));
     }
     public bool IsDefined(string variable) {
         return variables.ContainsKey(variable) || (parent != null && parent.IsDefined(variable));

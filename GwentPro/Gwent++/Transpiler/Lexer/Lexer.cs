@@ -3,63 +3,10 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Transpiler;
-
-//string pattern = @"^([a-zA-Z_][a-zA-Z0-9_]*)(\.[a-zA-Z_][a-zA-Z0-9_]*|\.[a-zA-Z_][a-zA-Z0-9_]*\([a-zA-Z_][a-zA-Z0-9_]*\))*$";
-
-
-public enum TokenType
-{
-    // Reserved words
-    For, While, Effect, C_Effect, Card, Source, Single, 
-    Predicate, PostAction, Type, Name, Faction, Power, Range, OnActivation, 
-    Selector, Implication, In, 
-
-    //FIXME: ELIMINAR (QUIZA DEJAR EL FIND)
-    // Hand, Deck, Board,
-    // TriggerPlayer, Find, Push, SendBottom, Pop, Remove, Shuffle,
-
-    // Operators
-    Increment, Decrement, Plus, Minus, Division, Multip, And, 
-    Or, Less, More, Equal, LessEq, MoreEq, SpaceConcatenation, 
-    Concatenation, Assign, MinusAssign, MoreAssign, NotEquals,
-
-    // Brackets
-    LParen, RParen, LBracket, RBracket, LCurly, RCurly,
-
-    // Punctuation
-    Semicolon, Colon, Point, Comma,
-
-    // Types
-    Boolean, String, Num, Id, Params, Action,
-
-    // Comment and whitespaces
-    Null,
-
-    // Value types
-    Number, Bool, Text
-}
-
-public struct Token {
-    public string Value {get; private set;}
-    public TokenType Definition {get; private set;}
-    public int Line {get; private set;}
-    public int Column {get; private set;}
-    public Token(string value, TokenType definition, int line, int column)
-    {
-        this.Value = value;
-        this.Definition = definition;
-        this.Line = line;
-        this.Column = column;
-    }
-}
 public class Lexer {
-    private readonly Dictionary<TokenType, string> TokenDefinitions = new Dictionary<TokenType, string>
+    //Create a dictionary that relates types with its regular expressions
+    readonly Dictionary<TokenType, string> TokenDefinitions = new Dictionary<TokenType, string>
     {
-        // // Access to properties and functions with one or none parameters
-        // {TokenType.IdCall, 
-        // @"([a-zA-Z_][a-zA-Z0-9_]*)(\.[a-zA-Z_][a-zA-Z0-9_]*)(\(\)|\([a-zA-Z_][a-zA-Z0-9_]*\))?(\.[a-zA-Z_][a-zA-Z0-9_]*(\(\)|\([a-zA-Z_][a-zA-Z0-9_]*\)))*"},
-
-
         // Comment and whitespaces
         {TokenType.Null, @"\s+|\/\/.*|(?s)/\*.*?\*/"},
 
@@ -87,10 +34,13 @@ public class Lexer {
         // Operators
         {TokenType.MinusAssign, @"\-="}, 
         {TokenType.MoreAssign, @"\+="}, 
+        {TokenType.MultipAssign, @"\*="},
+        {TokenType.DivisionAssign, @"\/="},
         {TokenType.NotEquals, @"!="}, 
         {TokenType.Implication, @"=>"}, 
         {TokenType.Increment, @"\+\+"}, 
         {TokenType.Decrement, @"--"}, 
+        {TokenType.Pow, @"\^"},
         {TokenType.Plus, @"\+"}, 
         {TokenType.Minus, @"-"}, 
         {TokenType.Multip, @"\*"}, 
@@ -105,15 +55,10 @@ public class Lexer {
         {TokenType.SpaceConcatenation, "@@"}, 
         {TokenType.Concatenation, "@"}, 
         {TokenType.Assign, "="},
-
-
-
-
         // Brackets
         {TokenType.LParen, @"\("}, {TokenType.RParen, @"\)"}, 
         {TokenType.LBracket, @"\["}, {TokenType.RBracket, @"\]"}, 
         {TokenType.LCurly, @"\{"}, {TokenType.RCurly, @"\}"},
-
         // Punctuation
         {TokenType.Semicolon, ";"}, {TokenType.Colon, @":"}, 
         {TokenType.Point, @"\."}, {TokenType.Comma, ","},
@@ -124,47 +69,47 @@ public class Lexer {
         {TokenType.String, "\".*?\""}, 
         {TokenType.Id, @"\b[A-Za-z_][A-Za-z_0-9]*\b"}
     };
+    //Function that returns the input as a list of tokens
     public List<Token> Tokenize(string input)
     {
+        //Initialize the needed variables
         List<Token> tokens = new List<Token>();
         string remainingInput = input;
         int actualLine = 1;
         int actualColumn = 1;
 
+        //Keep tokenizing while the remaining input is not empty
         while (!string.IsNullOrEmpty(remainingInput)) {
-
-            // Token actualToken = new Token();
             bool matchFound = false;
 
             foreach(var tokenDef in TokenDefinitions) {
-
                 Match match = Regex.Match(remainingInput, "^" + tokenDef.Value);
 
                 if (match.Success) {
-
                     if (match.Value.Contains('\n')) {
                         actualLine += match.Value.Count(c => c == '\n'); //Increment the actual line for each new line
                         actualColumn = 1;
                     }
-
                     //Ignore whitespaces and comments
                     if (tokenDef.Key != TokenType.Null) 
-                    { 
+                    {
                         tokens.Add(new Token(match.Value, tokenDef.Key, actualLine, actualColumn));
                     }
-
+                    //Delete the tokenized string from the remaining input
                     remainingInput = remainingInput.Substring(match.Value.Length);
                     actualColumn += match.Value.Length;
                     matchFound = true;
                     break;
                 }
             }
-
+            //A token didn't match with any of the regular expresions
             if (!matchFound) {
-                var invalidToken = new InvalidSyntaxError(actualLine, actualColumn, remainingInput[0]);
+                //Throw error
+                Error invalidToken = new InvalidSyntaxError(actualLine, actualColumn, remainingInput[0]);
                 throw new Exception(invalidToken.ToString());
             }
         }
+        //Return the list
         return tokens;
     } 
 }

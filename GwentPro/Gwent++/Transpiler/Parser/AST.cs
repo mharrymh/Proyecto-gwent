@@ -1,21 +1,7 @@
 /* SUMMARY
 
-
-Evaluar las expresiones corticas
-
-La propiedad Find voy a tener que hacerla en el parser poruque como parametro tiene un PREDICADO
-
-Implementar en el lexer y el parser la potenciacion
-
-Implementar el indexado en lista en el parser
-
-//ERRORES EN EL EVALUATE
-//MUCHO CATCH 
-
-
-FORMAS DE VALIDAR ACCESO A PROPIEDADES Y FUNCIONES
-//VOY CONSUMIENDO DE IZQUIERDA A DERECHA HASTA TENER ALGO O QUE ME DE ERROR
-//SI LLEGO A UNA CARTA ME QUEDO CON ELLA Y EMPIEZO A COGER DE LA PARTE DERECHA LO QUE ES VALIDO DE UNA CARTA
+ERRORES EN EL EVALUATE
+MUCHO CATCH 
 
 */
 
@@ -24,11 +10,20 @@ using System.Runtime.CompilerServices;
 using System.Security.Principal;
 
 namespace Transpiler;
-//Abstract root of all classes
+/// <summary>
+/// Represent an object in the DSL
+/// </summary>
 public abstract class DSL_Object
 {
-    public abstract bool Validate(IContext context);
+    /// <summary>
+    /// Analyze the object semantyc
+    /// </summary>
+    /// <param name="scope"></param>
+    public abstract void Validate(IScope scope);
 }
+/// <summary>
+/// Represent a block of declarations
+/// </summary>
 public class DecBlock : DSL_Object
 {
     public List<Effect> Effects {get; set;}
@@ -38,23 +33,24 @@ public class DecBlock : DSL_Object
         this.Effects = eff;
         this.Cards = card;
     }
-
-    //Validates all the effects and cards creating a new subyacent context for each one
-    public override bool Validate(IContext context)
+    //Validates all the effects and cards creating a new subyacent scope for each one
+    public override void Validate(IScope scope)
     {
-        //Effects has to be declared before cards
+        //Effects had to be declared before cards
         foreach(Effect effect in Effects)
         {
-            if(!effect.Validate(context.CreateChildContext())) return false;
+            effect.Validate(scope.CreateChildContext());
         }
         foreach(Card card in Cards)
         {
-            if (!card.Validate(context.CreateChildContext())) return false;
+            card.Validate(scope.CreateChildContext());
         }
-        return true;
     }
 }
 #region EffectNodes
+/// <summary>
+/// Represents an effect declaration
+/// </summary>
 public class Effect : DSL_Object
 {
     Expression Name {get;}
@@ -67,14 +63,17 @@ public class Effect : DSL_Object
         this.Action = action;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        if (!Name.Validate(context)) return false;
+        Name.ValidateAndCheck(scope, IdType.String);
         //TODO: Pasar name evaluando y quitar el casteo de la expresion literal
-        return (Param == null || context.DefineParams(((LiteralExpression)Name).Value.Value, Param)) && Action.Validate(context.CreateChildContext());
+        if (Param != null) scope.DefineParams(((LiteralExpression)Name).Value.Value, Param);
+        Action.Validate(scope.CreateChildContext());
     }
 }
-
+/// <summary>
+/// Represent an action declaration
+/// </summary>
 public class InstructionBlock : DSL_Object
 {
     //Target and context are defined always in the OnActivation
@@ -89,57 +88,69 @@ public class InstructionBlock : DSL_Object
         this.Context = context;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
         //Check that targets and context are correct, just id types
         if (Targets.Value.Definition is TokenType.Id && Context.Value.Definition is TokenType.Id)
         {
-            //The value is defined after in the selector
-            context.Define(Targets.Value.Value, new Variable(null, IdType.CardCollection));
-            //It has no value, context define all context in the game
-            context.Define(Context.Value.Value, new Variable(null, IdType.Context));
+            if (!scope.IsDefined(Targets.Value.Value))
+                //The value is defined after in the selector
+                scope.Define(Targets.Value.Value, new Variable(null, IdType.CardCollection));
+
+            if (!scope.IsDefined(Context.Value.Value))
+                //It has no value, context define all context in the game
+                scope.Define(Context.Value.Value, new Variable(null, IdType.Context));
         }
         //TODO:
         else throw new Exception();
         
         foreach (Statement statement in Statements)
         {
-            if (!statement.Validate(context)) return false;
+            statement.Validate(scope);
         }
-        return true;
     }
 }
 
+/// <summary>
+/// Represents an instruction in the DSL
+/// </summary>
 public abstract class Statement : DSL_Object {}
-
+/// <summary>
+/// Represent a for loop statement
+/// </summary>
 public class ForLoop : Statement
 {
-    Expression Iterator {get; }
+    LiteralExpression Iterator {get; }
     Expression Collection {get;}
     InstructionBlock Instructions {get; }
-    public ForLoop(InstructionBlock instructions, Expression iterator, Expression collection)
+    public ForLoop(InstructionBlock instructions, LiteralExpression iterator, Expression collection)
     {
         this.Instructions = instructions;
         this.Iterator = iterator;
         this.Collection = collection;
     }
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        //Define the iterator and the collection 
-        context.Define(((LiteralExpression)Iterator).Value.Value, new Variable(null, IdType.Card));
-
-        //Collection has to be already defined
+        //Define the iterator 
+        scope.Define(Iterator.Value.Value, new Variable(null, IdType.Card));
+        //Collection had to be already defined
+        //TODO: QUITAR CASTEO Y LANZAR ERROR: COLECCION NO DEFINIDA
+        if (!scope.IsDefined(((LiteralExpression)Collection).Value.Value)) throw new Exception();
 
         //Create a new scope
-        IContext child = context.CreateChildContext();
+        IScope child = scope.CreateChildContext();
 
-        if (!(Iterator.GetType(child) == IdType.Card && Collection.GetType(child) == IdType.CardCollection)) return false;
+        //Check that types are correct
+        Iterator.CheckType(child, IdType.Card);
+        Collection.CheckType(child, IdType.CardCollection);
 
         //Validate instructions inside the for
-        return Instructions.Validate(child);
+        Instructions.Validate(child);
     }
 }
-
+/// <summary>
+/// Represent a while loop statement
+/// </summary>
 public class WhileLoop : Statement
 {
     Expression BoolExpression {get; }
@@ -150,21 +161,29 @@ public class WhileLoop : Statement
         this.BoolExpression = boolExpression;
         this.Instructions = instructions;
     }
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
+        //Create a new child scope
+        IScope child = scope.CreateChildContext();
         //Validate the bool expression and the instruction inside
-        IContext child = context.CreateChildContext();
-        return BoolExpression.Validate(child) && Instructions.Validate(child);
+        //TODO: ARREGLAR EL TIPO DE LAS EXPRESIONES BOOLEANAS
+        BoolExpression.ValidateAndCheck(child, IdType.Boolean);
+        Instructions.Validate(child);
     }
 }
 #endregion
 #region Card
+/// <summary>
+/// Represent a card declaration in the DSL
+/// </summary>
 public class Card : DSL_Object
 {
     Expression Name {get; }
     Expression Type {get; }
     Expression Faction {get; }
+    //Power can be null for cards that doesn't have power
     Expression? Power {get; }
+    //Range can be null for leader cards or another especial cards
     List<Expression>? Range {get; }
     List<EffectAllocation> Activation {get; }
 
@@ -179,23 +198,31 @@ public class Card : DSL_Object
         this.Activation = activation;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        if (Range != null)
+        if (Range != null) {
             foreach(Expression exp in Range)
             {
+                exp.Validate(scope);
                 //Check that all expressions in range are string expressions
-                if (!exp.Validate(context) || !(exp.GetType(context) == IdType.String)) return false;
+                exp.CheckType(scope, IdType.String);
             }
+        }
+        
         foreach(EffectAllocation effect in Activation)
         {
-            if (!effect.Validate(context.CreateChildContext())) return false;
+            effect.Validate(scope.CreateChildContext());
         }
-        return Name.Validate(context) && Type.Validate(context) && Faction.Validate(context)
-        && (Power == null || Power.Validate(context));
+        Name.ValidateAndCheck(scope, IdType.String);
+        Type.ValidateAndCheck(scope, IdType.String);
+        Faction.ValidateAndCheck(scope, IdType.String);
+        //It calls the validate function only if power is not null
+        Power?.ValidateAndCheck(scope, IdType.Number);
     }
 }
-
+/// <summary>
+/// Represent an effect assignment in the DSL
+/// </summary>
 public class EffectAllocation : DSL_Object
 {
     Allocation Allocation {get; }
@@ -209,14 +236,16 @@ public class EffectAllocation : DSL_Object
         this.PostAction = postAction;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        return Allocation.Validate(context) && 
-        (Selector == null || Selector.Validate(context)) && 
-        (PostAction == null || PostAction.Validate(context));
+        Allocation.Validate(scope);
+        Selector?.Validate(scope);
+        PostAction?.Validate(scope);
     }
 }
-
+/// <summary>
+/// Represent the declaration of the card effect with its name and params assignments
+/// </summary>
 public class Allocation : DSL_Object
 {
     Expression Name {get; }
@@ -227,18 +256,33 @@ public class Allocation : DSL_Object
         this.VarAllocation = varAllocation;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
         //TODO:
         //Quitar el casteo y hacerlo evaluando la ezpresion de string
-        return Name.Validate(context) && DefinedActions.CheckValidParameters(((LiteralExpression)Name).Value.Value, VarAllocation, context);
+        Name.ValidateAndCheck(scope, IdType.String);
+        DefinedActions.CheckValidParameters(((LiteralExpression)Name).Value.Value, VarAllocation, scope);
     }
 }
-
+/// <summary>
+/// Assign the card collection that will be affected by the effect activation
+/// </summary>
 public class Selector : DSL_Object 
 {
+    /// <summary>
+    /// Card collection from where the cards are get 
+    /// </summary>
+    /// <value></value>
     Expression Source {get; }
+    /// <summary>
+    /// Represent if we only affect a single card in the collection or all of them
+    /// </summary>
+    /// <value>By default is false</value>
     Expression? Single {get; }
+    /// <summary>
+    /// Predicate used to restrict source even more
+    /// </summary>
+    /// <value></value>
     Predicate Predicate {get; }
     public Selector(Expression source, Expression? single, Predicate predicate)
     {
@@ -246,17 +290,16 @@ public class Selector : DSL_Object
         this.Single = single;
         this.Predicate = predicate;
     }
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        return Source.Validate(context) && Source.GetType(context) == IdType.String
-        && (Single == null || Single.Validate(context))
-        && Predicate.Validate(context);
+        Source.ValidateAndCheck(scope, IdType.String);
+        Single?.ValidateAndCheck(scope, IdType.Boolean);
+        Predicate.Validate(scope);
     }
 }
 
 public class Predicate : DSL_Object
 {
-    //TODO: RECIBE UNA EXPRESION?
     Token Id {get; }
     Expression BoolExp {get; }
     public Predicate(Token id, Expression boolExp)
@@ -265,11 +308,10 @@ public class Predicate : DSL_Object
         this.BoolExp = boolExp;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        //TODO: CONTEXT IS DEFINED??
-        context.Define(Id.Value, new Variable(null, IdType.Card));
-        return BoolExp.Validate(context);
+        scope.Define(Id.Value, new Variable(null, IdType.Card));
+        BoolExp.ValidateAndCheck(scope, IdType.Boolean);
     }
 }   
 public class PostActionBlock : DSL_Object
@@ -280,9 +322,9 @@ public class PostActionBlock : DSL_Object
         this.EffectBlock = effectBlock;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        return EffectBlock.Validate(context);
+        EffectBlock.Validate(scope);
     }
 }
 #endregion

@@ -1,79 +1,47 @@
 using System.ComponentModel.DataAnnotations;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Transactions;
 
-/*
-Crear el id type null?? 
-
-*/
-
-
-
 namespace Transpiler;
-//Create an abstract expression class 
+/// <summary>
+/// Represent an expression in the DSL
+/// </summary>
 public abstract class Expression : Statement {
     ///<summary>
     ///Returns the <see langword="type"/> of the expression: Int, String, Bool, etc...
     ///</summary>
-    public abstract IdType GetType(IContext context);
-    ///<summary>
-    ///Relate the types with a hashset of possible properties or functions represented as string 
-    ///</summary>
-    //TODO: Agregar otherhand etc...
-    public Dictionary<IdType, HashSet<string>> ValidAccess = new Dictionary<IdType, HashSet<string>>{
-        {IdType.Context, ["TriggerPlayer", "Board", "Hand", "HandOfPLayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer"]},
-        {IdType.Card, ["Owner", "Power", "Faction", "Name", "Type"]},
-        {IdType.Player, ["Enemy"]},
-        {IdType.CardCollection, ["Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add"]}
-    };
-    ///<summary>
-    ///Relate the functions with the types of the arguments 
-    ///</summary>
-    public Dictionary<string, IdType?> ValidArguments = new Dictionary<string, IdType?>{
-        {"Find", IdType.Predicate},
-        {"Push", IdType.Card},
-        {"SendBottom", IdType.Card},
-        {"Pop", null},
-        {"Remove", IdType.Card},
-        {"Shuffle", null},
-        {"Add", IdType.Card},
+    public abstract IdType GetType(IScope scope);
+    /// <summary>
+    /// Throw an error if the expected type is different from the actual expression type
+    /// </summary>
+    /// <param name="scope"></param>
+    /// <param name="expected"></param>
+    public void CheckType(IScope scope, IdType expected)
+    {
+        if (this.GetType(scope) != expected)
+        //TODO: 
+            throw new Exception();
+    }
+    /// <summary>
+    /// Validate and check the expression with only one function
+    /// </summary>
+    /// <param name="scope"></param>
+    /// <param name="expected"></param>
+    public void ValidateAndCheck(IScope scope, IdType expected)
+    {
+        this.Validate(scope);
+        this.CheckType(scope, expected);
+    }
+      
+};
 
-        {"HandOfPlayer", IdType.Player},
-        {"FieldOfPlayer", IdType.Player},
-        {"GraveyardOfPlayer", IdType.Player},
-        {"DeckOfPlayer", IdType.Player}
-    };
-    ///<summary>
-    ///Relate the functions with its types
-    ///</summary>
-    public Dictionary<string, IdType> Types = new Dictionary<string, IdType>{
-        //Functions
-        {"Find", IdType.Card},
-        {"Push", IdType.Null},
-        {"SendBottom", IdType.Null},
-        {"Pop", IdType.Card},
-        {"Remove", IdType.Null},
-        {"Shuffle", IdType.Null},
-        {"Add", IdType.Null},
-
-        {"HandOfPlayer", IdType.CardCollection},
-        {"FieldOfPlayer", IdType.CardCollection},
-        {"GraveyardOfPlayer", IdType.CardCollection},
-        {"DeckOfPlayer", IdType.CardCollection},
-        {"Owner", IdType.Player},
-        {"TriggerPlayer", IdType.Player},
-        {"Board", IdType.CardCollection},
-
-        {"Power", IdType.Number},
-        {"Faction", IdType.String},
-        {"Type", IdType.String},
-        {"Name", IdType.String}
-    };
-}
-
-//Represent all kind of binary expressions
+/// <summary>
+/// Represent a Binary Expression
+/// </summary>
 public class BinaryExpression : Expression
 {
     public Expression Left { get; }
@@ -86,137 +54,33 @@ public class BinaryExpression : Expression
         this.Right = right;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        //Saves the type of the operator
-        TokenType type = Op.Definition;
-        //Save right type
-        IdType rightType = Right.GetType(context);
-        IdType? leftType = null;
-        //Id operators:
-        // - Assignment '='
-        //TODO: -= += /= *= 
-
-        if (type is TokenType.Assign) {
-            //If left expression is an id then add definition to the scope dictionary
-            if (Left is LiteralExpression literal && literal.Value.Definition is TokenType.Id) {
-                //Define the new variable in the scope
-                if (!context.Define(literal.Value.Value, new Variable(Right, rightType))) return false;
-            } 
-            //TODO: SUPONIENDO QUE PARA SER MODIFICABLE UNA PROPIEDAD SOLO PUEDE SER NUMBER
-            //PORQUE NO TIENE SENTIDO QUE UNA ACCION PUEDA MODIFICARTE OTRA COSA, PREGUNTAR
-            //Puede ser una carta
-            // leftType = Left.GetType(context);
-            // if (!(leftType is IdType.Number && rightType == leftType)) return false;
-            return true;
-        }
-        //Save left type
-        if (leftType == null)
-            leftType = Left.GetType(context);
-
-        #region Bool Expression
-        //Save the bool operators in a hash set
-        HashSet<TokenType> boolOps = 
-        [TokenType.And, TokenType.Or, TokenType.Equal, TokenType.More, TokenType.MoreEq, TokenType.Less, TokenType.LessEq];
-        //Bool expressions must have the same type in both left and right expressions
-        if (boolOps.Contains(type) && leftType == rightType)
-        {
-            if (type is TokenType.And || type is TokenType.Or)
-            {
-                //Check that both expressions are bool 
-                return leftType == IdType.Boolean;
-            }
-            else if (type is TokenType.LessEq || type is TokenType.Less
-            || type is TokenType.MoreEq || type is TokenType.More) {
-                //Check that both expressions are ints
-                return leftType == IdType.Number;
-            }
-            //Is a equal operator
-            else {
-                //Already verified that both are the same
-                return true;
-            }
-        }
-        #endregion
-        #region Int 
-        //Saves the numeric and concat operators in a hash set
-        HashSet<TokenType> numericOps = 
-        [TokenType.Minus, TokenType.Plus, TokenType.Division, TokenType.Multip];
-
-        if (numericOps.Contains(type) && leftType == rightType && leftType == IdType.Number) {
-            //Already checked that both left and right are int or string expressions
-            return true;
-        }
-        #endregion
-        #region String
-        HashSet<TokenType> stringOps = [TokenType.Concatenation, TokenType.SpaceConcatenation];
-
-        if (stringOps.Contains(type) && leftType == rightType && leftType == IdType.String) {
-            //Already checked that both left and right are int or string expressions
-            return true;
-        }
-        #endregion
-        //Else is an id expression
-        #region Id Expression
-        //-Access '.'
-        if (Op.Definition is TokenType.Point) {
-            //Left type is not null here
-            ValidateAccess((IdType)leftType, Right, context);
-        }
-
-        #endregion
-        return true;
+        //Validate depending of the operator definition
+        SemantycBinaryExpression.ValidateByOp[Op.Definition].Invoke(this, scope);
     }
-    void ValidateAccess(IdType leftType, Expression right, IContext context)
-    {
-        if (right is BinaryExpression binary)
-        {
-            if (ValidAccess.ContainsKey(leftType) 
-            //The left part of an access binary expression is always an id literal expression
-            && ValidAccess[leftType].Contains(((LiteralExpression)binary.Left).Value.Value))
-            {
-                //Is correct
-                return;
-            }
-        }
-        else if (right is LiteralExpression literal) {
-            if (ValidAccess.ContainsKey(leftType)
-            && ValidAccess[leftType].Contains(literal.Value.Value)) return;
-        }
-        else if (right is FunctionCall function) {
-            //Body of a function call is always a literal expression
-            if (function.Validate(context) && ValidAccess[leftType].Contains(((LiteralExpression)function.Body).Value.Value)) return;
-        }
-        //It is an indexer
-        else if (right is Indexer indexer){
-            if (indexer.Validate(context))
-            {
-                if (indexer.Body is LiteralExpression litBody && ValidAccess[leftType].Contains(litBody.Value.Value)) return;
-                //Body is a function call
-                else {
-                    ValidateAccess(leftType, indexer.Body, context);
-                }
-            }
-        }
 
-        //It doesn't validate
-        //TODO:
-        throw new Exception();
-    }
     //It is done depending of the operator
-    public override IdType GetType(IContext context)
+    public override IdType GetType(IScope scope)
     {
+        SemantycBinaryExpression.GetTypeByOp[Op.Definition].Invoke(this, scope);
+        TokenType op = Op.Definition;
         //If it is an access operatos just return the right type and it becomes recursive
-        if (Op.Definition is TokenType.Point) return Right.GetType(context);
-        else if (Op.Definition is TokenType.Assign) {
+        if (op is TokenType.Point) return Right.GetType(scope);
+
+        else if (op is TokenType.Assign) {
             //If it is an assignment return the type of the right side of the assignment 
-            return Right.GetType(context);
+            return Right.GetType(scope);
+        }
+        else if (Op.Definition is TokenType.Equal) {
+            //If it is an equal operator
+            return IdType.Boolean;
         }
         else {
             //TODO:
-            if (Left.GetType(context) != Right.GetType(context)) throw new Exception();
+            if (Left.GetType(scope) != Right.GetType(scope)) throw new Exception();
             //If they are the same return the right side 
-            return Left.GetType(context);
+            return Left.GetType(scope);
         }
         
     }
@@ -227,30 +91,28 @@ public class LiteralExpression : Expression
     public LiteralExpression(Token value) {
         this.Value = value;
     }
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
         TokenType type = Value.Definition;
         //returns true is it is not an id
         if (type is TokenType.Num || type is TokenType.String
-        || type is TokenType.Boolean) {
-            return true;
+        || type is TokenType.Boolean || scope.IsDefined(this.Value.Value)) {
+            return;
         }
-        //else return true is the id has been defined
-        //TODO: YA EXISTEN IDS DEFINIDOS COMO LOS DE CONTEXT ETC
-        //Definir el context cuando se crea el action
-        else return context.IsDefined(this.Value.Value);
+        //TODO:
+        throw new Exception();
     }
 
-    public override IdType GetType(IContext? context)
+    public override IdType GetType(IScope? scope)
     {
         //If is an id or a reserved word id return its type
         if ((Value.Definition is TokenType.Id || Utils.PropertiesReservedWords.Contains(Value.Definition)) 
-        && context != null) {
-            if (Types.ContainsKey(Value.Value)) {
+        && scope != null) {
+            if (Utils.Types.TryGetValue(Value.Value, out IdType value)) {
                 //This can be null
-                return Types[Value.Value];
+                return value;
             }
-            return context.GetIdType(this.Value.Value);
+            return scope.GetIdType(this.Value.Value);
         }
 
         //Boolean, ints and strings only 
@@ -275,21 +137,26 @@ public class UnaryExpression : Expression
         this.AtTheEnd = atTheEnd;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
         //Id must contain a numeric expression
-        if(ID is LiteralExpression literal && ID.GetType(context) == IdType.Number) return literal.Validate(context);
+        if(ID is LiteralExpression literal)
+        { 
+            ID.CheckType(scope, IdType.Number);
+            literal.Validate(scope);
+        }
         //TODO: THROW ERROR
-        return false;
+        throw new Exception();
     }
 
-    public override IdType GetType(IContext context)
+    public override IdType GetType(IScope scope)
     {
-        return ID.GetType(context);
+        return ID.GetType(scope);
     }
 }
 
 public class FindFunction : Expression {
+    //The body is always a find function
     Expression Body {get;}
     Predicate Predicate {get;}
     public FindFunction(Expression body, Predicate predicate)
@@ -298,14 +165,14 @@ public class FindFunction : Expression {
         this.Predicate = predicate;
     }
 
-    public override IdType GetType(IContext context)
+    public override IdType GetType(IScope scope)
     {
-        throw new NotImplementedException();
+        return IdType.Card;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        throw new NotImplementedException();
+        Predicate.Validate(scope);
     }
 }
 
@@ -318,21 +185,22 @@ public class FunctionCall : Expression {
         this.Argument = argument;
     }
 
-    public override IdType GetType(IContext context)
+    public override IdType GetType(IScope scope)
     {
-        return Body.GetType(context);
+        return Body.GetType(scope);
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
         //Body expression is always a literal expression
         //Check if the body match with the arguments
         string body = ((LiteralExpression)Body).Value.Value;
-        if (ValidArguments.ContainsKey(body) && ValidArguments[body] == Argument?.GetType(context))
+        if (Utils.ValidArguments.TryGetValue(body, out IdType? value) && value == Argument?.GetType(scope))
         {
-            return true;
+            return;
         }
-        return false;
+        //TODO:
+        throw new Exception();
     }
 }
 
@@ -345,17 +213,18 @@ public class Indexer : Expression {
         this.Index = index;
     }
 
-    public override IdType GetType(IContext context)
+    public override IdType GetType(IScope scope)
     {
         return IdType.Card;
     }
 
-    public override bool Validate(IContext context)
+    public override void Validate(IScope scope)
     {
-        if (Body.GetType(context) is IdType.CardCollection && Index.GetType(context) is IdType.Number)
+        if (Body.GetType(scope) is IdType.CardCollection && Index.GetType(scope) is IdType.Number)
         {
-            return true;
+            return;
         }
-        return false;
+        //TODO:
+        throw new Exception();
     }
 }

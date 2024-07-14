@@ -9,27 +9,32 @@ public static class DefinedActions
     public static Dictionary<string, Dictionary<string, IdType>> Actions = [];
 
     //Check that all declared params were already defined and add them to the variables in the scope
-    public static bool CheckValidParameters(string Name, Dictionary<Token, Expression>? allocations, IContext context)
+    public static void CheckValidParameters(string Name, Dictionary<Token, Expression>? allocations, IScope scope)
     {
         //If the dictionary is null it means actions must not contain any key with the same effect name
         if (allocations == null) {
-            return !Actions.ContainsKey(Name);
+            //TODO: Error de que se no se declara un efecto que tiene que ser declarable
+            if (!Actions.ContainsKey(Name)) throw new Exception();
         }
 
-        if (!Actions.ContainsKey(Name)) return false;
+        //TODO: Error de que un efecto con ese nombre no esta definido
+        if (!Actions.ContainsKey(Name)) throw new Exception();
  
+
         foreach (Token idName in allocations.Keys) {
             //Check that all defined variables were declared and with the same type
-            if (Actions[Name].ContainsKey(idName.Value) ) {
-                IdType expType = allocations[idName].GetType(context);
+            if (Actions[Name].ContainsKey(idName.Value)) {
+                //Get the expected param type
+                IdType expType = allocations[idName].GetType(scope);
+                //If everything is correct, define the new variable and continue checking
                 if (Actions[Name][idName.Value] == expType) {
                     //Add the defined variable with its name (expression), its values and its type (variable)
-                    context.Define(idName.Value, new Variable(allocations[idName], expType));
+                    scope.Define(idName.Value, new Variable(allocations[idName], expType));
                     continue;
                 }
             }
-            else return false;
+            //TODO:
+            else throw new Exception();
         }
-        return true;
     }
 }

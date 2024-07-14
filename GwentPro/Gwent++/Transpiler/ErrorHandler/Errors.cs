@@ -1,21 +1,27 @@
-
 namespace Transpiler;  
-interface IParserError {
-    Token ErrorToken { get; }
-}
-interface INullableError {
-    List<string> NullObjects { get; }
-}
+//Abstract class that represents an error in the DSL
 public abstract class Error {
+    /// <summary>
+    /// Returns the line of the error
+    /// </summary>
+    /// <value></value>
     public int Line { get; protected set;}
+    /// <summary>
+    /// Returns the column of the error
+    /// </summary>
+    /// <value></value>
     public int Column { get; protected set;}
     public Error(int errorLine, int errorColumn) {
         this.Line = errorLine;
         this.Column = errorColumn;
     }
+    ///<summary>
+    ///Throw the error message to the user
+    ///</summary>
     public abstract override string ToString();
 }
 
+#region LexerError
 public class InvalidSyntaxError : Error {
     public char ErrorChar { get; }
     public InvalidSyntaxError(int errorLine, int errorColumn, char errorChar) : base(errorLine, errorColumn) {
@@ -25,8 +31,11 @@ public class InvalidSyntaxError : Error {
         return $"Invalid syntax Error. Unexpected character: {ErrorChar} in line: {this.Line} in column: {this.Column}";
     }
 }
+#endregion
+#region ParserError
 
-public class UnexpectedEndOfInput : Error, IParserError
+//Represents an unexpected end of the tokens when parsing
+public class UnexpectedEndOfInput : Error
 {
     public Token ErrorToken { get; }
     public UnexpectedEndOfInput(int errorLine, int errorColumn, Token token) : base(errorLine, errorColumn) 
@@ -39,7 +48,9 @@ public class UnexpectedEndOfInput : Error, IParserError
     }
 }
 
-public class UnexpectedToken : Error, IParserError
+//Represents when another token was expected
+//TODO: Decir que token se esperaba
+public class UnexpectedToken : Error
 {
     public Token ErrorToken {get;}
     public UnexpectedToken(int errorLine, int errorColumn, Token errorToken) : base(errorLine, errorColumn)
@@ -51,8 +62,12 @@ public class UnexpectedToken : Error, IParserError
         return $"Unexpected token error. Unexpected token detected: {ErrorToken.Value} in line: {Line}, in column: {Column}";
     }
 }
-
-public class ParameterUnknown : Error, IParserError, INullableError
+#endregion
+#region SemantycError
+//Represent a semantyc error
+//Checked in the parsing 
+//It is thrown when a must-declare parameter wasn't declared
+public class ParameterUnknown : Error
 {
     public Token ErrorToken {get; }
     public List<string> NullObjects {get; }
@@ -76,6 +91,10 @@ public class ParameterUnknown : Error, IParserError, INullableError
     {
         return $"Field ignored error. You must declare the parameter {NullObjects[0]} to continue after Token: {ErrorToken.Value} in line: {Line} in column: {Column}. " + PrintNullObjects();
     }
+    /// <summary>
+    /// Function used to print all null parameters that can't be null
+    /// </summary>
+    /// <returns></returns>
     string PrintNullObjects()
     {
         string aux = "";
@@ -94,7 +113,7 @@ public class ParameterUnknown : Error, IParserError, INullableError
 public class NotNullableObj {
     //Save the name of the parameter
     public string Name {get; }
-    //Save the parameter to check nullability 
+    //Save the parameter value to check nullability 
     public DSL_Object? Obj {get; }
     public NotNullableObj(string name, DSL_Object? obj)
     {
@@ -102,5 +121,4 @@ public class NotNullableObj {
         this.Obj = obj;
     }
 }
-
-
+#endregion
