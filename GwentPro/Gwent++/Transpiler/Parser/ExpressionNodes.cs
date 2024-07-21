@@ -36,7 +36,8 @@ public abstract class Expression : Statement {
         this.Validate(scope);
         this.CheckType(scope, expected);
     }
-      
+    
+    public abstract object Evaluate();
 };
 
 /// <summary>
@@ -63,26 +64,13 @@ public class BinaryExpression : Expression
     //It is done depending of the operator
     public override IdType GetType(IScope scope)
     {
-        SemantycBinaryExpression.GetTypeByOp[Op.Definition].Invoke(this, scope);
-        TokenType op = Op.Definition;
-        //If it is an access operatos just return the right type and it becomes recursive
-        if (op is TokenType.Point) return Right.GetType(scope);
+        //Get the type using the dictionary in SemantycBinaryExpression class
+        return SemantycBinaryExpression.GetTypeByOp[Op.Definition].Invoke(this, scope);
+    }
 
-        else if (op is TokenType.Assign) {
-            //If it is an assignment return the type of the right side of the assignment 
-            return Right.GetType(scope);
-        }
-        else if (Op.Definition is TokenType.Equal) {
-            //If it is an equal operator
-            return IdType.Boolean;
-        }
-        else {
-            //TODO:
-            if (Left.GetType(scope) != Right.GetType(scope)) throw new Exception();
-            //If they are the same return the right side 
-            return Left.GetType(scope);
-        }
-        
+    public override object Evaluate()
+    {
+        return EvaluateBinaryExpression.EvaluateByOp[Op.Definition].Invoke(this);
     }
 }
 public class LiteralExpression : Expression
@@ -124,6 +112,16 @@ public class LiteralExpression : Expression
         };
         return pairs[Value.Definition];
     }
+
+    public override object Evaluate()
+    {
+        if (this.Value.Definition is TokenType.String)
+        {
+            //Remove the character " at the start and at the end
+            return this.Value.Value[1..^1];
+        }
+        return this.Value.Value;
+    }
 }
 
 public class UnaryExpression : Expression
@@ -153,6 +151,11 @@ public class UnaryExpression : Expression
     {
         return ID.GetType(scope);
     }
+
+    public override object Evaluate()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class FindFunction : Expression {
@@ -173,6 +176,11 @@ public class FindFunction : Expression {
     public override void Validate(IScope scope)
     {
         Predicate.Validate(scope);
+    }
+
+    public override object Evaluate()
+    {
+        throw new NotImplementedException();
     }
 }
 
@@ -202,6 +210,11 @@ public class FunctionCall : Expression {
         //TODO:
         throw new Exception();
     }
+
+    public override object Evaluate()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class Indexer : Expression {
@@ -226,5 +239,10 @@ public class Indexer : Expression {
         }
         //TODO:
         throw new Exception();
+    }
+
+    public override object Evaluate()
+    {
+        throw new NotImplementedException();
     }
 }

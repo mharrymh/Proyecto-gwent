@@ -66,8 +66,8 @@ public class Effect : DSL_Object
     public override void Validate(IScope scope)
     {
         Name.ValidateAndCheck(scope, IdType.String);
-        //TODO: Pasar name evaluando y quitar el casteo de la expresion literal
-        if (Param != null) scope.DefineParams(((LiteralExpression)Name).Value.Value, Param);
+        
+        if (Param != null) scope.DefineParams((string)Name.Evaluate(), Param);
         Action.Validate(scope.CreateChildContext());
     }
 }
@@ -95,11 +95,11 @@ public class InstructionBlock : DSL_Object
         {
             if (!scope.IsDefined(Targets.Value.Value))
                 //The value is defined after in the selector
-                scope.Define(Targets.Value.Value, new Variable(null, IdType.CardCollection));
+                scope.Define((string)Targets.Evaluate(), new Variable(null, IdType.CardCollection));
 
             if (!scope.IsDefined(Context.Value.Value))
                 //It has no value, context define all context in the game
-                scope.Define(Context.Value.Value, new Variable(null, IdType.Context));
+                scope.Define((string)Context.Evaluate(), new Variable(null, IdType.Context));
         }
         //TODO:
         else throw new Exception();
@@ -132,10 +132,10 @@ public class ForLoop : Statement
     public override void Validate(IScope scope)
     {
         //Define the iterator 
-        scope.Define(Iterator.Value.Value, new Variable(null, IdType.Card));
+        scope.Define((string)Iterator.Evaluate(), new Variable(null, IdType.Card));
         //Collection had to be already defined
-        //TODO: QUITAR CASTEO Y LANZAR ERROR: COLECCION NO DEFINIDA
-        if (!scope.IsDefined(((LiteralExpression)Collection).Value.Value)) throw new Exception();
+        //TODO: Lanzar error
+        if (!scope.IsDefined((string)Collection.Evaluate())) throw new Exception();
 
         //Create a new scope
         IScope child = scope.CreateChildContext();
@@ -258,10 +258,8 @@ public class Allocation : DSL_Object
 
     public override void Validate(IScope scope)
     {
-        //TODO:
-        //Quitar el casteo y hacerlo evaluando la ezpresion de string
         Name.ValidateAndCheck(scope, IdType.String);
-        DefinedActions.CheckValidParameters(((LiteralExpression)Name).Value.Value, VarAllocation, scope);
+        DefinedActions.CheckValidParameters((string)Name.Evaluate(), VarAllocation, scope);
     }
 }
 /// <summary>

@@ -14,7 +14,8 @@ public static class DefinedActions
         //If the dictionary is null it means actions must not contain any key with the same effect name
         if (allocations == null) {
             //TODO: Error de que se no se declara un efecto que tiene que ser declarable
-            if (!Actions.ContainsKey(Name)) throw new Exception();
+            if (Actions.ContainsKey(Name)) throw new Exception();
+            return;
         }
 
         //TODO: Error de que un efecto con ese nombre no esta definido
