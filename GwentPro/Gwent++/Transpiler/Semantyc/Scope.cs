@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq.Expressions;
 
 namespace Transpiler;
 
@@ -13,33 +14,31 @@ public interface IScope {
     //Check if its defined and returns the context where it is defined
     bool IsDefinedInContext(string idName, ref Scope scopeOf);
     //Define the id with its name, its token type and its expression value
-    bool Define(string idName, Variable value);
+    bool Define(string idName, IdType type);
     //Returns the type of the id
     IdType GetIdType(string id);
     //Creates a subyacent context
     IScope CreateChildContext();
 }
 
-
-//TODO: DIFINE PARAMETERS
 public class Scope : IScope
 {
     IScope? parent;
     //Saves each variable with its names and its values
-    Dictionary<string, Variable> variables = [];
+    Dictionary<string, IdType> variables = [];
     //Create the context child
     public IScope CreateChildContext() => new Scope {parent = this};
     //Add each variable to the dictionary with its name and its type and its value(expression) 
-    public bool Define(string variable, Variable value)
+    public bool Define(string variable, IdType type)
     {
         //If the variable is not defined add it to the dictionary
         if (!IsDefined(variable)) {
-            variables.Add(variable, value);
+            variables.Add(variable, type);
         }
         //else change its value
         else {
             //change its value, dynamic type
-            variables[variable] = value;
+            variables[variable] = type;
         }
         return true;
     }
@@ -72,7 +71,7 @@ public class Scope : IScope
                 //Add the token with the respective type changed using the types dictionary and the params dictionary
                 DefinedActions.Actions[name].Add(token.Value, types[param[token].Definition]);
                 //Define the variables in the scope
-                this.Define(token.Value, new Variable(null, types[param[token].Definition]));
+                this.Define(token.Value, types[param[token].Definition]);
             }
         }
         return true;
@@ -80,15 +79,16 @@ public class Scope : IScope
     //Returns the id type using the variables dictionary 
     public IdType GetIdType(string idName)
     {
-        //If the variable is not defined throw error
-        //TODO:
         //Get the context in the hierarchy where it is declared the variable
         Scope scopeOf = this;
         //Context is passed by reference so it returns modified 
-        //TODO:
-        if (!IsDefinedInContext(idName, ref scopeOf)) throw new Exception();
-        //else return the type of the variable
-        return scopeOf.variables[idName].IdType;
+        if (IsDefinedInContext(idName, ref scopeOf))         
+            return scopeOf.variables[idName];
+        
+
+        //Throw error of use of unasigned variable
+        Error unasignedVariable = new UnasignedVariable(idName);
+        throw new Exception(unasignedVariable.ToString());
     }
     public bool IsDefinedInContext(string idName, ref Scope scopeOf) {
         scopeOf = this;

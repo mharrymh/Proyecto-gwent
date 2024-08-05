@@ -56,4 +56,19 @@ public static class Utils {
         {"Type", IdType.String},
         {"Name", IdType.String}
     };
+
+    internal static Token GetErrorToken(Expression exp)
+    {
+        //Create a pointer to the expression
+        Expression pointer = exp;
+        while (pointer is BinaryExpression binary)
+        {
+            pointer = binary.Left;
+        }
+        if (pointer is UnaryExpression unary) return unary.ID.Value;
+        else if (pointer is LiteralExpression literal) return literal.Value;
+        else if (pointer is Indexer indexer) return GetErrorToken(indexer.Body);
+        else if (pointer is FunctionCall functionCall) return GetErrorToken(functionCall.Body);
+        else return GetErrorToken(((FindFunction)exp).Body);
+    }
 }

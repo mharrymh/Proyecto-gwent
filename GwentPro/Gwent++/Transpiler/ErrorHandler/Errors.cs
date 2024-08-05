@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Transpiler;  
 //Abstract class that represents an error in the DSL
 public abstract class Error {
@@ -11,7 +13,7 @@ public abstract class Error {
     /// </summary>
     /// <value></value>
     public int Column { get; protected set;}
-    public Error(int errorLine, int errorColumn) {
+    public Error(int errorLine = 0, int errorColumn = 0) {
         this.Line = errorLine;
         this.Column = errorColumn;
     }
@@ -48,18 +50,25 @@ public class UnexpectedEndOfInput : Error
     }
 }
 
-//Represents when another token was expected
-//TODO: Decir que token se esperaba
 public class UnexpectedToken : Error
 {
     public Token ErrorToken {get;}
-    public UnexpectedToken(int errorLine, int errorColumn, Token errorToken) : base(errorLine, errorColumn)
+    /// <summary>
+    /// Represent the type of the expected token
+    /// </summary>
+    /// <value></value>
+    public string Expected {get; }
+
+    public UnexpectedToken(int errorLine, int errorColumn, Token errorToken, TokenType expected) : base(errorLine, errorColumn)
     {
         this.ErrorToken = errorToken;
+
+        //Convert the type to an string
+        this.Expected = expected.ToString();
     }
     public override string ToString()
     {
-        return $"Unexpected token error. Unexpected token detected: {ErrorToken.Value} in line: {Line}, in column: {Column}";
+        return $"Unexpected token error. Unexpected token detected: {ErrorToken.Value} in line: {Line}, in column: {Column}, Expected: {Expected}";
     }
 }
 #endregion
@@ -121,4 +130,91 @@ public class NotNullableObj {
         this.Obj = obj;
     }
 }
+
+public class ContextAndTargetsError : Error
+{
+    /// <summary>
+    /// Represent if the error was with targets (first parameter) or context (second parameter)
+    /// </summary>
+    /// <value></value>
+    string Mistake {get; }
+    public ContextAndTargetsError(int errorLine, int errorColumn, bool targetsMistake) : base(errorLine, errorColumn)
+    {
+        if (targetsMistake) this.Mistake = "First";
+        else this.Mistake = "Second";
+    }
+
+    public override string ToString()
+    {
+        return $"{Mistake} paarmeter value is not recognized as an id. It must be declared as an id";
+    }
+}
+
+public class CollectionNotDefined : Error
+{
+    public CollectionNotDefined(int errorLine, int errorColumn) : base(errorLine, errorColumn)
+    {
+    }
+
+    public override string ToString()
+    {
+        return $"Not recognized collection in the for loop in line: {Line} in column: {Column}"; 
+    }
+}
+
+public class IndexerError : Error
+{
+    bool IndexError {get;}
+    public IndexerError(int errorLine, int errorColumn, bool indexError) : base(errorLine, errorColumn)
+    {
+        this.IndexError = indexError;
+    }
+
+    public override string ToString()
+    {
+        if (IndexError) return $"Numeric expression not received in the indexer in line: {this.Line} in column: {this.Column}";
+        return $"Card Collection expected in line: {this.Line} in column: {this.Column}";
+    }
+}
+
+//TODO: Agregar linea del error y  columna
+public class UnasignedVariable : Error
+{
+    string IdName {get;}
+    public UnasignedVariable(string idName)
+    {
+        this.IdName = idName;
+    }
+    public override string ToString()
+    {
+        return $"Use of unasigned variable: {IdName}";
+    }
+}
+
+public class DifferentType : Error 
+{
+    IdType Received {get;}
+    IdType Expected {get;}
+
+    public DifferentType(IdType received, IdType expected)
+    {
+        this.Received = received;
+        this.Expected = expected;
+    }
+
+    public override string ToString()
+    {
+        return $"Id Type: {Expected} expected. Cannot implycity convert id type: {Received} to: {Expected}";
+    }
+}
 #endregion
+
+public class DivideByZeroError(int errorLine, int errorColumn) : Error(errorLine, errorColumn)
+{
+    public override string ToString()
+    {
+        return $"Division by zero seen in line {this.Line} in column {this.Column}";
+    }
+}
+
+

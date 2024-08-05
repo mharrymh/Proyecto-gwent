@@ -6,69 +6,99 @@ using System.Runtime;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
-//using static UnityEditor.Experimental.GraphView.GraphView;
+using UnityEngine.UIElements;
 
 public class DragAndDrop : MonoBehaviour
 {
+    /// <summary>
+    /// Returns true if the object is moving
+    /// </summary>
     public bool isDragging = false;
-    public bool isOverDropZone = false;
-    //Gets the panels 
+    //FIXME: Eliminar comentario?
+    // public bool isOverDropZone = false;
+
+    //It saves the panel where the card is dropped
     public GameObject DropZone;
     //Save the start position
     public Vector2 startPosition;
     //Gets the card
-    public Card card;
-    //The max of cards allow per panel
+    public Card MovingCard;
+    //TODO: ELIMINAR ESTO HACIENDOLO CON ARRAYS EN EL BOARD.CS
+    //Max amount of cards allowed per range section
     public int max_sections = 6;
-    //Relate the range with the position in climate_section
-    Dictionary<string, int> relate = new Dictionary<string, int>()
-        {
-            {"M", 0}, {"R", 1}, {"S", 2}
-        };
+
+    /// <summary>
+    /// Relate the range with the position in the climate section
+    /// </summary>
+    readonly Dictionary<string, int> relate = new()
+    {
+        {"M", 0}, {"R", 1}, {"S", 2}
+    };
 
     //Gets references
-    Board board = Board.Instance;
-    Effects CardEffects;
-    public GameManager gm;
-    public SoundManager soundM;
+    readonly Board board = Board.Instance;
+    GameManager gm;
+    SoundManager soundM;
 
     // Event Declaration
+    /// <summary>
+    /// Event declaration that represent when a drag starts
+    /// </summary>
     public event Action OnDragStart;
 
+    /// <summary>
+    /// Function called by Unity, it is called when an instance of the script is loaded
+    /// </summary>
     private void Awake()
     {
-        CardEffects = new Effects();
-        //Get the GameManagerObject
+        //Get the GameManager and the sound manager script
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
         soundM = GameObject.Find("AudioSourceEffects").GetComponent<SoundManager>();
     }
 
+    /// <summary>
+    /// Function called by Unity, it is called in every frame (60 times per second)
+    /// </summary>//  
     void Update()
     {
         if (isDragging)
         {
+            //Move the object to the position where the mouse is
             transform.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
         }
     }
 
-    //This method is called when my card collides with an object 
+    /// <summary>
+    /// It is called when my card collides with an object 
+    /// </summary>
+    /// <param name="collision"></param>
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        //Saves the object that is colliding with the moving card
         DropZone = collision.gameObject;
     }
 
-    //This method is called when stops card stops colliding with an object
+    /// <summary>
+    /// It is called when the card stops colliding with an object
+    /// </summary>
+    /// <param name="collision"></param>
     private void OnTriggerExit2D(Collider2D collision)
     {
         DropZone = null;
     }
 
-
+    /// <summary>
+    /// It is called when the drag starts
+    /// </summary>
     public void StartDrag()
     {
+        //Get the display card script
         DisplayCard disp = gameObject.GetComponent<DisplayCard>();
-        card = disp.card;
-        if (!card.IsPlayed && !isDragging)
+        //Saves the card
+        MovingCard = disp.card;
+
+        //Just start the drag if the card hasn't been played and is not already being dragged
+        if (!MovingCard.IsPlayed && !isDragging)
         {
             startPosition = gameObject.transform.position;
             isDragging = true;
@@ -77,25 +107,30 @@ public class DragAndDrop : MonoBehaviour
             OnDragStart?.Invoke();
         }
 
-        //Save the pos to the leader card
-        else if (card is Card.LeaderCard leader)
+
+        //TODO: Por que necesito guardar la posicion inicial para la carta lider?
+        //Save the start position to the leader card
+        else if (MovingCard is Card.LeaderCard leader)
         {
             startPosition = gameObject.transform.position;
         }
     }
     public void EndDrag()
     {
-        if (!card.IsPlayed)
-        {
-            isDragging = false;
+        //FIXME: ELIMINAR COMENTARIOS?
+        // if (!MovingCard.IsPlayed)
+        // {
+        isDragging = false;
 
-            if (DropZone != null) DropCard(card);
-            else transform.position = startPosition;
-        }
+        if (DropZone != null) DropCard(MovingCard);
+        else this.transform.position = startPosition;
+        // }
     }
 
-    public void DropCard(Card card)
-    {
+
+    //FIXME: Create validate method
+    void DropCard(Card card)
+    {        
         if (DropZone.name.Contains("Deck") && gm.Round == 1)
         {
             if (DropZone.name.Contains("1") && gm.currentPlayer == gm.player1 && !gm.player1.HasPlayed && gm.player1.Changes < 2
@@ -144,8 +179,7 @@ public class DragAndDrop : MonoBehaviour
                 transform.position = startPosition;
             }
         }
-        else if (card is Card.SpecialCard climate_card && climate_card.Type is SpecialType.Climate
-            && DropZone.name == "ClimateZone")
+        else if (card is Card.ClimateCard climate_card && DropZone.name == "ClimateZone")
         {
             if (climate_card.Range == "M" && board.climate_section[0] == null)
             {
@@ -165,7 +199,7 @@ public class DragAndDrop : MonoBehaviour
                 transform.position = startPosition;
             }
         }
-        else if (card is Card.SpecialCard increment_card && increment_card.Type is SpecialType.Increment)
+        else if (card is Card.IncrementCard increment_card)
         {
             if (increment_card.Range == "M" && increment_card.Owner.ID == "player1"
                 && DropZone.name == "IncrementMeleePlayer1"
@@ -209,12 +243,13 @@ public class DragAndDrop : MonoBehaviour
                 transform.position = startPosition;
             }
         }
-        else if (card is Card.SpecialCard cleareance && cleareance.Type is SpecialType.Clearance
+        else if (card is Card.CleareanceCard cleareance
+        //TODO: CREAR UN METODO QUE TE VERIFIQUE EN EL DROPZONE ACTUAL O EN EL DEL PARENT
             && (DropZone.name == "ClimateZone" || DropZone.transform.parent.gameObject.name == "ClimateZone"))
         {
             PlayCard(cleareance);
         }
-        else if (card is Card.SpecialCard decoy && decoy.Type is SpecialType.Decoy && DropZone.tag == card.Owner.ID
+        else if (card is Card.DecoyCard decoy && DropZone.tag == card.Owner.ID
             && DropZone.transform.parent != gm.HandPanel && DropZone.transform.parent.name != "ClimateZone"
             && !DropZone.transform.parent.name.Contains("Increment"))
         {
@@ -225,26 +260,35 @@ public class DragAndDrop : MonoBehaviour
             transform.position = startPosition;
         }
     }
-
     public void PlayCard(Card card, string range = "")
     {
+        //Play a sound when a card is dropped
         soundM.PlayCardSound();
 
-
+        //Set that owner already played
         card.Owner.HasPlayed = true;
-        //Set the card to true so that it 
+
+        //Set the card to played so that it 
         //wont interact anymore with the drag and drop
         card.IsPlayed = true;
-        //Remove card from the player hand
+
+        //Remove card from the player hand in the backend
         card.Owner.Hand.Remove(card);
+
         //Drop card
         transform.SetParent(DropZone.transform, false);
+
         //Disable passed property if you play a card 
         gm.currentPlayer.Passed = false;
+
         //Apply effect
-        CardEffects.CardEffects[card.effectType].Invoke(card);
+        if (card.EffectType is IActiveEffect effect)
+        {
+            effect.Invoke(card);
+        }
 
         //Add card in backend
+        //FIXME:  CREAR UN DICCIONARIO
         if (card is Card.UnityCard unity_card)
         {
             board.sections[unity_card.Owner.ID][range].Add(unity_card);
@@ -253,23 +297,23 @@ public class DragAndDrop : MonoBehaviour
             {
                 if (board.climate_section[0] != null) unity_card.Power--;
                 else if (board.increment_section[unity_card.Owner.ID][0] != null
-                    && unity_card.UnityType == UnityType.Silver) unity_card.Power++;
+                    && unity_card is Card.SilverCard) unity_card.Power++;
             }
             else if (range == "R")
             {
                 if (board.climate_section[1] != null) unity_card.Power--;
                 else if (board.increment_section[unity_card.Owner.ID][1] != null
-                    && unity_card.UnityType == UnityType.Silver) unity_card.Power++;
+                    && unity_card is Card.SilverCard) unity_card.Power++;
             }
             else if (range == "S")
             {
                 if (board.climate_section[2] != null) unity_card.Power--;
                 else if (board.increment_section[unity_card.Owner.ID][2] != null
-                    && unity_card.UnityType == UnityType.Silver) unity_card.Power++;
+                    && unity_card is Card.SilverCard) unity_card.Power++;
             }
 
         }
-        else if (card is Card.SpecialCard climate_card && climate_card.Type == SpecialType.Climate)
+        else if (card is Card.ClimateCard climate_card)
         {
             string key = range;
             int value;
@@ -284,7 +328,7 @@ public class DragAndDrop : MonoBehaviour
 
             gm.StartCoroutine(gm.SetAuxText("Se aplic� un clima en la zona " + range));
         }
-        else if (card is Card.SpecialCard increment_card && increment_card.Type == SpecialType.Increment)
+        else if (card is Card.IncrementCard increment_card)
         {
             string key = range;
             int value;
@@ -299,13 +343,13 @@ public class DragAndDrop : MonoBehaviour
 
             gm.StartCoroutine(gm.SetAuxText("Se aplic� un incremento en la zona " + range + " de " + gm.currentPlayer.PlayerName));
         }
-        else if (card is Card.SpecialCard cleareance && cleareance.Type is SpecialType.Clearance)
+        else if (card is Card.CleareanceCard cleareance )
         {
             cleareance.Owner.GraveYard.Add(cleareance);
             cleareance.IsPlayed = false;
             gm.CardBeaten(cleareance);
         }
-        else if (card is Card.SpecialCard decoy && decoy.Type is SpecialType.Decoy)
+        else if (card is Card.DecoyCard decoy)
         {
             //Get the card to move
             GameObject CardToMove = decoy.CardPrefab.transform.parent.gameObject;
@@ -329,7 +373,11 @@ public class DragAndDrop : MonoBehaviour
                 BackendZone = "S";
             }
 
-            if (BackendZone != null) CardEffects.Decoy(CardToMove.name, BackendZone, PlayerZone, decoy);
+            if (BackendZone != null)
+            {
+                Decoy eff = new();
+                eff.Invoke(CardToMove.name, BackendZone, PlayerZone, decoy);
+            }
             else
             {
                 transform.position = startPosition;
@@ -342,8 +390,7 @@ public class DragAndDrop : MonoBehaviour
         }
 
         //Update the power
-        gm.SetPower(gm.player1);
-        gm.SetPower(gm.player2);
+        gm.SetPower();
 
         //Change turn
         gm.ChangeTurn();      

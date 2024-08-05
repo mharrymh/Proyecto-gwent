@@ -77,11 +77,11 @@ public class Effect : DSL_Object
 public class InstructionBlock : DSL_Object
 {
     //Target and context are defined always in the OnActivation
-    LiteralExpression Targets {get;}
-    LiteralExpression Context {get;}
+    Token Targets {get;}
+    Token Context {get;}
     //Statements: ForLoops, WhileLoops, Expressions
     List<Statement> Statements {get;}
-    public InstructionBlock(List<Statement> statements, LiteralExpression targets, LiteralExpression context)
+    public InstructionBlock(List<Statement> statements, Token targets, Token context)
     {
         this.Statements = statements;
         this.Targets = targets;
@@ -91,18 +91,12 @@ public class InstructionBlock : DSL_Object
     public override void Validate(IScope scope)
     {
         //Check that targets and context are correct, just id types
-        if (Targets.Value.Definition is TokenType.Id && Context.Value.Definition is TokenType.Id)
-        {
-            if (!scope.IsDefined(Targets.Value.Value))
-                //The value is defined after in the selector
-                scope.Define((string)Targets.Evaluate(), new Variable(null, IdType.CardCollection));
-
-            if (!scope.IsDefined(Context.Value.Value))
-                //It has no value, context define all context in the game
-                scope.Define((string)Context.Evaluate(), new Variable(null, IdType.Context));
-        }
-        //TODO:
-        else throw new Exception();
+        if (!scope.IsDefined(Targets.Value))
+            //The value is defined after in the selector
+            scope.Define(Targets.Value, IdType.CardCollection);
+        if (!scope.IsDefined(Context.Value))
+            //It has no value, context define all context in the game
+            scope.Define(Context.Value, IdType.Context);
         
         foreach (Statement statement in Statements)
         {
@@ -120,10 +114,14 @@ public abstract class Statement : DSL_Object {}
 /// </summary>
 public class ForLoop : Statement
 {
-    LiteralExpression Iterator {get; }
+    /// <summary>
+    /// The iterator of a for loop can be any name but it always represents a card
+    /// </summary>
+    /// <value></value>
+    Token Iterator {get; }
     Expression Collection {get;}
     InstructionBlock Instructions {get; }
-    public ForLoop(InstructionBlock instructions, LiteralExpression iterator, Expression collection)
+    public ForLoop(InstructionBlock instructions, Token iterator, Expression collection)
     {
         this.Instructions = instructions;
         this.Iterator = iterator;
@@ -132,16 +130,20 @@ public class ForLoop : Statement
     public override void Validate(IScope scope)
     {
         //Define the iterator 
-        scope.Define((string)Iterator.Evaluate(), new Variable(null, IdType.Card));
+        scope.Define((string)Iterator.Value, IdType.Card);
         //Collection had to be already defined
-        //TODO: Lanzar error
-        if (!scope.IsDefined((string)Collection.Evaluate())) throw new Exception();
+        if (!scope.IsDefined((string)Collection.Evaluate())) 
+        {
+            //TODO:
+            //Iterator is the token before where the collection is defined
+            Error notDefinedCollection = new CollectionNotDefined(Iterator.Line, Iterator.Column);
+            throw new Exception(notDefinedCollection.ToString());
+        }
 
         //Create a new scope
         IScope child = scope.CreateChildContext();
 
         //Check that types are correct
-        Iterator.CheckType(child, IdType.Card);
         Collection.CheckType(child, IdType.CardCollection);
 
         //Validate instructions inside the for
@@ -166,7 +168,6 @@ public class WhileLoop : Statement
         //Create a new child scope
         IScope child = scope.CreateChildContext();
         //Validate the bool expression and the instruction inside
-        //TODO: ARREGLAR EL TIPO DE LAS EXPRESIONES BOOLEANAS
         BoolExpression.ValidateAndCheck(child, IdType.Boolean);
         Instructions.Validate(child);
     }
@@ -308,7 +309,7 @@ public class Predicate : DSL_Object
 
     public override void Validate(IScope scope)
     {
-        scope.Define(Id.Value, new Variable(null, IdType.Card));
+        scope.Define(Id.Value, IdType.Card);
         BoolExp.ValidateAndCheck(scope, IdType.Boolean);
     }
 }   

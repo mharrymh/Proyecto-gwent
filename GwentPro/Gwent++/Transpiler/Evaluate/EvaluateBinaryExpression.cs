@@ -102,8 +102,22 @@ public static class EvaluateBinaryExpression {
         int divisor = int.Parse((string)expression.Right.Evaluate());
         if (divisor != 0)
             return int.Parse((string)expression.Left.Evaluate()) / divisor;
-        //TODO: 
-        else throw new DivideByZeroException();
+        else {
+            Token token = GetToken(expression).Value;
+            Error DivisionByZero = new DivideByZeroError(token.Line, token.Column);
+            throw new Exception(DivisionByZero.ToString());
+        }
+    }
+
+    static LiteralExpression GetToken(BinaryExpression exp)
+    {
+        Expression pointer = exp.Right;
+        while (pointer is not LiteralExpression) {
+            //Use it to get the token to use its line to throw the error
+            //FIXME: expresiones numericas solo pueden ser binarias y literales??
+            pointer = ((BinaryExpression)pointer).Left;
+        }
+        return (LiteralExpression)pointer;
     }
     private static object PowExpression(BinaryExpression expression)
     {

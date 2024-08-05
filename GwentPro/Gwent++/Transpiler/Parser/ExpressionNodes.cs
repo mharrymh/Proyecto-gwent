@@ -22,9 +22,13 @@ public abstract class Expression : Statement {
     /// <param name="expected"></param>
     public void CheckType(IScope scope, IdType expected)
     {
-        if (this.GetType(scope) != expected)
-        //TODO: 
-            throw new Exception();
+        IdType type = this.GetType(scope);
+        if (type != expected) {
+            //Throw error
+            Error differentTypeOfVariable = new DifferentType(type, expected);
+            throw new Exception(differentTypeOfVariable.ToString());
+        }
+
     }
     /// <summary>
     /// Validate and check the expression with only one function
@@ -57,6 +61,8 @@ public class BinaryExpression : Expression
 
     public override void Validate(IScope scope)
     {
+        Left.Validate(scope);
+        Right.Validate(scope);
         //Validate depending of the operator definition
         SemantycBinaryExpression.ValidateByOp[Op.Definition].Invoke(this, scope);
     }
@@ -79,15 +85,24 @@ public class LiteralExpression : Expression
     public LiteralExpression(Token value) {
         this.Value = value;
     }
+    /// <summary>
+    /// A hash set with the reserved words types that are also properties of a card
+    /// </summary>
+    /// <param name="scope"></param>
+    readonly HashSet<TokenType> ReservedWordsProperties = new()
+    {
+        TokenType.Power, TokenType.Faction, TokenType.Name, TokenType.Type
+    };
     public override void Validate(IScope scope)
     {
         TokenType type = Value.Definition;
         //returns true is it is not an id
         if (type is TokenType.Num || type is TokenType.String
-        || type is TokenType.Boolean || scope.IsDefined(this.Value.Value)) {
+        || type is TokenType.Boolean || scope.IsDefined(this.Value.Value)
+        || ReservedWordsProperties.Contains(type)) {
             return;
         }
-        //TODO:
+        //TODO: Variable no definida
         throw new Exception();
     }
 
@@ -126,10 +141,10 @@ public class LiteralExpression : Expression
 
 public class UnaryExpression : Expression
 {
-    Expression ID { get; }
+    public LiteralExpression ID { get; }
     Token Op {get; }
     bool AtTheEnd { get; }
-    public UnaryExpression(Expression id, Token op, bool atTheEnd) {
+    public UnaryExpression(LiteralExpression id, Token op, bool atTheEnd) {
         this.ID = id;
         this.Op = op;
         this.AtTheEnd = atTheEnd;
@@ -138,13 +153,8 @@ public class UnaryExpression : Expression
     public override void Validate(IScope scope)
     {
         //Id must contain a numeric expression
-        if(ID is LiteralExpression literal)
-        { 
-            ID.CheckType(scope, IdType.Number);
-            literal.Validate(scope);
-        }
-        //TODO: THROW ERROR
-        throw new Exception();
+        ID.CheckType(scope, IdType.Number);
+        ID.Validate(scope);
     }
 
     public override IdType GetType(IScope scope)
@@ -160,7 +170,7 @@ public class UnaryExpression : Expression
 
 public class FindFunction : Expression {
     //The body is always a find function
-    Expression Body {get;}
+    public Expression Body {get;}
     Predicate Predicate {get;}
     public FindFunction(Expression body, Predicate predicate)
     {
@@ -233,14 +243,27 @@ public class Indexer : Expression {
 
     public override void Validate(IScope scope)
     {
-        if (Body.GetType(scope) is IdType.CardCollection && Index.GetType(scope) is IdType.Number)
+        IdType bodyType = Body.GetType(scope);
+        IdType indexType = Index.GetType(scope);
+        if (bodyType is IdType.CardCollection && indexType is IdType.Number)
         {
             return;
         }
-        //TODO:
-        throw new Exception();
+        //Throw exception
+        //Get the token of the error
+        Token errorToken; 
+        bool indexMistake = false;
+        if (bodyType is not IdType.CardCollection)  errorToken = Utils.GetErrorToken(Body);
+        else { 
+            errorToken = Utils.GetErrorToken(Index); 
+            indexMistake = true; 
+        }
+
+        Error indexerError = new IndexerError(errorToken.Line, errorToken.Column, indexMistake);
+        throw new Exception(indexerError.ToString());
     }
 
+    //TODO:
     public override object Evaluate()
     {
         throw new NotImplementedException();

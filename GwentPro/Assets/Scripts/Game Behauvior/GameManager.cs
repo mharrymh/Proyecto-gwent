@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     public Transform LeaderPlayer1;
     public Transform LeaderPlayer2;
 
+    //Initialize the card counter
     public int Round;
     public bool GivingCards = false;
     public bool RoundOverAux = false;
@@ -48,59 +49,62 @@ public class GameManager : MonoBehaviour
     public TMP_Text TurnOfText;
     public TMP_Text AuxText;
 
-
-
     //References
-    CardDatabase cartas = new CardDatabase();
-    Effects CardEffects;
-    Board board = Board.Instance;
+    readonly CardDatabase cartas = new CardDatabase();
+
+    readonly Board board = Board.Instance;
     DisplayCard disp;
 
+    /// <summary>
+    /// This is called when game manager object is instantiated
+    /// </summary>
     void Start()
     {
-        CardEffects = new Effects();
-
+        //Start the round at 1
         Round = 1;
-        player1 = new Player(PlayerData.FactionPlayer1, "player1", PlayerData.Player1Name);
-        player1.GraveyardObj = Graveyard1;
-        player2 = new Player(PlayerData.FactionPlayer2, "player2",PlayerData.Player2Name);
-        player2.GraveyardObj = Graveyard2;
+        
+        // Instantiate the players
+        player1 = new Player(PlayerData.FactionPlayer1, "player1", PlayerData.Player1Name, Graveyard1);
+        player2 = new Player(PlayerData.FactionPlayer2, "player2", PlayerData.Player2Name, Graveyard2);
+
+        //Set the power at 0
+        SetPower();
 
         currentPlayer = GetStarterPlayer();
         //If the starter player is player2 rotate the scene
         if (currentPlayer == player2) RotateObjects();
+        //Draw cards to both players
         StartCoroutine(InstanciarCartas(StartingAmount, currentPlayer));
 
-        //Start the power at 0
-        SetPower(player1);
-        SetPower(player2);
-
+        //This text will be showed in the game when the game starts
         StartCoroutine(SetAuxText("Antes de jugar cualquier carta, puedes devolver " +
             "hasta dos cartas no deseadas y cambiarlas simplemente arrastr�ndolas al deck"));
 
-        StartCoroutine(VisualChangeTurn());
+        //Show visually whose the turn is 
+        StartCoroutine(VisualTurn());
     }
 
+    //Close application if esc key is selected at any moment
     void Update()
     {
-        if (Input.GetKey("escape"))
+        if (Input.GetKey(KeyCode.Escape))
         {
             Application.Quit();
         }
     }
 
-    IEnumerator InstanciarCartas(int n, Player player)
+    IEnumerator InstanciarCartas(int drawAmount, Player player)
     {
         //Leader effect
-        if (player.Leader.effectType == EffectType.DrawExtraCard && Round > 1) n++;
+        if (player.Leader.EffectType.ToString() == "DrawExtraCard" && Round > 1) drawAmount++;
 
         player.Ready = true;
-        if (player.PlayerDeck.Count < n) n = player.PlayerDeck.Count;
-        Shuffle(player.PlayerDeck);
+        if (player.PlayerDeck.Count < drawAmount) drawAmount = player.PlayerDeck.Count;
+        player.PlayerDeck.Shuffle();
 
         //Do not change turns while instantiating
         GivingCards = true;
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < drawAmount; i++)
         {
             if (player.Hand.Count < 10)
             {
@@ -176,17 +180,27 @@ public class GameManager : MonoBehaviour
         //Increment the property changes of the player 
         player.Changes++;
     }
+
+    public void SetPower()
+    {
+        SetPower(player1);
+        SetPower(player2);
+    }
+
     public void SetPower(Player player)
     {
+        //Get the power of the player 
+        
+        int powerOfPlayer = GetPower(player);
         if (player == player1)
         {
-            if (GetPower(player) == 0) PowerPlayer1.text = "";
-            else PowerPlayer1.text = GetPower(player).ToString();
+            if (powerOfPlayer == 0) PowerPlayer1.text = "";
+            else PowerPlayer1.text = powerOfPlayer.ToString();
         }
         else if (player == player2)
         {
-            if (GetPower(player) == 0) PowerPlayer2.text = "";
-            else PowerPlayer2.text = GetPower(player).ToString();
+            if (powerOfPlayer == 0) PowerPlayer2.text = "";
+            else PowerPlayer2.text = powerOfPlayer.ToString();
         }
     }
     public int GetPower(Player player)
@@ -236,29 +250,19 @@ public class GameManager : MonoBehaviour
         SetPower(player1);
         SetPower(player2);
     }
-    //Shuffle deck
-    private void Shuffle(List<Card> cards)
-    {
-        int n = 0;
-        Card aux;
-
-        for (int i = 0; i < cards.Count; i++)
-        {
-            n = Random.Range(0, cards.Count);
-
-            aux = cards[n];
-            cards[n] = cards[i];
-            cards[i] = aux;
-        }
-    }
+    /// <summary>
+    /// Get starter player by random
+    /// </summary>
+    /// <returns></returns>
     private Player GetStarterPlayer()
     {
-        int n = Random.Range(0, 2);
-        return (n == 0) ? player2 : player1;
+        int random = Random.Range(0, 2);
+        return (random == 0) ? player2 : player1;
     }
 
     public void ChangeTurn()
     {
+        //Don't change cards if the giving cards coroutine is running 
         if (GivingCards) return;
 
         Player perspective = currentPlayer;
@@ -285,10 +289,10 @@ public class GameManager : MonoBehaviour
         SetPower(player1);
         SetPower(player2);
 
-        StartCoroutine(VisualChangeTurn());
+        StartCoroutine(VisualTurn());
     }
 
-    IEnumerator VisualChangeTurn()
+    IEnumerator VisualTurn()
     {
         if (RoundOverAux)
         { 
@@ -472,7 +476,7 @@ public class GameManager : MonoBehaviour
     {
         //Effect of the leader
         //Keep a random card on the board between rounds
-        Player KeepRandomPlayer = GetPlayerWithLeader(EffectType.KeepRandomCard);
+        Player KeepRandomPlayer = GetPlayerWithLeader("KeepRandomCard");
         Card.UnityCard Keeper = null;
 
         if (KeepRandomPlayer != null)
@@ -574,10 +578,10 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-    Player GetPlayerWithLeader(EffectType keepRandomCard)
+    Player GetPlayerWithLeader(string keepRandomCard)
     {
-        if (player1.Leader.effectType == keepRandomCard) return player1;
-        else if (player2.Leader.effectType == keepRandomCard) return player2;
+        if (player1.Leader.EffectType.ToString() == keepRandomCard) return player1;
+        else if (player2.Leader.EffectType.ToString() == keepRandomCard) return player2;
 
         else return null;
     }

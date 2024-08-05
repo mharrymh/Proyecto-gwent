@@ -9,14 +9,13 @@ public class EndSceneManager : MonoBehaviour
     public TMP_Text WinnerText;
     public SoundManager soundM;
 
-
     public void Start()
     {
         soundM = GameObject.Find("AudioSourceEffects").GetComponent<SoundManager>();
 
         if (PlayerData.Winner != null)
         {
-            WinnerText.text = "Felicidades!!! Ganó " + PlayerData.Winner;
+            WinnerText.text = "Felicidades!!! Ganï¿½ " + PlayerData.Winner;
         }
         else
         {
@@ -27,7 +26,6 @@ public class EndSceneManager : MonoBehaviour
     public void Exit()
     {
         soundM.PlayButtonSound();
-        Debug.Log("Salir...");
         Application.Quit();
     }
 }

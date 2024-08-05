@@ -4,13 +4,13 @@ using UnityEngine;
 public class DropdownSample: MonoBehaviour
 {
 	[SerializeField]
-	private TextMeshProUGUI text = null;
+	private readonly TextMeshProUGUI text = null;
 
 	[SerializeField]
-	private TMP_Dropdown dropdownWithoutPlaceholder = null;
+	private readonly TMP_Dropdown dropdownWithoutPlaceholder = null;
 
 	[SerializeField]
-	private TMP_Dropdown dropdownWithPlaceholder = null;
+	private readonly TMP_Dropdown dropdownWithPlaceholder = null;
 
 	public void OnButtonClick()
 	{

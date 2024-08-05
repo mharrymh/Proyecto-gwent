@@ -35,3 +35,42 @@ error de division por cero es del evaluate o de la semantica?
 parsear indexado en lista
 Se aceptan operadores aritmeticos,implementar pow^^^^^
 implementar numeros con coma??
+Board se cambio por BoardCards
+
+Revisar el contador de columnas que no esta funcionando bien
+Revisar el error de que sean declarados todos los parametros de un efecto
+
+En el error Unexpected token detected, pasar en el expected una lista de todos los tokens que se esperaban, en vez de solo el primero de la lista
+
+Revisar el lexer con los comentarios en una misma linea 
+
+La parte izquierda de una expression binaria es siempre una expression literal???
+
+
+
+
+se esta partiendo con este caso (por lo de Power): 
+effect {
+    Name: "Boost",
+    Action: (targets, context) =>
+        for target in targets
+            Power += 3; 
+}
+
+card {
+    Type: "Oro",
+    Name: "Triss",
+    Faction: "Northern Realms",
+    Power: 12,
+    Range: ["Ranged"],
+    OnActivation: [
+        {
+            Effect: "Boost",
+            Selector: {
+                Source: "deck",
+                Single: true,
+                Predicate: (unit) => true
+            },
+        }
+    ]
+}

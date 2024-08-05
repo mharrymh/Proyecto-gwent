@@ -305,8 +305,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.462, y: 71.62297}
-  m_SizeDelta: {x: 103.1352, y: 9.403}
+  m_AnchoredPosition: {x: 0.38074, y: 71.623}
+  m_SizeDelta: {x: 103.1352, y: 9.4028}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &226615713415234757
 CanvasRenderer:
@@ -811,10 +811,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   card: {fileID: 0}
-  Description: {fileID: 6548190517210185288}
+  DescriptionText: {fileID: 6548190517210185288}
   CardImage: {fileID: 1439429320625395376}
-  Power: {fileID: 7146790250671575775}
-  CardName: {fileID: 442815215300329782}
+  PowerText: {fileID: 7146790250671575775}
+  text: {fileID: 0}
+  NameText: {fileID: 442815215300329782}
   FactionImage: {fileID: 97082303790344062}
 --- !u!50 &3047136731189598562
 Rigidbody2D:
@@ -876,13 +877,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isDragging: 0
-  isOverDropZone: 0
   DropZone: {fileID: 0}
   startPosition: {x: 0, y: 0}
-  card: {fileID: 0}
+  MovingCard: {fileID: 0}
   max_sections: 6
-  gm: {fileID: 0}
-  soundM: {fileID: 0}
 --- !u!114 &5323189161734791023
 MonoBehaviour:
   m_ObjectHideFlags: 0

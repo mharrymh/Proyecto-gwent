@@ -25,8 +25,8 @@ namespace TMPro.Examples
 
         //private int m_frame = 0;
 
-        static WaitForEndOfFrame k_WaitForEndOfFrame = new WaitForEndOfFrame();
-        static WaitForSeconds[] k_WaitForSecondsRandom = new WaitForSeconds[]
+        static readonly WaitForEndOfFrame k_WaitForEndOfFrame = new WaitForEndOfFrame();
+        static readonly WaitForSeconds[] k_WaitForSecondsRandom = new WaitForSeconds[]
         {
             new WaitForSeconds(0.05f), new WaitForSeconds(0.1f), new WaitForSeconds(0.15f), new WaitForSeconds(0.2f), new WaitForSeconds(0.25f),
             new WaitForSeconds(0.3f), new WaitForSeconds(0.35f), new WaitForSeconds(0.4f), new WaitForSeconds(0.45f), new WaitForSeconds(0.5f),

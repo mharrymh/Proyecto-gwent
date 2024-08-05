@@ -179,20 +179,16 @@ public static class SemantycBinaryExpression {
 
     private static void NumericAssignExpression(BinaryExpression expression, IScope scope)
     {
-        if (expression.Left is LiteralExpression literal && literal.Value.Definition is TokenType.Id)
+        //It has to be a numeric expression
+        expression.Left.CheckType(scope, IdType.Number);
+        if (expression.Left is LiteralExpression literalExpression && literalExpression.Value.Definition is not TokenType.Id)
         {
-            //This assignment expressions had to be already defined
-            //TODO:
-            if (scope.IsDefined(literal.Value.Value)) throw new Exception();
-
-            //It has to be a numeric expression
-            literal.CheckType(scope, IdType.Number);
-            //Define the new expression 
-            BinaryExpression value = new(expression.Left, ConvertOp(expression.Op), expression.Right);
-            scope.Define(literal.Value.Value, new Variable(value, IdType.Number));
+            //It can be the property power
+            if (literalExpression.Value.Value != "Power")
+            //TODO: Lanzar error de que si es una expresion literal tiene que ser de tipo id porque pudiera estarse haciendo 3 += 4;
+            throw new Exception();
         }
-        //TODO:
-        else throw new Exception();
+        expression.Right.CheckType(scope, IdType.Number);    
     }
 
     private static Token ConvertOp(Token op)
@@ -214,7 +210,7 @@ public static class SemantycBinaryExpression {
         literal.Value.Definition is TokenType.Id)
         {
             //Define the new variable in the scope
-            scope.Define(literal.Value.Value, new Variable(expression.Right, expression.Right.GetType(scope)));
+            scope.Define(literal.Value.Value, expression.Right.GetType(scope));
             return;
         }
         //TODO: SUPONIENDO QUE PARA SER MODIFICABLE UNA PROPIEDAD SOLO PUEDE SER NUMBER
@@ -292,18 +288,23 @@ public static class SemantycBinaryExpression {
             throw new Exception();
         }
     }
-
+    /// <summary>
+    /// The right part of the access expression is a binary expression
+    /// </summary>
+    /// <param name="leftType"></param>
+    /// <param name="rightExp"></param>
+    /// <param name="scope"></param>
     private static void ToBinary(IdType leftType, Expression rightExp, IScope scope)
     {
         //It can only be another binary access expression
         BinaryExpression right = (BinaryExpression)rightExp;
-        //The left part of an access binary expression is always an id literal expression
+        //The left part of a binary expression is always an id literal expression
         //that is why we use the cast
         LiteralExpression leftOfRight = (LiteralExpression)right.Left;
 
         if (!Utils.ValidAccess.TryGetValue(leftType, out HashSet<string>? value) || !value.Contains(leftOfRight.Value.Value))
             throw new Exception();
-        //TODO:
+        //TODO: NO existe ese parametro para ese tipo
     }
     #endregion
 }
