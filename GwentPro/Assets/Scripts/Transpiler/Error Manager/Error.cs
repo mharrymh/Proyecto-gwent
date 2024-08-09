@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+//Allow nullability in objects
+#nullable enable
 using System.Runtime.CompilerServices;
 //Abstract class that represents an error in the DSL
 public abstract class Error {

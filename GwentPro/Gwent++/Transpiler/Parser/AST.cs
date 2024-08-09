@@ -6,6 +6,7 @@ MUCHO CATCH
 */
 
 using System.Data;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
 
@@ -20,6 +21,11 @@ public abstract class DSL_Object
     /// </summary>
     /// <param name="scope"></param>
     public abstract void Validate(IScope scope);
+    /// <summary>
+    /// Evaluate and return the object as a C# object
+    /// </summary>
+    /// <returns>It returns null because some objects dont need to return anythig</returns>
+    public abstract object? Evaluate();
 }
 /// <summary>
 /// Represent a block of declarations
@@ -45,6 +51,11 @@ public class DecBlock : DSL_Object
         {
             card.Validate(scope.CreateChildContext());
         }
+    }
+
+    public override object? Evaluate()
+    {
+        foreach (Card card in Cards) 
     }
 }
 #region EffectNodes

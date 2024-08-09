@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Transactions;
+using System;
 /// <summary>
 /// Represent an expression in the DSL
 /// </summary>
@@ -41,7 +43,6 @@ public abstract class Expression : Statement {
         this.CheckType(scope, expected);
     }
     
-    public abstract object Evaluate();
 };
 
 /// <summary>
@@ -74,10 +75,11 @@ public class BinaryExpression : Expression
         return SemantycBinaryExpression.GetTypeByOp[Op.Definition].Invoke(this, scope);
     }
 
-    public override object Evaluate()
-    {
-        return EvaluateBinaryExpression.EvaluateByOp[Op.Definition].Invoke(this);
-    }
+    //TODO: Chequear evaluate
+    // public override object Evaluate()
+    // {
+    //     return EvaluateBinaryExpression.EvaluateByOp[Op.Definition].Invoke(this);
+    // }
 }
 public class LiteralExpression : Expression
 {
@@ -128,15 +130,7 @@ public class LiteralExpression : Expression
         return pairs[Value.Definition];
     }
 
-    public override object Evaluate()
-    {
-        if (this.Value.Definition is TokenType.String)
-        {
-            //Remove the character " at the start and at the end
-            return this.Value.Value[1..^1];
-        }
-        return this.Value.Value;
-    }
+    //FIXME: Chequear evaluate
 }
 
 public class UnaryExpression : Expression

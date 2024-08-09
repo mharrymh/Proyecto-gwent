@@ -1,8 +1,8 @@
-effect {
+effect { 
     Name: "Boost",
     Action: (targets, context) =>
         for target in targets
-            power += 3; 
+            Power += 3; 
 }
 
 card {

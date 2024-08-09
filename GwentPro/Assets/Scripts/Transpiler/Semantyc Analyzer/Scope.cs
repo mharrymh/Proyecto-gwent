@@ -1,9 +1,11 @@
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq.Expressions;
+using System;
 public interface IScope {
     //Actions
     //Receives the effect name and the dictionary with the tokens and the types declared
@@ -25,7 +27,7 @@ public class Scope : IScope
 {
     IScope? parent;
     //Saves each variable with its names and its values
-    Dictionary<string, IdType> variables = [];
+    Dictionary<string, IdType> variables = new Dictionary<string, IdType>();
     //Create the context child
     public IScope CreateChildContext() => new Scope {parent = this};
     //Add each variable to the dictionary with its name and its type and its value(expression) 

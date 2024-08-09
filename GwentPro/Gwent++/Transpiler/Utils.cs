@@ -6,7 +6,6 @@ public static class Utils {
     ///<summary>
     ///Relate the types with a hashset of possible properties or functions represented as string 
     ///</summary>
-    //TODO: Agregar otherhand etc...
     public static Dictionary<IdType, HashSet<string>> ValidAccess = new Dictionary<IdType, HashSet<string>>{
         {IdType.Context, ["TriggerPlayer", "Board", "Hand", "HandOfPLayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Find"]},
         {IdType.Card, ["Owner", "Power", "Faction", "Name", "Type"]},

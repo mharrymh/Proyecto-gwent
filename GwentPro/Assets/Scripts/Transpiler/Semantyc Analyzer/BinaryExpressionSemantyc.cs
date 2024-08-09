@@ -1,8 +1,10 @@
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
+using System;
 public static class SemantycBinaryExpression {
     #region Get Type
     public static Dictionary<TokenType, Func<BinaryExpression, IScope, IdType>> GetTypeByOp = new()
@@ -179,13 +181,12 @@ public static class SemantycBinaryExpression {
 
     private static void NumericAssignExpression(BinaryExpression expression, IScope scope)
     {
+        //TODO: Expression.left tiene que ser 
         //It has to be a numeric expression
         expression.Left.CheckType(scope, IdType.Number);
-        if (expression.Left is LiteralExpression literalExpression && literalExpression.Value.Definition is not TokenType.Id)
+        if (expression.Left is LiteralExpression literal && literal.Value.Definition is not TokenType.Id)
         {
-            //It can be the property power
-            if (literalExpression.Value.Value != "Power")
-            //TODO: Lanzar error de que si es una expresion literal tiene que ser de tipo id porque pudiera estarse haciendo 3 += 4;
+            //TODO: LANZA EXCEPCION DE QUE o es un acceso a propiedad o un id
             throw new Exception();
         }
         expression.Right.CheckType(scope, IdType.Number);    

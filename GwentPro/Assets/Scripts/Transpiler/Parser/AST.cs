@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,7 @@ MUCHO CATCH
 using System.Data;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
+using System;
 /// <summary>
 /// Represent an object in the DSL
 /// </summary>
@@ -21,6 +23,11 @@ public abstract class DSL_Object
     /// </summary>
     /// <param name="scope"></param>
     public abstract void Validate(IScope scope);
+    /// <summary>
+    /// Evaluate and return the object as a C# object
+    /// </summary>
+    /// <returns>It returns null because some objects dont need to return anythig</returns>
+    public abstract object? Evaluate();
 }
 /// <summary>
 /// Represent a block of declarations
@@ -46,6 +53,11 @@ public class DecBlock : DSL_Object
         {
             card.Validate(scope.CreateChildContext());
         }
+    }
+
+    public override object? Evaluate()
+    {
+        foreach (Card card in Cards) 
     }
 }
 #region EffectNodes

@@ -1,6 +1,9 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using System.Runtime.InteropServices;
+using System;
 
-namespace Transpiler;
 public static class EvaluateBinaryExpression {
     public static Dictionary<TokenType, Func<BinaryExpression, object>> EvaluateByOp = new()
     {
@@ -13,12 +16,15 @@ public static class EvaluateBinaryExpression {
         {TokenType.Concatenation, ConcatExpression},
         {TokenType.SpaceConcatenation, SpaceConcatExpression},
 
+        //TODO:
+        //It is done in the validate, should i do it in the evaluate instead?
         {TokenType.Assign, NotImplemented},
 
         {TokenType.MinusAssign, NotImplemented},
         {TokenType.MoreAssign, NotImplemented},
         {TokenType.DivisionAssign, NotImplemented},
         {TokenType.MultipAssign, NotImplemented},
+
 
         {TokenType.And, AndExpression},
         {TokenType.Or, OrExpression},
@@ -37,6 +43,17 @@ public static class EvaluateBinaryExpression {
     {
         throw new NotImplementedException();
     }
+
+
+
+
+
+
+
+
+
+
+
 
     private static object MoreExp(BinaryExpression expression)
     {

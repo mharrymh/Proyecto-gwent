@@ -8,7 +8,7 @@ public class Lexer {
     readonly Dictionary<TokenType, string> TokenDefinitions = new Dictionary<TokenType, string>
     {
         // Comment and whitespaces
-        {TokenType.Null, @"\s+|\/\/.*|(?s)/\*.*?\*/"},
+        {TokenType.Null, @"^\s+|^\/\/[^\n]*|^\/\*[\s\S]*?\*\/"},
 
         // Reserved words
         {TokenType.For, @"\bfor\b"}, 
@@ -87,8 +87,10 @@ public class Lexer {
 
                 if (match.Success) {
                     if (match.Value.Contains('\n')) {
-                        actualLine += match.Value.Count(c => c == '\n'); //Increment the actual line for each new line
-                        actualColumn = 1;
+                        int newLines = match.Value.Count(c => c == '\n');
+                        int carriageReturnCount = match.Value.Count(c => c == '\r');
+                        actualLine += newLines; //Increment the actual line for each new line
+                        actualColumn = 1 - newLines - carriageReturnCount; //Ignore characters of new line 
                     }
                     //Ignore whitespaces and comments
                     if (tokenDef.Key != TokenType.Null) 

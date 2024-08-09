@@ -1,12 +1,14 @@
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.Serialization;
+using System;
 public static class DefinedActions
 {
     //Saves the declaration of the params foreach effect
     //TODO: hacerlo string pero evaluando la expresion 
-    public static Dictionary<string, Dictionary<string, IdType>> Actions = [];
+    public static Dictionary<string, Dictionary<string, IdType>> Actions = new Dictionary<string, Dictionary<string, IdType>>();
 
     //Check that all declared params were already defined and add them to the variables in the scope
     public static void CheckValidParameters(string Name, Dictionary<Token, Expression>? allocations, IScope scope)

@@ -209,12 +209,17 @@ public class DifferentType : Error
 }
 #endregion
 
-public class DivideByZeroError(int errorLine, int errorColumn) : Error(errorLine, errorColumn)
+public class DivideByZeroError : Error
 {
+    public DivideByZeroError(int errorLine, int errorColumn) : base(errorLine, errorColumn)
+    {
+    }
+
     public override string ToString()
     {
         return $"Division by zero seen in line {this.Line} in column {this.Column}";
     }
 }
+
 
 

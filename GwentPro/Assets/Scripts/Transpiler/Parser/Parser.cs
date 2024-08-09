@@ -1,8 +1,10 @@
+#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Data.Common;
 using System.Linq.Expressions;
+using System;
 public class Parser
 {
     // List of tokens to be parsed
@@ -579,7 +581,7 @@ public class Parser
     Expression ParseExpression()
     {
         LookAhead();
-        if(NextToken.Definition is TokenType.Num) return ParseNumericExpression();
+        if(NextToken.Definition is TokenType.Num || NextToken.Definition is TokenType.Minus) return ParseNumericExpression();
         if (NextToken.Definition is TokenType.String) return ParseStringExpression();
         if (NextToken.Definition is TokenType.Boolean) {
             var boolean = NextToken;
@@ -597,7 +599,7 @@ public class Parser
             var left = ParseIdLiteral();
             List<TokenType> BinOperators = [TokenType.Plus, TokenType.Minus, TokenType.Multip, TokenType.Division, TokenType.Concatenation,
             TokenType.SpaceConcatenation,TokenType.Assign, TokenType.MoreAssign, TokenType.MinusAssign, 
-            TokenType.MultipAssign, TokenType.DivisionAssign, TokenType.Point];
+            TokenType.MultipAssign, TokenType.DivisionAssign];
             LookAhead();
             if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement) {
                 Token op = NextToken;
@@ -653,7 +655,15 @@ public class Parser
         var value = NextToken;
         Consume(NextToken.Definition);
         LookAhead();
-        return new LiteralExpression(value);
+        Expression left = new LiteralExpression(value);
+        if (NextToken.Definition is TokenType.Point)
+        {
+            Token op = NextToken;
+            Consume(NextToken.Definition);
+            LookAhead();
+            left = new BinaryExpression(left, op, ParseIdLiteral());
+        }
+        return left;
     }
     Expression ParseBoolExpression()
     {
@@ -778,4 +788,3 @@ public class Parser
     }
     #endregion
 }
-
