@@ -10,7 +10,6 @@ using UnityEngine.UIElements;
 using static Unity.Burst.Intrinsics.X86;
 //using static UnityEditor.PlayerSettings;
 
-//TODO: Crear una clase para cada efecto
 
 /// <summary>
 /// Represent an effect

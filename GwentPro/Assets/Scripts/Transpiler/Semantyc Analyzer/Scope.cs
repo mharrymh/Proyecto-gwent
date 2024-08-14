@@ -19,7 +19,7 @@ public interface IScope {
     bool Define(string idName, IdType type);
     //Returns the type of the id
     IdType GetIdType(string id);
-    //Creates a subyacent context
+    //Creates a subyacent scope
     IScope CreateChildContext();
 }
 
@@ -37,7 +37,7 @@ public class Scope : IScope
         if (!IsDefined(variable)) {
             variables.Add(variable, type);
         }
-        //else change its value
+        //else change its type
         else {
             //change its value, dynamic type
             variables[variable] = type;

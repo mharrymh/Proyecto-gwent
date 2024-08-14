@@ -17,7 +17,7 @@ public class Parser
     // Look ahead to the next token and check if it matches the expected token type
     void LookAhead(TokenType tokenType)
     {
-        LookAhead([tokenType]);
+        LookAhead(new List<TokenType> { tokenType });
     }
     // Look ahead to the next token and check if it matches any of the expected token types
     void LookAhead(List<TokenType>? expected = null)
@@ -67,6 +67,8 @@ public class Parser
         }
     }
 
+    
+
     // Constructor to initialize the parser with a list of tokens
     public Parser(List<Token> tokens)
     {
@@ -91,9 +93,9 @@ public class Parser
 
     #region EffectNodes
     // Parse a list of effect declarations
-    List<Effect> ParseEffDecBlock()
+    List<Effect_Object> ParseEffDecBlock()
     {
-        var effects = new List<Effect>();
+        var effects = new List<Effect_Object>();
         effects.Add(ParseEffect());
         LookAhead();
         while (NextToken.Definition is TokenType.Effect)
@@ -105,9 +107,9 @@ public class Parser
     }
 
     // Parse a single effect declaration
-    Effect ParseEffect()
+    Effect_Object ParseEffect()
     {
-        Consume([TokenType.Effect, TokenType.LCurly]);
+        Consume(new List<TokenType> { TokenType.Effect, TokenType.LCurly });
 
         Expression? name = null;
         Dictionary<Token, Token>? param = null;
@@ -143,7 +145,7 @@ public class Parser
         Consume(TokenType.RCurly);
         if (name != null && action != null)
         {
-            return new Effect(name, param, action);
+            return new Effect_Object(name, param, action);
         }
         //FIXME:
         throw new Exception("Implementar excepcion"); //name y action no pueden ser nulos
@@ -151,13 +153,13 @@ public class Parser
 
     Expression ParseName()
     {
-        Consume([TokenType.Name, TokenType.Colon]);
+        Consume(new List<TokenType> { TokenType.Name, TokenType.Colon });
         LookAhead(TokenType.String);
         return ParseStringExpression();
     }
     public Dictionary<Token, Token> ParseParam()
     {
-        Consume([TokenType.Params, TokenType.Colon, TokenType.LCurly]);
+        Consume(new List<TokenType> { TokenType.Params, TokenType.Colon, TokenType.LCurly });
 
         //Create a dictionary to save the id related with its type declared
         Dictionary<Token, Token> id_type = new Dictionary<Token, Token>();
@@ -168,12 +170,12 @@ public class Parser
         while(NextToken.Definition != TokenType.RCurly)
         {
             id = NextToken;
-            Consume([NextToken.Definition, TokenType.Colon]);
-            LookAhead([TokenType.Number, TokenType.Bool, TokenType.Text]);
+            Consume(new List<TokenType> { NextToken.Definition, TokenType.Colon });
+            LookAhead(new List<TokenType> { TokenType.Number, TokenType.Bool, TokenType.Text });
             //Add pair to the dictionary
             id_type.Add(id, NextToken);
             Consume(NextToken.Definition);
-            LookAhead([TokenType.RCurly, TokenType.Comma]);
+            LookAhead(new List<TokenType> { TokenType.RCurly, TokenType.Comma });
             if (NextToken.Definition == TokenType.Comma) 
                 Consume(TokenType.Comma);
             LookAhead(expected);
@@ -184,15 +186,15 @@ public class Parser
     //Targets y context siempre van a aser tokens
     InstructionBlock ParseAction()
     {
-        Consume([TokenType.Action, TokenType.Colon, TokenType.LParen]);
+        Consume(new List<TokenType> { TokenType.Action, TokenType.Colon, TokenType.LParen });
 
         LookAhead(TokenType.Id);
         //Saves the targets and the context id
         Token targets = NextToken;
-        Consume([TokenType.Id, TokenType.Comma]);
+        Consume(new List<TokenType> { TokenType.Id, TokenType.Comma });
         LookAhead(TokenType.Id);
         Token context = NextToken;
-        Consume([TokenType.Id, TokenType.RParen, TokenType.Implication]);
+        Consume(new List<TokenType> { TokenType.Id, TokenType.RParen, TokenType.Implication });
 
         LookAhead();
         if (NextToken.Definition is not TokenType.LCurly)
@@ -208,7 +210,7 @@ public class Parser
 
     InstructionBlock ParseOneInstruction(Token targets, Token context)
     {
-        List<Statement> statements = [];
+        List<Statement> statements = new List<Statement>();
 
         LookAhead();
         if (NextToken.Definition == TokenType.For) {
@@ -225,7 +227,7 @@ public class Parser
     }
     InstructionBlock ParseInstruction(Token targets, Token context)
     {
-        List<Statement> statements = [];
+        List<Statement> statements = new List<Statement>();
 
         LookAhead();
         while(NextToken.Definition != TokenType.RCurly)
@@ -246,7 +248,7 @@ public class Parser
     }
     WhileLoop ParseWhileLoop(Token targets, Token context)
     {
-        Consume([TokenType.While, TokenType.LParen]);
+        Consume(new List<TokenType> { TokenType.While, TokenType.LParen });
         var exp = ParseBoolExpression();
         Consume(TokenType.RParen);
         LookAhead();
@@ -269,7 +271,7 @@ public class Parser
         LookAhead(TokenType.Id);
         //Saves the iterator and the collection
         Token iterator = NextToken;
-        Consume([TokenType.Id, TokenType.In]);
+        Consume(new List<TokenType> { TokenType.Id, TokenType.In });
         LookAhead(TokenType.Id);
         LiteralExpression collection = (LiteralExpression)ParseExpression();
         //TODO:
@@ -289,9 +291,9 @@ public class Parser
     
     #endregion
     #region CardNodes
-    List<Card> ParseCardDecBlock()
+    List<Card_Object> ParseCardDecBlock()
     {
-        var cards = new List<Card>();
+        var cards = new List<Card_Object>();
         cards.Add(ParseCard());
         while(Pos + 1 < Tokens.Count)
         {
@@ -300,9 +302,9 @@ public class Parser
         }
         return cards;
     }
-    Card ParseCard()
+    Card_Object ParseCard()
     {
-        Consume([TokenType.Card, TokenType.LCurly]);
+        Consume(new List<TokenType> { TokenType.Card, TokenType.LCurly });
 
         Expression? name = null;
         Expression? type = null;
@@ -336,7 +338,7 @@ public class Parser
 
         if (name != null && faction != null && type != null && activation != null)
         {
-            return new Card(name, type, faction, power, range, activation);
+            return new Card_Object(name, type, faction, power, range, activation);
         }
         List<NotNullableObj> notNullableObjs= new List<NotNullableObj>{
             new NotNullableObj("Name", name),
@@ -350,7 +352,7 @@ public class Parser
 
     List<EffectAllocation> ParseActivation()
     {
-        Consume([TokenType.OnActivation, TokenType.Colon, TokenType.LBracket]);
+        Consume(new List<TokenType> { TokenType.OnActivation, TokenType.Colon, TokenType.LBracket });
         var effBlock = ParseEffBlock();
         Consume(TokenType.RBracket);
         return effBlock;
@@ -362,10 +364,10 @@ public class Parser
         var effects = new List<EffectAllocation>();
         effects.Add(ParseEffAllocation());
         Consume(TokenType.RCurly);
-        LookAhead([TokenType.Comma, TokenType.RCurly, TokenType.RBracket]);
+        LookAhead(new List<TokenType> { TokenType.Comma, TokenType.RCurly, TokenType.RBracket });
         while (NextToken.Definition is TokenType.Comma)
         {
-            Consume([TokenType.Comma, TokenType.LCurly]);
+            Consume(new List<TokenType> { TokenType.Comma, TokenType.LCurly });
             effects.Add(ParseEffAllocation());
             Consume(TokenType.RCurly);
         }
@@ -412,26 +414,26 @@ public class Parser
     }
     Expression ParseType()
     {
-        Consume([TokenType.Type, TokenType.Colon]);
+        Consume(new List<TokenType> { TokenType.Type, TokenType.Colon });
         LookAhead(TokenType.String);
         return ParseStringExpression();
     }
 
     Expression ParseFaction()
     {
-        Consume([TokenType.Faction, TokenType.Colon]);
+        Consume(new List<TokenType> { TokenType.Faction, TokenType.Colon });
         LookAhead(TokenType.String);
         return ParseStringExpression();
     }
 
     Expression ParsePower()
     {
-        Consume([TokenType.Power, TokenType.Colon]);
+        Consume(new List<TokenType> { TokenType.Power, TokenType.Colon });
         return ParseNumericExpression();
     }
     List<Expression> ParseRange()
     {
-        Consume([TokenType.Range, TokenType.Colon, TokenType.LBracket]);
+        Consume(new List<TokenType> { TokenType.Range, TokenType.Colon, TokenType.LBracket });
         List<Expression> ranges = new List<Expression>();
         var expected = new List<TokenType>{TokenType.RBracket, TokenType.String};
         LookAhead(expected);
@@ -447,12 +449,12 @@ public class Parser
     }
     PostActionBlock ParsePostAction()
     {
-        Consume([TokenType.PostAction, TokenType.Colon, TokenType.LCurly]);
+        Consume(new List<TokenType> { TokenType.PostAction, TokenType.Colon, TokenType.LCurly });
         return new PostActionBlock(ParseEffAllocation());
     }
     Selector ParseSelector()
     {
-        Consume([TokenType.Selector, TokenType.Colon, TokenType.LCurly]);
+        Consume(new List<TokenType> { TokenType.Selector, TokenType.Colon, TokenType.LCurly });
 
         Expression? source = null;
         Expression? single = null;
@@ -490,31 +492,26 @@ public class Parser
     }
     Predicate ParsePredicate()
     {
-        //FIXME:
-        Consume(TokenType.Predicate);
-        Consume(TokenType.Colon);
-        Consume(TokenType.LParen);
+        Consume(new List<TokenType> {TokenType.Predicate, TokenType.Colon, TokenType.LParen});
         LookAhead(TokenType.Id);
         Token id = NextToken;
-        Consume(NextToken.Definition);
-        Consume(TokenType.RParen);
-        Consume(TokenType.Implication);
+        Consume(new List<TokenType> {NextToken.Definition, TokenType.RParen, TokenType.Implication});
         return new Predicate(id, ParseBoolExpression());
     }
     Expression ParseSingle()
     {
-        Consume([TokenType.Single, TokenType.Colon]);
+        Consume(new List<TokenType> { TokenType.Single, TokenType.Colon });
         return ParseBoolExpression();
     }
     Expression ParseSource()
     {
-        Consume([TokenType.Source, TokenType.Colon]);
+        Consume(new List<TokenType> { TokenType.Source, TokenType.Colon });
         LookAhead(TokenType.String);
         return ParseStringExpression();
     }
     Allocation ParseAllocation()
     {
-        Consume([TokenType.C_Effect, TokenType.Colon]);
+        Consume(new List<TokenType> { TokenType.C_Effect, TokenType.Colon });
         LookAhead(new List<TokenType>{TokenType.String, TokenType.LCurly});
         if (NextToken.Definition is TokenType.String)
         {
@@ -597,9 +594,12 @@ public class Parser
         }
         else {
             var left = ParseIdLiteral();
-            List<TokenType> BinOperators = [TokenType.Plus, TokenType.Minus, TokenType.Multip, TokenType.Division, TokenType.Concatenation,
-            TokenType.SpaceConcatenation,TokenType.Assign, TokenType.MoreAssign, TokenType.MinusAssign, 
-            TokenType.MultipAssign, TokenType.DivisionAssign];
+            List<TokenType> BinOperators = new List<TokenType>
+            {
+                TokenType.Plus, TokenType.Minus, TokenType.Multip, TokenType.Division, TokenType.Concatenation,
+                TokenType.SpaceConcatenation, TokenType.Assign, TokenType.MoreAssign, TokenType.MinusAssign, 
+                TokenType.MultipAssign, TokenType.DivisionAssign
+            };
             LookAhead();
             if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement) {
                 Token op = NextToken;
@@ -611,25 +611,6 @@ public class Parser
                 Token op = NextToken;
                 Consume(NextToken.Definition);
                 left = new BinaryExpression(left, op, ParseExpression());
-            }
-            else if(NextToken.Definition is TokenType.LParen)
-            {
-                Consume(NextToken.Definition);
-                LookAhead();
-                if (NextToken.Definition is TokenType.RParen) {
-                    left = new FunctionCall(left, null);                    
-                }
-                //Find is an special function
-                //because it has inside a predicate
-                else if (NextToken.Value == "Find")
-                {
-                    left = new FindFunction(left, ParsePredicate());
-                }
-                else {
-                    left = new FunctionCall(left, ParseExpression());
-                }
-                Consume(TokenType.RParen);
-                LookAhead();
             }
             //It is just an if because indexer can be placed after a function
             if (NextToken.Definition is TokenType.LBracket)
@@ -644,14 +625,12 @@ public class Parser
     }
     Expression ParseIdLiteral()
     {
+        //It is a unary expression
         if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement)
         {
-            Token oper = NextToken;
-            Consume(NextToken.Definition);
-            Expression id = ParseIdLiteral();
-            //TODO: Probar testeando con expresiones como ++++i o ++i++
-            return new UnaryExpression((LiteralExpression)id, oper, false);
+            return ParseUnaryExpressionAtTheStart();
         }
+
         var value = NextToken;
         Consume(NextToken.Definition);
         LookAhead();
@@ -661,15 +640,63 @@ public class Parser
             Token op = NextToken;
             Consume(NextToken.Definition);
             LookAhead();
+            if (Peek().Definition is TokenType.LParen)
+            {
+                return ParseFunctionCall(left);
+            }
             left = new BinaryExpression(left, op, ParseIdLiteral());
         }
         return left;
     }
+    /// <summary>
+    /// This function looks ahead for the token next to NextToken
+    /// </summary>
+    /// <returns></returns>
+    private Token Peek()
+    {
+        if (Pos+2 < Tokens.Count)
+            return Tokens[Pos+2];
+
+        //TODO: Error de unexpected end
+        else throw new Exception();
+    }
+
+    Expression ParseFunctionCall(Expression left)
+    {
+        Token FunctionName = NextToken;
+        Consume(NextToken.Definition);
+        Consume(TokenType.LParen);
+        LookAhead();
+        Expression function;
+        if (FunctionName.Value == "Find")
+        {
+            function = new FindFunction(left, ParsePredicate());
+        }
+        else if (NextToken.Definition is TokenType.RParen)
+        {
+            function = new FunctionCall(left, FunctionName, null);
+        }
+        else {
+            var argument = ParseIdLiteral();
+            function = new FunctionCall(left, FunctionName, argument);
+        }
+        Consume(TokenType.RParen);
+        return function;
+    }
+
+    Expression ParseUnaryExpressionAtTheStart()
+    {
+        Token oper = NextToken;
+        Consume(NextToken.Definition);
+        Expression id = ParseIdLiteral();
+        //TODO: Probar testeando con expresiones como ++++i o ++i++
+        return new UnaryExpression((LiteralExpression)id, oper, false);
+    }
+
     Expression ParseBoolExpression()
     {
         var left = ParseExpression();
-        var expected = new List<TokenType>{TokenType.And, TokenType.Or, TokenType.Equal, TokenType.Less, TokenType.LessEq
-        , TokenType.More, TokenType.MoreEq};
+        var expected = new List<TokenType> { TokenType.And, TokenType.Or, TokenType.Equal, TokenType.Less, TokenType.LessEq, TokenType.More, TokenType.MoreEq };
         LookAhead();
         if (expected.Contains(NextToken.Definition))
         {
@@ -770,7 +797,7 @@ public class Parser
         //Can be an id
         //Can be an open parenthesis
         //Can be an string
-        LookAhead([TokenType.String, TokenType.LCurly, TokenType.Id]);
+        LookAhead(new List<TokenType>{TokenType.String, TokenType.LCurly, TokenType.Id});
         if (NextToken.Definition is TokenType.String)
         {
             var literal = NextToken;

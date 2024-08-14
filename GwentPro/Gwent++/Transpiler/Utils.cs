@@ -1,6 +1,9 @@
 using Transpiler;
 
 public static class Utils {
+    //TODO: Cambiar esta imagen
+    public static Sprite DefaultCardImage = Resources.Load<Sprite>("1"); 
+
     //Hash set that save tokentypes that are reserved words but can be used as properties
     public static HashSet<TokenType> PropertiesReservedWords = [TokenType.Faction, TokenType.Name, TokenType.Power, TokenType.Type];
     ///<summary>

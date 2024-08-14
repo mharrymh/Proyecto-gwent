@@ -2,20 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 public static class Utils {
+    //TODO: Cambiar imagen
+    public static Sprite DefaultCardImage = Resources.Load<Sprite>("0");
     //Hash set that save tokentypes that are reserved words but can be used as properties
-    public static HashSet<TokenType> PropertiesReservedWords = [TokenType.Faction, TokenType.Name, TokenType.Power, TokenType.Type];
+    public static HashSet<TokenType> PropertiesReservedWords = new HashSet<TokenType>{TokenType.Faction, TokenType.Name, TokenType.Power, TokenType.Type};
     ///<summary>
     ///Relate the types with a hashset of possible properties or functions represented as string 
     ///</summary>
-    public static Dictionary<IdType, HashSet<string>> ValidAccess = new Dictionary<IdType, HashSet<string>>{
-        {IdType.Context, ["TriggerPlayer", "Board", "Hand", "HandOfPLayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Find"]},
-        {IdType.Card, ["Owner", "Power", "Faction", "Name", "Type"]},
-        {IdType.Player, ["Enemy"]},
-        {IdType.CardCollection, ["Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add"]}
+    public static Dictionary<IdType, HashSet<string>> ValidAccess = new Dictionary<IdType, HashSet<string>>
+    {
+        {IdType.Context, new HashSet<string>{"TriggerPlayer", "Board", "Hand", "HandOfPLayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Find", "Enemy"}},
+        {IdType.Card, new HashSet<string>{"Owner", "Power", "Faction", "Name", "Type"}},
+        {IdType.CardCollection, new HashSet<string>{"Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add"}}
     };
     ///<summary>
     ///Relate the functions with the types of the arguments 
-    ///</summary>
+    /// ///</summary>
     public static Dictionary<string, IdType?> ValidArguments = new Dictionary<string, IdType?>{
         {"Find", IdType.Predicate},
         {"Push", IdType.Card},
@@ -57,6 +59,7 @@ public static class Utils {
         {"Name", IdType.String}
     };
 
+
     internal static Token GetErrorToken(Expression exp)
     {
         //Create a pointer to the expression
@@ -68,7 +71,7 @@ public static class Utils {
         if (pointer is UnaryExpression unary) return unary.ID.Value;
         else if (pointer is LiteralExpression literal) return literal.Value;
         else if (pointer is Indexer indexer) return GetErrorToken(indexer.Body);
-        else if (pointer is FunctionCall functionCall) return GetErrorToken(functionCall.Body);
+        else if (pointer is FunctionCall functionCall) return functionCall.FunctionName;
         else return GetErrorToken(((FindFunction)exp).Body);
     }
 }

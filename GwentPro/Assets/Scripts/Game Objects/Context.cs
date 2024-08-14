@@ -15,11 +15,17 @@ public class Context
             return gm.currentPlayer;
         }
     }
+
+    public Player Enemy {
+        get {
+            return gm.NotCurrentPlayer;
+        }
+    }
     
     //Returns a list with all card in the board
     public CardCollection BoardCards {
         get {
-            CardCollection aux = new();
+            CardCollection aux = new CardCollection();
             //Get all the cards in the section and add them to the aux list
             foreach (var Range in board.sections.Values)
             {
@@ -44,7 +50,7 @@ public class Context
                     if (arr[i] != null) aux.Add(arr[i]);
                 }
             }
-
+            // aux.Shuffle();
             return aux;
         }
     }

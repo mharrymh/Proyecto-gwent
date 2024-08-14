@@ -275,7 +275,7 @@ public static class SemantycBinaryExpression {
         FunctionCall right = (FunctionCall)expression;
         //Body of a function call is always a literal expression
         right.Validate(scope);
-        if (Utils.ValidAccess[leftType].Contains(((LiteralExpression)right.Body).Value.Value)) return;
+        if (Utils.ValidAccess[leftType].Contains(right.FunctionName.Value)) return;
         //TODO:
         else throw new Exception();
     }

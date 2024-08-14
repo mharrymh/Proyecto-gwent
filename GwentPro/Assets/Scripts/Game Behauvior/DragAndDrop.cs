@@ -282,9 +282,16 @@ public class DragAndDrop : MonoBehaviour
         gm.currentPlayer.Passed = false;
 
         //Apply effect
-        if (card.EffectType is IActiveEffect effect)
+        if (!(card.EffectType == null) && card.EffectType is IActiveEffect effect)
         {
             effect.Invoke(card);
+        }
+        if (card.UserCardEffects != null)
+        {
+            foreach (DeclaredEffect eff in card.UserCardEffects)
+            {
+                eff.Execute();
+            }
         }
 
         //Add card in backend

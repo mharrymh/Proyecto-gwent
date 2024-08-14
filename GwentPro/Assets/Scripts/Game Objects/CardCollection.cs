@@ -7,10 +7,21 @@ public class CardCollection : IList<Card>
 {
     private List<Card> Cards = new List<Card>();
 
-    public CardCollection Find() 
+    public CardCollection Find(Predicate predicate, IExecuteScope scope) 
     {
         // TODO: Completar con un predicado
-        throw new NotImplementedException();
+        CardCollection aux = new CardCollection();
+
+        foreach (Card card in this)
+        {
+            //If the card fulfill 
+            if (predicate.Execute(card, scope.CreateChildScope()))
+            {
+                aux.Add(card);
+            }
+        }
+
+        return aux;
     }
 
     public CardCollection Copy()

@@ -42,7 +42,12 @@ public abstract class Expression : Statement {
         this.Validate(scope);
         this.CheckType(scope, expected);
     }
-    
+    //Not all expressions can be evaluated
+    public virtual object? Evaluate() {
+        return null;
+    }
+    //The execute of expressions
+    public abstract override object Execute(IExecuteScope scope);
 };
 
 /// <summary>
@@ -75,11 +80,15 @@ public class BinaryExpression : Expression
         return SemantycBinaryExpression.GetTypeByOp[Op.Definition].Invoke(this, scope);
     }
 
-    //TODO: Chequear evaluate
-    // public override object Evaluate()
-    // {
-    //     return EvaluateBinaryExpression.EvaluateByOp[Op.Definition].Invoke(this);
-    // }
+    public override object Evaluate()
+    {
+        return EvaluateBinaryExpression.EvaluateByOp[Op.Definition].Invoke(this);
+    }
+
+    public override object Execute(IExecuteScope scope)
+    {
+       return BinaryExpressionExecuter.ExecuteByOp[Op.Definition](this, scope);
+    }
 }
 public class LiteralExpression : Expression
 {
@@ -100,7 +109,7 @@ public class LiteralExpression : Expression
         TokenType type = Value.Definition;
         //returns true is it is not an id
         if (type is TokenType.Num || type is TokenType.String
-        || type is TokenType.Boolean || scope.IsDefined(this.Value.Value)
+        || type is TokenType.Boolean || scope.IsDefined(Value.Value)
         || ReservedWordsProperties.Contains(type)) {
             return;
         }
@@ -129,8 +138,45 @@ public class LiteralExpression : Expression
         };
         return pairs[Value.Definition];
     }
+    //It is secure that it will not be an id, ids are called in the instructions
+    public override object Evaluate()
+    {
+        if (this.Value.Definition is TokenType.String)
+        {
+            //Remove the character " at the start and at the end
+            return this.Value.Value[1..^1];
+        }
+        if (Value.Definition is TokenType.Num)
+        {
+            return int.Parse(Value.Value);
+        }
+        return (this.Value.Value == "true")? true : false;
+    }
 
-    //FIXME: Chequear evaluate
+    public override object Execute(IExecuteScope scope)
+    {
+        TokenType definition = this.Value.Definition;
+        //It is an string
+        if (definition is TokenType.String)
+        {
+            //Remove the character " at the start and at the end
+            return this.Value.Value[1..^1];
+        }   
+        //It is an integer
+        if (definition is TokenType.Num)
+        {
+            return int.Parse(this.Value.Value);
+        }
+        //It is a variable
+        if (definition is TokenType.Id)
+        {
+            //Get the id value (it can be null)
+            return scope.GetValue(Value.Value);
+        }
+        //it is a boolean
+        if (Value.Value == "true") return true;
+        else return false;
+    }
 }
 
 public class UnaryExpression : Expression
@@ -156,9 +202,18 @@ public class UnaryExpression : Expression
         return ID.GetType(scope);
     }
 
-    public override object Evaluate()
+    public override object Execute(IExecuteScope scope)
     {
-        throw new NotImplementedException();
+        //Save the variable value
+        int varValue = (int)ID.Execute(scope);
+        //Redefine its value without changing the value of varValue
+        scope.Define(ID.Value.Value, varValue + 1);
+        if (!AtTheEnd)
+        {
+            //Change the varValue
+            varValue++;
+        }
+        return varValue;
     }
 }
 
@@ -182,31 +237,58 @@ public class FindFunction : Expression {
         Predicate.Validate(scope);
     }
 
-    public override object Evaluate()
+    public override object Execute(IExecuteScope scope)
     {
-        throw new NotImplementedException();
+        CardCollection body = (CardCollection)Body.Execute(scope);
+        return body.Find(Predicate, scope);
     }
 }
 
 public class FunctionCall : Expression {
-    public Expression Body {get;}
+    /// <summary>
+    /// The left part before the function is called 
+    /// </summary>
+    /// <value></value>
+    public Expression LeftExpression {get;}
+    /// <summary>
+    /// The function Name
+    /// </summary>
+    /// <value></value>
+    public Token FunctionName {get;}
+    /// <summary>
+    /// The arguments of the functions
+    /// </summary>
+    /// <value>If null it means it has no arguments</value>
     Expression? Argument {get;}
-    public FunctionCall(Expression body, Expression? argument)
+    public FunctionCall(Expression left, Token name, Expression? argument)
     {
-        this.Body = body;
-        this.Argument = argument;
+        LeftExpression = left;
+        FunctionName = name;
+        Argument = argument;
     }
 
     public override IdType GetType(IScope scope)
     {
-        return Body.GetType(scope);
+        //Return the type that the function returns
+        return Utils.Types[FunctionName.Value];
     }
 
     public override void Validate(IScope scope)
     {
-        //Body expression is always a literal expression
-        //Check if the body match with the arguments
-        string body = ((LiteralExpression)Body).Value.Value;
+        IdType leftType = LeftExpression.GetType(scope);
+        if (leftType != IdType.Context || leftType != IdType.CardCollection)
+        {
+            //TODO: LOS UNICOS QUE PUEDEN ACCEDER A FUNCIONES SON CONTEXT Y CARDCOLLECTION
+            throw new Exception();
+        }
+        //Check that the left expression match the function name
+        if (!Utils.ValidAccess[leftType].Contains(FunctionName.Value))
+        {
+            //TODO: esta funcion no esta disponible para context o cardCollection
+            throw new Exception();
+        }
+        //Check if the functionName match with the arguments
+        string body = FunctionName.Value;
         if (Utils.ValidArguments.TryGetValue(body, out IdType? value) && value == Argument?.GetType(scope))
         {
             return;
@@ -215,9 +297,19 @@ public class FunctionCall : Expression {
         throw new Exception();
     }
 
-    public override object Evaluate()
+    public override object Execute(IExecuteScope scope)
     {
-        throw new NotImplementedException();
+        object body = LeftExpression.Execute(scope);
+        if (body is CardCollection collection)
+        {
+            return Executer.CollectionFunctions[FunctionName.Value](Argument, collection, scope);
+        }
+        //It is a context function
+        else 
+        {
+            //Argument is always a player here
+            return Executer.ContextFunctions[FunctionName.Value](new Context(), Argument, scope);
+        }
     }
 }
 
@@ -257,9 +349,10 @@ public class Indexer : Expression {
         throw new Exception(indexerError.ToString());
     }
 
-    //TODO:
-    public override object Evaluate()
+    public override object Execute(IExecuteScope scope)
     {
-        throw new NotImplementedException();
+        CardCollection body = (CardCollection)Body.Execute(scope);
+        int index = (int)Index.Execute(scope);
+        return body[index];
     }
 }

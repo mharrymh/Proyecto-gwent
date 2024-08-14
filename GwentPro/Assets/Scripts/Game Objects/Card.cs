@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+#nullable enable
 [System.Serializable] 
 
 public enum CardFaction
@@ -48,7 +49,7 @@ public class Card : ScriptableObject
     /// Card effect
     /// </summary>
     /// <value></value>
-    public Effect EffectType { get;}
+    public Effect? EffectType { get;}
     /// <summary>
     /// Owner of the card
     /// </summary>
@@ -64,6 +65,11 @@ public class Card : ScriptableObject
     /// </summary>
     /// <value></value>
     public GameObject CardPrefab { get; set; }
+    /// <summary>
+    /// The effects for the User cards
+    /// </summary>
+    /// <value></value>
+    public List<DeclaredEffect>? UserCardEffects {get;}
 
     
     /// <summary>
@@ -73,7 +79,7 @@ public class Card : ScriptableObject
     /// <param name="cardFaction"></param>
     /// <param name="effectType"></param>
     /// <param name="CardImage"></param>
-    public Card(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage)
+    public Card(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null)
     {
         Name = name;
         Faction = cardFaction;
@@ -85,6 +91,8 @@ public class Card : ScriptableObject
             Description = effectDescriptions[effectType.ToString()];
         }
         else Description = "Sin efecto";
+
+        this.UserCardEffects = userCardEffects;
     }
 
     /// <summary>
@@ -102,8 +110,8 @@ public class Card : ScriptableObject
         /// <value>It returns False by default</value>
         public bool Placed { get; set; }
 
-        public LeaderCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage)
-            : base(name, cardFaction, effectType,  CardImage)
+        public LeaderCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null)
+            : base(name, cardFaction, effectType,  CardImage, userCardEffects)
         {
             //Set the IsPlayed property to true cause it wont interact with de event triggers
             IsPlayed = true;
@@ -115,8 +123,8 @@ public class Card : ScriptableObject
     /// </summary>
     public abstract class SpecialCard : Card
     {
-        public SpecialCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage)
-        : base(name, cardFaction, effectType, CardImage) {}
+        public SpecialCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null)
+        : base(name, cardFaction, effectType, CardImage, userCardEffects) {}
     }
     /// <summary>
     /// Represents a climate special card
@@ -124,8 +132,8 @@ public class Card : ScriptableObject
     public class ClimateCard : SpecialCard
     {
         public string Range {get;}
-        public ClimateCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, string range) 
-        : base(name, cardFaction, effectType, CardImage)
+        public ClimateCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, string range, List<DeclaredEffect>? userCardEffects = null) 
+        : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
             this.Range = range;
         }
@@ -136,8 +144,8 @@ public class Card : ScriptableObject
     public class IncrementCard : SpecialCard
     {
         public string Range {get;}
-        public IncrementCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, string range) 
-        : base(name, cardFaction, effectType, CardImage)
+        public IncrementCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, string range, List<DeclaredEffect>? userCardEffects = null) 
+        : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
             this.Range = range;
         }
@@ -147,8 +155,8 @@ public class Card : ScriptableObject
     /// </summary>
     public class CleareanceCard : SpecialCard
     {
-        public CleareanceCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage) 
-        : base(name, cardFaction, effectType, CardImage)
+        public CleareanceCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null) 
+        : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
         }
     }
@@ -157,8 +165,8 @@ public class Card : ScriptableObject
     /// </summary>
     public class DecoyCard : SpecialCard
     {
-        public DecoyCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage) 
-        : base(name, cardFaction, effectType, CardImage)
+        public DecoyCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null) 
+        : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
             this.Description = "Carta señuelo, colocala sobre una de tus cartas para que esta vuelva a tu mano";
         }
@@ -175,7 +183,7 @@ public class Card : ScriptableObject
         public int Power { get; set; }
 
         public UnityCard(string name, CardFaction cardFaction, Effect effectType, string Range, int power,
-        Sprite CardImage) : base(name, cardFaction, effectType, CardImage)
+        Sprite CardImage, List<DeclaredEffect>? userCardEffects = null) : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
             this.Range = Range;
             OriginalPower = power;
@@ -188,8 +196,8 @@ public class Card : ScriptableObject
     public class SilverCard : UnityCard
     {
         public SilverCard(string name, CardFaction cardFaction, Effect effectType, string Range, 
-        int power, Sprite CardImage) 
-        : base(name, cardFaction, effectType, Range, power, CardImage)
+        int power, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null) 
+        : base(name, cardFaction, effectType, Range, power, CardImage, userCardEffects)
         {
         }
     }
@@ -199,8 +207,8 @@ public class Card : ScriptableObject
     public class GoldCard : UnityCard
     {
         public GoldCard(string name, CardFaction cardFaction, Effect effectType, string Range, 
-        int power, Sprite CardImage) 
-        : base(name, cardFaction, effectType, Range, power, CardImage)
+        int power, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null) 
+        : base(name, cardFaction, effectType, Range, power, CardImage, userCardEffects)
         {
         }
     }

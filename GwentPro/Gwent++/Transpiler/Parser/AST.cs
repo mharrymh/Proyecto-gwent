@@ -21,11 +21,6 @@ public abstract class DSL_Object
     /// </summary>
     /// <param name="scope"></param>
     public abstract void Validate(IScope scope);
-    /// <summary>
-    /// Evaluate and return the object as a C# object
-    /// </summary>
-    /// <returns>It returns null because some objects dont need to return anythig</returns>
-    public abstract object? Evaluate();
 }
 /// <summary>
 /// Represent a block of declarations
@@ -53,10 +48,6 @@ public class DecBlock : DSL_Object
         }
     }
 
-    public override object? Evaluate()
-    {
-        foreach (Card card in Cards) 
-    }
 }
 #region EffectNodes
 /// <summary>
@@ -74,13 +65,6 @@ public class Effect : DSL_Object
         this.Action = action;
     }
 
-    public override void Validate(IScope scope)
-    {
-        Name.ValidateAndCheck(scope, IdType.String);
-        
-        if (Param != null) scope.DefineParams((string)Name.Evaluate(), Param);
-        Action.Validate(scope.CreateChildContext());
-    }
 }
 /// <summary>
 /// Represent an action declaration

@@ -38,6 +38,16 @@ public class GameManager : MonoBehaviour
     //The players
     public Player player1;
     public Player player2;
+
+    public Player NotCurrentPlayer
+    {
+        get
+        {
+            return GetNotCurrentPlayer();
+        }
+    }
+
+
     public Player winner = null;
     //The points in the UI
     public TMP_Text PowerPlayer1;
@@ -159,6 +169,10 @@ public class GameManager : MonoBehaviour
                 player.LeaderPlayed = true;
             }
         }
+    }
+    private Player GetNotCurrentPlayer()
+    {
+        return (currentPlayer == player1) ? player2 : player1;
     }
 
     public void ChangeCard(Card card, Player player)

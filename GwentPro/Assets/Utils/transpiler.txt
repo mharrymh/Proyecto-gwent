@@ -2,21 +2,21 @@ effect {
     Name: "Boost",
     Action: (targets, context) =>
         for target in targets
-            Power += 3; 
+            target.Power += 3; 
 }
 
 card {
     Type: "Gold",
     Name: "Triss",
-    Faction: "Northern Realms",
+    Faction: "Light",
     Power: 12,
     Range: ["Ranged"],
     OnActivation: [
         {
             Effect: "Boost",
             Selector: {
-                Source: "deck",
-                Single: true,
+                Source: "hand",
+                Single: false,
                 Predicate: (unit) => true
             },
         }

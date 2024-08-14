@@ -68,6 +68,13 @@ public class Player
         {
             PlayerDeck = cards.GetDarkDeck();
         }
+
+        //Add user cards
+        foreach (Card card in CardConverter.myCardsPerFactions[Faction])
+        {
+            PlayerDeck.Add(card);
+        }
+
         //Assign Leader property
         for (int i = 0; i < PlayerDeck.Count; i++)
         {
