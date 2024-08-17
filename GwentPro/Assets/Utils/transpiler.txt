@@ -1,24 +1,68 @@
-effect { 
-    Name: "Boost",
-    Action: (targets, context) =>
-        for target in targets
-            target.Power += 3; 
+
+effect {
+    Name: "Draw",
+    Action: (targets, context) => {
+        topCard = context.Deck.Pop();
+        context.Hand.Add(topCard);
+        context.Hand.Shuffle();
+    }
+}
+effect {
+    Name: "Dam" @ "age",
+    Params: {
+        Amount: Number
+    },
+    Action: (targets, context) => {
+        for target in targets {
+            i = 0;
+            while (i++ < Amount) 
+                target.Power*=1;
+        };
+    }
+}
+
+effect {
+    Name: "ReturnToDeck",
+    Action: (targets, context) => {
+        for target in targets {
+            context.BoardCards.Remove(target);
+            owner = target.Owner;
+            deck = context.DeckOfPlayer(owner);
+            deck.Shuffle();
+            deck.Push(target);
+            deck.Shuffle();
+        };
+    }
 }
 
 card {
     Type: "Gold",
-    Name: "Triss",
+    Name: "Beluga",
     Faction: "Light",
-    Power: 12,
-    Range: ["Ranged"],
+    Power: 5 / (1),
+    Range: ["Melee", "Ranged"],
     OnActivation: [
         {
-            Effect: "Boost",
+            Effect: {
+                Name: "Damage",
+                Amount: 5,
+            },
             Selector: {
                 Source: "hand",
                 Single: false,
-                Predicate: (unit) => true
+                Predicate: (unit) => unit.Power > 0
             },
+            PostAction: {
+                Effect: "ReturnToDeck",
+                Selector: {
+                    Source: "parent",
+                    Single: 3 == 5,
+                    Predicate: (unit) => unit.Power < 6
+                },
+            },
+            {
+                Effect: "Draw"
+            }
         }
     ]
 }

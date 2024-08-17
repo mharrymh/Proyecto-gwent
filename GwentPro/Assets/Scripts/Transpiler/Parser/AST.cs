@@ -342,10 +342,10 @@ public class Card_Object : DSL_Object
         List<string> ValidRanges = new List<string> {"Melee", "Ranged", "Siege"};
         for (int i = 0; i < rangeString.Count; i++)
         {
-            if (ValidRanges.Contains(rangeString[0])) {
-                correctFormatRange += rangeString[0];
+            if (ValidRanges.Contains(rangeString[i])) {
+                correctFormatRange += rangeString[i][0];
                 //Remove it so it cant be ranges repeated 
-                ValidRanges.Remove(rangeString[0]);
+                ValidRanges.Remove(rangeString[i]);
             }
             //TODO: Rango no valido
             else throw new Exception("");
@@ -413,8 +413,8 @@ public class EffectAllocation : DSL_Object
         //Check that selector in not null
         if (parent == null && Selector == null)
         {
-            //TODO: Los unicos efectos que pueden ser declarados sin selector son los post efectos
-            throw new Exception();
+            //targets is an empty list
+            usedEffect.Targets = new EffectSelector("null", false, null, true);
         }
 
         CardCollection effectTargets = new CardCollection();

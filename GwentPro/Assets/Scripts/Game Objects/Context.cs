@@ -25,7 +25,7 @@ public class Context
     //Returns a list with all card in the board
     public CardCollection BoardCards {
         get {
-            CardCollection aux = new CardCollection();
+            CardCollection aux = new CardCollection("board");
             //Get all the cards in the section and add them to the aux list
             foreach (var Range in board.sections.Values)
             {
@@ -56,7 +56,10 @@ public class Context
     }
 
     public CardCollection HandOfPlayer(Player player) {
-        return player.Hand;
+        CardCollection hand = player.Hand;
+        hand.GameListName = "hand";
+        hand.Player = player;
+        return hand;
     }
 
     public CardCollection Hand {
@@ -66,7 +69,10 @@ public class Context
     }
 
     public CardCollection FieldOfPlayer(Player player) {
-        return player.Field;
+        CardCollection field = player.Field;
+        field.GameListName = "field";
+        field.Player = player;
+        return field;
     }
 
     public CardCollection Field {
@@ -77,7 +83,10 @@ public class Context
 
     public CardCollection GraveyardOfPlayer(Player player)
     {
-        return player.GraveYard;
+        CardCollection graveyard = player.GraveYard;
+        graveyard.GameListName = "graveyard";
+        graveyard.Player = player;
+        return graveyard;
     }
 
     public CardCollection Graveyard {
@@ -89,7 +98,10 @@ public class Context
 
     public CardCollection DeckOfPlayer(Player player)
     {
-        return player.PlayerDeck;
+        CardCollection deck = player.PlayerDeck;
+        deck.GameListName = "deck";
+        deck.Player = player;
+        return deck;
     }
 
     public CardCollection Deck {

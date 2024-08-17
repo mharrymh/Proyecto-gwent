@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player
@@ -72,7 +73,7 @@ public class Player
         //Add user cards
         foreach (Card card in CardConverter.myCardsPerFactions[Faction])
         {
-            PlayerDeck.Add(card);
+            PlayerDeck.Add(card.Duplicate());
         }
 
         //Assign Leader property

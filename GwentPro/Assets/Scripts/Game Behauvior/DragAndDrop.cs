@@ -30,7 +30,7 @@ public class DragAndDrop : MonoBehaviour
     /// <summary>
     /// Relate the range with the position in the climate section
     /// </summary>
-    readonly Dictionary<string, int> relate = new()
+    public readonly Dictionary<string, int> relateClimateSection = new()
     {
         {"M", 0}, {"R", 1}, {"S", 2}
     };
@@ -118,13 +118,13 @@ public class DragAndDrop : MonoBehaviour
     public void EndDrag()
     {
         //FIXME: ELIMINAR COMENTARIOS?
-        // if (!MovingCard.IsPlayed)
-        // {
-        isDragging = false;
+        if (!MovingCard.IsPlayed)
+        {
+            isDragging = false;
 
-        if (DropZone != null) DropCard(MovingCard);
-        else this.transform.position = startPosition;
-        // }
+            if (DropZone != null) DropCard(MovingCard);
+            else this.transform.position = startPosition;
+        }
     }
 
 
@@ -260,7 +260,7 @@ public class DragAndDrop : MonoBehaviour
             transform.position = startPosition;
         }
     }
-    public void PlayCard(Card card, string range = "")
+    public void PlayCard(Card card,  string range = "", bool dropped = true)
     {
         //Play a sound when a card is dropped
         soundM.PlayCardSound();
@@ -280,19 +280,9 @@ public class DragAndDrop : MonoBehaviour
 
         //Disable passed property if you play a card 
         gm.currentPlayer.Passed = false;
-
         //Apply effect
-        if (!(card.EffectType == null) && card.EffectType is IActiveEffect effect)
-        {
-            effect.Invoke(card);
-        }
-        if (card.UserCardEffects != null)
-        {
-            foreach (DeclaredEffect eff in card.UserCardEffects)
-            {
-                eff.Execute();
-            }
-        }
+        ApplyEffect(card);
+        
 
         //Add card in backend
         //FIXME:  CREAR UN DICCIONARIO
@@ -324,7 +314,7 @@ public class DragAndDrop : MonoBehaviour
         {
             string key = range;
             int value;
-            if (relate.TryGetValue(key, out value))
+            if (relateClimateSection.TryGetValue(key, out value))
             {
                 board.climate_section[value] = climate_card;
             }
@@ -338,8 +328,7 @@ public class DragAndDrop : MonoBehaviour
         else if (card is Card.IncrementCard increment_card)
         {
             string key = range;
-            int value;
-            if (relate.TryGetValue(key, out value))
+            if (relateClimateSection.TryGetValue(key, out int value))
             {
                 board.increment_section[increment_card.Owner.ID][value] = increment_card;
             }
@@ -398,9 +387,26 @@ public class DragAndDrop : MonoBehaviour
 
         //Update the power
         gm.SetPower();
+        //Cards that were not dropped will not make the turn to change 
+        if (dropped)
+            //Change turn
+            gm.ChangeTurn();      
+    }
 
-        //Change turn
-        gm.ChangeTurn();      
+    private void ApplyEffect(Card card)
+    {
+        //Apply effect
+        if (!(card.EffectType == null) && card.EffectType is IActiveEffect effect)
+        {
+            effect.Invoke(card);
+        }
+        if (card.UserCardEffects != null)
+        {
+            foreach (DeclaredEffect eff in card.UserCardEffects)
+            {
+                eff.Execute();
+            }
+        }
     }
 }
 

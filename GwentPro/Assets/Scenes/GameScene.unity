@@ -178,12 +178,24 @@ MonoBehaviour:
   Graveyard2: {fileID: 504129342}
   cardPrefab: {fileID: 9194607509127826207, guid: 67de988592b8ab14eac30269c9b76737, type: 3}
   HandPanel: {fileID: 645684548}
+  MeleePlayer1: {fileID: 1851342252}
+  RangePlayer1: {fileID: 225856770}
+  SiegePlayer1: {fileID: 363397488}
+  MeleePlayer2: {fileID: 866578634}
+  RangePlayer2: {fileID: 2047799031}
+  SiegePlayer2: {fileID: 1710977717}
+  IncrementMeleePlayer1: {fileID: 1869187000}
+  IncrementRangePlayer1: {fileID: 286928440}
+  IncrementSiegePlayer1: {fileID: 1817858818}
+  IncrementMeleePlayer2: {fileID: 309792302}
+  IncrementRangePlayer2: {fileID: 747345210}
+  IncrementSiegePlayer2: {fileID: 1822453002}
+  ClimateZone: {fileID: 0}
   LeaderPlayer1: {fileID: 1686272076}
   LeaderPlayer2: {fileID: 1669998736}
   Round: 0
   GivingCards: 0
   RoundOverAux: 0
-  RoundDraws: 0
   StartingAmount: 8
   PowerPlayer1: {fileID: 6711892443546061072}
   PowerPlayer2: {fileID: 6711892443546061071}

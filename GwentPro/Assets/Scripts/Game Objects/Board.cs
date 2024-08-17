@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -77,5 +78,32 @@ public class Board
             { "player1" , new Card.SpecialCard[3] },
             {"player2", new Card.SpecialCard[3] }
         };
+    }
+
+    public void RemoveFromBoard(Card card)
+    {
+        Player owner = card.Owner;
+        string range = null;
+        foreach (var keyValuePair in sections[owner.ID])
+        {
+            range = keyValuePair.Key;
+            foreach (Card item in sections[owner.ID][range])
+            {
+                if (item == card)
+                {
+                    return;
+                }
+            }
+        }
+        //Guaranteed that range is not null here
+        sections[owner.ID][range].Remove(card);
+    }
+
+    public void ClearField(Player player)
+    {
+        foreach (CardCollection cardCollection in sections[player.ID].Values)
+        {
+            cardCollection.Clear();
+        }
     }
 }

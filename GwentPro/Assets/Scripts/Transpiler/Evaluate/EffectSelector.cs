@@ -2,21 +2,28 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#nullable enable
 
 public class EffectSelector 
 {
+    bool EmptyList {get;}
     string Source {get; }
     bool Single {get; }
-    Predicate Predicate {get; } 
-    public EffectSelector(string source, bool single, Predicate predicate)
+    Predicate? Predicate {get; } 
+    public EffectSelector(string source, bool single, Predicate? predicate, bool emptyList = false)
     {
         Source = source;
         Single = single;
         Predicate = predicate;
+        EmptyList = emptyList;
     }
 
     public CardCollection GetTargets(DeclaredEffect parent)
     {
+        if (EmptyList)
+        {
+            return new CardCollection();
+        }
         //Get the cards of the source
         CardCollection source = GetSourceCollection(Source, parent);
         

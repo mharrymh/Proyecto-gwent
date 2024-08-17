@@ -132,13 +132,36 @@ public static class SemantycBinaryExpression {
     };
 
     private static void AccessExpression(BinaryExpression expression, IScope scope)
-    {
-        Type rightType = expression.Right.GetType();
-        if (ValidateAccess.ContainsKey(rightType))
-            ValidateAccess[rightType].Invoke(expression.Left.GetType(scope), expression.Right, scope);
-        else 
+     {
+        //Get the left part that is a literal expression
+        LiteralExpression left = (LiteralExpression)expression.Left;
+        IdType leftType = left.GetType(scope);
+
+        Expression pointer = expression.Right;
+
+        while (pointer is BinaryExpression binaryExpression)
+        {
+            //Get the left part of the right part
+            LiteralExpression rightLeft = (LiteralExpression)binaryExpression.Left;
+            //Get its type
+            IdType rightLeftType = rightLeft.GetType(scope);
+            if (!Utils.RelateTypes[leftType].Contains(rightLeftType))
+            {
+                //TODO:
+                throw new Exception("El tipo leftType no puedo acceder a una propiedad de tipo rightLeftType");
+            }
+
+            leftType = rightLeftType;
+            pointer = binaryExpression.Right;
+        }
+        //is a literal expression
+        //Get the type of right part that is a literal expression
+        IdType rightType = pointer.GetType(scope);
+        if (!Utils.RelateTypes.ContainsKey(leftType) || !Utils.RelateTypes[leftType].Contains(rightType))
+        {
             //TODO:
-            throw new Exception();
+            throw new Exception("El tipo leftType no puedo acceder a una propiedad de tipo rightType");
+        }
     }
 
     private static void StringExpression(BinaryExpression expression, IScope scope)
@@ -192,18 +215,6 @@ public static class SemantycBinaryExpression {
         expression.Right.CheckType(scope, IdType.Number);    
     }
 
-    private static Token ConvertOp(Token op)
-    {
-        string value = op.Value[0].ToString();
-        Dictionary<string, TokenType> ValueMatch = new Dictionary<string, TokenType>(){
-            {"+", TokenType.Plus},
-            {"-", TokenType.Minus},
-            {"/", TokenType.Division},
-            {"*", TokenType.Multip}
-        };
-        return new Token(value, ValueMatch[value], op.Line, op.Column);
-    }
-
     private static void AssignExpression(BinaryExpression expression, IScope scope)
     {
         //If left expression is an id then add it to the scopes dictionary
@@ -214,98 +225,17 @@ public static class SemantycBinaryExpression {
             scope.Define(literal.Value.Value, expression.Right.GetType(scope));
             return;
         }
+        IdType leftType = expression.Left.GetType(scope);
+        IdType rightType = expression.Right.GetType(scope);
         //TODO: SUPONIENDO QUE PARA SER MODIFICABLE UNA PROPIEDAD SOLO PUEDE SER NUMBER
         //PORQUE NO TIENE SENTIDO QUE UNA ACCION PUEDA MODIFICARTE OTRA COSA, PREGUNTAR
         //Puede ser una carta
-        // leftType = Left.GetType(context);
-        // if (!(leftType is IdType.Number && rightType == leftType)) return false;
-        // return;
-
-
-
-        //TODO: Lanza error de que a la izquierda de una asignacion debe
-        //haber un id para ser asignado o un objeto variable valido
-        throw new Exception();
-    }
-    #endregion
-    #region Validate Access
-    /// <summary>
-    /// Helps to Validate the access binary expresssion depending of the type of the right expression
-    /// </summary>
-    /// <returns></returns>
-    public static Dictionary<Type, Action<IdType, Expression, IScope>> ValidateAccess= new()
-    {
-        {typeof(BinaryExpression), ToBinary},
-        {typeof(LiteralExpression), ToLiteral},
-        {typeof(FunctionCall), TofunctionCall},
-        {typeof(Indexer), ToIndexer},
-        {typeof(FindFunction), ToFindFunction},
-    };
-    private static void ToFindFunction(IdType leftType, Expression expression, IScope scope)
-    {
-        FindFunction right = (FindFunction)expression;
-        //Body of a function call is always a literal expression
-        right.Validate(scope);
-        if (!Utils.ValidAccess[leftType].Contains("Find")) throw new Exception();
-        //TODO:
-    }
-    private static void ToIndexer(IdType leftType, Expression expression, IScope scope)
-    {
-        //It is an indexer
-        Indexer right = (Indexer)expression;
-
-        right.Validate(scope);
-
-        if (right.Body is LiteralExpression litBody) 
+        if ((leftType is not IdType.Number && leftType is not IdType.Card) || leftType != rightType)
         {
-            if (!Utils.ValidAccess[leftType].Contains(litBody.Value.Value))
-            {
-                //TODO: LANZAR ERROR
-                throw new Exception();
-            }
-        }
-        //Body can be a function call
-        else {
-            ValidateAccess[typeof(FunctionCall)].Invoke(leftType, right.Body, scope);
-        }
-    }
-
-    private static void TofunctionCall(IdType leftType, Expression expression, IScope scope)
-    {
-        FunctionCall right = (FunctionCall)expression;
-        //Body of a function call is always a literal expression
-        right.Validate(scope);
-        if (Utils.ValidAccess[leftType].Contains(right.FunctionName.Value)) return;
-        //TODO:
-        else throw new Exception();
-    }
-
-    private static void ToLiteral(IdType leftType, Expression expression, IScope scope)
-    {
-        LiteralExpression right = (LiteralExpression)expression;
-        if (!Utils.ValidAccess.ContainsKey(leftType) || !Utils.ValidAccess[leftType].Contains(right.Value.Value))
-        {
-            //TODO:
+            //TODO: Lanza error de que a la izquierda de una asignacion debe
+            //haber un id para ser asignado o un objeto variable valido
             throw new Exception();
         }
-    }
-    /// <summary>
-    /// The right part of the access expression is a binary expression
-    /// </summary>
-    /// <param name="leftType"></param>
-    /// <param name="rightExp"></param>
-    /// <param name="scope"></param>
-    private static void ToBinary(IdType leftType, Expression rightExp, IScope scope)
-    {
-        //It can only be another binary access expression
-        BinaryExpression right = (BinaryExpression)rightExp;
-        //The left part of a binary expression is always an id literal expression
-        //that is why we use the cast
-        LiteralExpression leftOfRight = (LiteralExpression)right.Left;
-
-        if (!Utils.ValidAccess.TryGetValue(leftType, out HashSet<string>? value) || !value.Contains(leftOfRight.Value.Value))
-            throw new Exception();
-        //TODO: NO existe ese parametro para ese tipo
     }
     #endregion
 }

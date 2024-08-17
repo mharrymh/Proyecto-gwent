@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -71,6 +72,16 @@ public class Card : ScriptableObject
     /// <value></value>
     public List<DeclaredEffect>? UserCardEffects {get;}
 
+    public string Source { get
+        {
+            if (Owner.PlayerDeck.Contains(this)) return "deck";
+            if (Owner.GraveYard.Contains(this)) return "graveyard";
+            if (Owner.Hand.Contains(this)) return "hand";
+            if (Owner.Field.Contains(this)) return "field";
+            else return "board";
+        }
+    }
+
     
     /// <summary>
     /// Represents a card in its basic form 
@@ -94,12 +105,63 @@ public class Card : ScriptableObject
 
         this.UserCardEffects = userCardEffects;
     }
+    public Card Duplicate()
+    {
+        if (this is GoldCard goldCard)
+        {
+            return new GoldCard
+            (goldCard.Name, goldCard.Faction, goldCard.EffectType, 
+            goldCard.Range, goldCard.Power, goldCard.CardImage, goldCard.UserCardEffects);
+        }
+        if (this is SilverCard silverCard)
+        {
+            return new SilverCard
+            (silverCard.Name, silverCard.Faction, silverCard.EffectType, 
+            silverCard.Range, silverCard.Power, silverCard.CardImage, silverCard.UserCardEffects);
+        }
+        if (this is DecoyCard decoyCard)
+        {
+            return new DecoyCard
+            (decoyCard.Name, decoyCard.Faction, decoyCard.EffectType, decoyCard.CardImage, decoyCard.UserCardEffects);
+        }
+        if (this is CleareanceCard cleareanceCard)
+        {
+            return new CleareanceCard
+            (cleareanceCard.Name, cleareanceCard.Faction, cleareanceCard.EffectType, cleareanceCard.CardImage, cleareanceCard.UserCardEffects);
+        }
+        if (this is IncrementCard incrementCard)
+        {
+            return new IncrementCard
+            (incrementCard.Name, incrementCard.Faction, incrementCard.EffectType, incrementCard.CardImage, incrementCard.Range, incrementCard.UserCardEffects);
+        }
+        if (this is ClimateCard climateCard)
+        {
+            return new ClimateCard
+            (climateCard.Name, climateCard.Faction, climateCard.EffectType, climateCard.CardImage, climateCard.Range, climateCard.UserCardEffects);
+        }
+        else
+        {
+            LeaderCard leader = (LeaderCard)this;
+            return new LeaderCard
+            (leader.Name, leader.Faction, leader.EffectType, leader.CardImage, leader.UserCardEffects);
+        }
+    }
+
+    public void Restore()
+    {
+        IsPlayed = false;
+        if (this is Card.UnityCard unityCard)
+        {
+            unityCard.Power = unityCard.OriginalPower;
+        }
+    }
 
     /// <summary>
     /// Represents a leader card
     /// </summary>
     public class LeaderCard : Card
     {
+        //TODO: 
         readonly Dictionary<string, string> leaderDescription = new()
         {
             
@@ -150,6 +212,7 @@ public class Card : ScriptableObject
             this.Range = range;
         }
     }
+
     /// <summary>
     /// Represents a cleareance special card
     /// </summary>
@@ -212,5 +275,7 @@ public class Card : ScriptableObject
         {
         }
     }
+
+
     #endregion
 }

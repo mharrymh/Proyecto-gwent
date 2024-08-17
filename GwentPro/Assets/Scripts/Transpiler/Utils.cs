@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Transactions;
 using UnityEngine;
 public static class Utils {
     //TODO: Cambiar imagen
@@ -11,7 +12,7 @@ public static class Utils {
     ///</summary>
     public static Dictionary<IdType, HashSet<string>> ValidAccess = new Dictionary<IdType, HashSet<string>>
     {
-        {IdType.Context, new HashSet<string>{"TriggerPlayer", "Board", "Hand", "HandOfPLayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Find", "Enemy"}},
+        {IdType.Context, new HashSet<string>{"TriggerPlayer", "BoardCards", "Hand", "HandOfPLayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Find", "Enemy"}},
         {IdType.Card, new HashSet<string>{"Owner", "Power", "Faction", "Name", "Type"}},
         {IdType.CardCollection, new HashSet<string>{"Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add"}}
     };
@@ -37,7 +38,7 @@ public static class Utils {
     ///</summary>
     public static Dictionary<string, IdType> Types = new Dictionary<string, IdType>{
         //Functions
-        {"Find", IdType.Card},
+        {"Find", IdType.CardCollection},
         {"Push", IdType.Null},
         {"SendBottom", IdType.Null},
         {"Pop", IdType.Card},
@@ -49,14 +50,30 @@ public static class Utils {
         {"FieldOfPlayer", IdType.CardCollection},
         {"GraveyardOfPlayer", IdType.CardCollection},
         {"DeckOfPlayer", IdType.CardCollection},
+
+        //Properties
         {"Owner", IdType.Player},
+        {"Enemy", IdType.Player},
         {"TriggerPlayer", IdType.Player},
-        {"Board", IdType.CardCollection},
+        {"BoardCards", IdType.CardCollection},
+        {"Deck", IdType.CardCollection},
+        {"Hand", IdType.CardCollection},
+        {"Field", IdType.CardCollection},
+        {"Graveyard", IdType.CardCollection},
+
 
         {"Power", IdType.Number},
         {"Faction", IdType.String},
         {"Type", IdType.String},
         {"Name", IdType.String}
+    };
+
+    //Get what type can call to another type
+    public static Dictionary<IdType, HashSet<IdType>> RelateTypes = new Dictionary<IdType, HashSet<IdType>>
+    {
+        {IdType.Context, new HashSet<IdType>{IdType.CardCollection, IdType.Player}},
+        {IdType.Card, new HashSet<IdType>{IdType.Number, IdType.Player, IdType.String}},
+        {IdType.CardCollection, new HashSet<IdType>{IdType.Null, IdType.CardCollection, IdType.Card}}
     };
 
 

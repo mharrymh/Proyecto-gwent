@@ -67,7 +67,10 @@ public class BinaryExpression : Expression
 
     public override void Validate(IScope scope)
     {
-        Left.Validate(scope);
+        //If the op is assign expression we should not validate the left expression
+        if (Op.Definition is not TokenType.Assign)
+            Left.Validate(scope);
+        //else
         Right.Validate(scope);
         //Validate depending of the operator definition
         SemantycBinaryExpression.ValidateByOp[Op.Definition].Invoke(this, scope);
@@ -96,21 +99,13 @@ public class LiteralExpression : Expression
     public LiteralExpression(Token value) {
         this.Value = value;
     }
-    /// <summary>
-    /// A hash set with the reserved words types that are also properties of a card
-    /// </summary>
-    /// <param name="scope"></param>
-    readonly HashSet<TokenType> ReservedWordsProperties = new()
-    {
-        TokenType.Power, TokenType.Faction, TokenType.Name, TokenType.Type
-    };
     public override void Validate(IScope scope)
     {
         TokenType type = Value.Definition;
         //returns true is it is not an id
         if (type is TokenType.Num || type is TokenType.String
         || type is TokenType.Boolean || scope.IsDefined(Value.Value)
-        || ReservedWordsProperties.Contains(type)) {
+        || Utils.Types.ContainsKey(Value.Value)) {
             return;
         }
         //TODO: Variable no definida
@@ -120,13 +115,15 @@ public class LiteralExpression : Expression
     public override IdType GetType(IScope? scope)
     {
         //If is an id or a reserved word id return its type
-        if ((Value.Definition is TokenType.Id || Utils.PropertiesReservedWords.Contains(Value.Definition)) 
+        if ((Value.Definition is TokenType.Id || Utils.PropertiesReservedWords.Contains(Value.Definition)
+        || Utils.Types.ContainsKey(Value.Value)) 
         && scope != null) {
             if (Utils.Types.TryGetValue(Value.Value, out IdType value)) {
                 //This can be null
                 return value;
             }
-            return scope.GetIdType(this.Value.Value);
+            if (Utils.Types.ContainsKey(Value.Value)) return Utils.Types[Value.Value];
+            return scope.GetIdType(Value.Value);
         }
 
         //Boolean, ints and strings only 
@@ -165,7 +162,8 @@ public class LiteralExpression : Expression
         //It is an integer
         if (definition is TokenType.Num)
         {
-            return int.Parse(this.Value.Value);
+            int num = int.Parse(this.Value.Value);
+            return num;
         }
         //It is a variable
         if (definition is TokenType.Id)
@@ -229,7 +227,7 @@ public class FindFunction : Expression {
 
     public override IdType GetType(IScope scope)
     {
-        return IdType.Card;
+        return IdType.CardCollection;
     }
 
     public override void Validate(IScope scope)
@@ -276,7 +274,7 @@ public class FunctionCall : Expression {
     public override void Validate(IScope scope)
     {
         IdType leftType = LeftExpression.GetType(scope);
-        if (leftType != IdType.Context || leftType != IdType.CardCollection)
+        if (leftType != IdType.Context && leftType != IdType.CardCollection)
         {
             //TODO: LOS UNICOS QUE PUEDEN ACCEDER A FUNCIONES SON CONTEXT Y CARDCOLLECTION
             throw new Exception();
@@ -329,30 +327,20 @@ public class Indexer : Expression {
 
     public override void Validate(IScope scope)
     {
-        IdType bodyType = Body.GetType(scope);
-        IdType indexType = Index.GetType(scope);
-        if (bodyType is IdType.CardCollection && indexType is IdType.Number)
-        {
-            return;
-        }
-        //Throw exception
-        //Get the token of the error
-        Token errorToken; 
-        bool indexMistake = false;
-        if (bodyType is not IdType.CardCollection)  errorToken = Utils.GetErrorToken(Body);
-        else { 
-            errorToken = Utils.GetErrorToken(Index); 
-            indexMistake = true; 
-        }
-
-        Error indexerError = new IndexerError(errorToken.Line, errorToken.Column, indexMistake);
-        throw new Exception(indexerError.ToString());
+        Body.CheckType(scope, IdType.CardCollection);
+        Index.CheckType(scope, IdType.Number);
     }
 
     public override object Execute(IExecuteScope scope)
     {
         CardCollection body = (CardCollection)Body.Execute(scope);
         int index = (int)Index.Execute(scope);
+
+        if (index >= body.Count)
+        {
+            //TODO: 
+            throw new IndexOutOfRangeException();
+        }
         return body[index];
     }
 }

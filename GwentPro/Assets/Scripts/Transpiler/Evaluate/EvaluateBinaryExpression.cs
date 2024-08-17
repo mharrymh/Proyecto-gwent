@@ -89,37 +89,37 @@ public static class EvaluateBinaryExpression {
     private static object SpaceConcatExpression(BinaryExpression expression)
     {
         string left = (string)expression.Left.Evaluate();
-        string right = (string)expression.Left.Evaluate();
+        string right = (string)expression.Right.Evaluate();
         return  left + " " + right;
     }
 
     private static object ConcatExpression(BinaryExpression expression)
     {
         string left = (string)expression.Left.Evaluate();
-        string right = (string)expression.Left.Evaluate();
+        string right = (string)expression.Right.Evaluate();
         return string.Concat(left, right);
     }
 
     private static object SumExpression(BinaryExpression expression)
     {
-        return int.Parse((string)expression.Left.Evaluate()) + 
-        int.Parse((string)expression.Right.Evaluate());
+        return (int)expression.Left.Evaluate() + 
+        (int)expression.Right.Evaluate();
     }
     private static object MinusExpression(BinaryExpression expression)
     {
-        return int.Parse((string)expression.Left.Evaluate()) -
-        int.Parse((string)expression.Right.Evaluate());
+        return (int)expression.Left.Evaluate() -
+        (int)expression.Right.Evaluate();
     }
     private static object MultipExpression(BinaryExpression expression)
     {
-        return int.Parse((string)expression.Left.Evaluate()) *
-        int.Parse((string)expression.Right.Evaluate());
+        return (int)expression.Left.Evaluate() *
+        (int)expression.Right.Evaluate();
     }
     private static object DivisionExpression(BinaryExpression expression)
     {
-        int divisor = int.Parse((string)expression.Right.Evaluate());
+        int divisor = (int)expression.Right.Evaluate();
         if (divisor != 0)
-            return int.Parse((string)expression.Left.Evaluate()) / divisor;
+            return (int)expression.Left.Evaluate() / divisor;
         else {
             Token token = GetToken(expression).Value;
             Error DivisionByZero = new DivideByZeroError(token.Line, token.Column);
@@ -138,7 +138,7 @@ public static class EvaluateBinaryExpression {
     }
     private static object PowExpression(BinaryExpression expression)
     {
-        return Math.Pow(double.Parse((string)expression.Left.Evaluate()), double.Parse((string)expression.Right.Evaluate()));
+        return Math.Pow((int)expression.Left.Evaluate(), (int)expression.Right.Evaluate());
     }
 
 }

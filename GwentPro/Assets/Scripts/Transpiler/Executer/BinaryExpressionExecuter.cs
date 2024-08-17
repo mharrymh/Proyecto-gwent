@@ -98,7 +98,11 @@ public static class BinaryExpressionExecuter
     {
         if (expression.Left is LiteralExpression literal)
         {
-            scope.Define(literal.Value.Value, expression.Right.Execute(scope));
+            object value = expression.Right.Execute(scope);
+            //if it is a cardCollection do the assignation by value 
+            if (value is CardCollection collection) value = collection.Copy();
+
+            scope.Define(literal.Value.Value, value);
         }
         //Else it is an accesor property
         else 
@@ -291,7 +295,13 @@ public static class BinaryExpressionExecuter
 
     private static object PowExpression(BinaryExpression expression, IExecuteScope scope)
     {
-        return Math.Pow((int)expression.Left.Execute(scope), (int)expression.Right.Execute(scope));
+        try {
+            return (int)Math.Pow((int)expression.Left.Execute(scope), (int)expression.Right.Execute(scope));
+        }
+        //TODO: 
+        catch(InvalidCastException) {
+            throw new Exception("Index out of range");
+        }
     }
 
     private static object DivisionExpression(BinaryExpression expression, IExecuteScope scope)

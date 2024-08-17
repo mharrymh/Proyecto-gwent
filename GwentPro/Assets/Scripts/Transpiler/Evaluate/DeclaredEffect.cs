@@ -13,7 +13,7 @@ public class DeclaredEffect
 {
     public DeclaredEffect? Parent = null;
     public string Name  {get;}
-    Dictionary<string, object> Params {get;}
+    Dictionary<string, object?> Params {get;}
     public EffectSelector Targets {get; set;}
     public string TargetsNameId {get;}
     public string ContextNameId {get;}
@@ -47,6 +47,7 @@ public class DeclaredEffect
         Name = name;
         Action = action;
         //Fill the keys of the dictionary
+        Params = new Dictionary<string, object?>();
         foreach(string paramName in paramsName)
         {
             Params.Add(paramName, null);

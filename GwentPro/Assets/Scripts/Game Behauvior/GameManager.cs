@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -21,6 +22,24 @@ public class GameManager : MonoBehaviour
 
     public GameObject cardPrefab; // The card prefab
     public Transform HandPanel;
+    #region Board Zones
+    public Transform MeleePlayer1;
+    public Transform RangePlayer1;
+    public Transform SiegePlayer1;
+    public Transform MeleePlayer2;
+    public Transform RangePlayer2;
+    public Transform SiegePlayer2;
+    #endregion
+    #region Increment Zones
+    public Transform IncrementMeleePlayer1;
+    public Transform IncrementRangePlayer1;
+    public Transform IncrementSiegePlayer1;
+    public Transform IncrementMeleePlayer2;
+    public Transform IncrementRangePlayer2;
+    public Transform IncrementSiegePlayer2;
+    #endregion
+
+    public Transform ClimateZone;
     //The leader panels
     public Transform LeaderPlayer1;
     public Transform LeaderPlayer2;
@@ -29,7 +48,6 @@ public class GameManager : MonoBehaviour
     public int Round;
     public bool GivingCards = false;
     public bool RoundOverAux = false;
-    public int RoundDraws;
     public Player currentPlayer;
     //Amount of cards to start with
     public int StartingAmount = 8;
@@ -61,7 +79,7 @@ public class GameManager : MonoBehaviour
 
     //References
     readonly CardDatabase cartas = new CardDatabase();
-
+    DragAndDrop dragAndDrop;
     readonly Board board = Board.Instance;
     DisplayCard disp;
 
@@ -170,6 +188,21 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+    public void InstantiateInHand(Card card, Player player)
+    {
+        //TODO: REPRESENTAR VISUALMENTE LO QUE SE JUGO
+        if (player.Hand.Count <= 10)
+        {
+            InstantiateIn(card, HandPanel, player);
+        }
+        //Move card to the graveyard direcrtly 
+        else 
+        {
+            card.Owner = player;
+            player.GraveYard.Add(card);
+        }
+    }
     private Player GetNotCurrentPlayer()
     {
         return (currentPlayer == player1) ? player2 : player1;
@@ -204,7 +237,6 @@ public class GameManager : MonoBehaviour
     public void SetPower(Player player)
     {
         //Get the power of the player 
-        
         int powerOfPlayer = GetPower(player);
         if (player == player1)
         {
@@ -270,7 +302,7 @@ public class GameManager : MonoBehaviour
     /// <returns></returns>
     private Player GetStarterPlayer()
     {
-        int random = Random.Range(0, 2);
+        int random = UnityEngine.Random.Range(0, 2);
         return (random == 0) ? player2 : player1;
     }
 
@@ -486,7 +518,7 @@ public class GameManager : MonoBehaviour
         //Change scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
-    void CleanBoard()
+    public void CleanBoard()
     {
         //Effect of the leader
         //Keep a random card on the board between rounds
@@ -586,7 +618,7 @@ public class GameManager : MonoBehaviour
 
         if (aux.Count > 0)
         {
-            n = Random.Range(0, aux.Count);
+            n = UnityEngine.Random.Range(0, aux.Count);
             return aux[n];
         }
         return null;
@@ -598,5 +630,135 @@ public class GameManager : MonoBehaviour
         else if (player2.Leader.EffectType.ToString() == keepRandomCard) return player2;
 
         else return null;
+    }
+
+    public void InstantiateAndPlay(Card item, Player player)
+    {
+        if (item is Card.UnityCard unityCard)
+        {
+            InstantiateUnityCard(unityCard, player);
+        }
+        else if (item is Card.ClimateCard climateCard)
+        {
+            InstantiateClimateCard(climateCard, climateCard.Range, player);
+        }
+        else if (item is Card.CleareanceCard cleareanceCard)
+        {
+            InstantiateClearanceCard(cleareanceCard, player);
+        }
+        else if (item is Card.IncrementCard incrementCard)
+        {
+            InstantiateIncrementCard(incrementCard, incrementCard.Range, player);
+        }
+        else
+        {
+                //TODO:
+            throw new System.Exception("La carta no se puede jugar sin ser arrastrada");
+        }
+
+    }
+
+    private void InstantiateClearanceCard(Card.CleareanceCard cleareanceCard, Player player)
+    {
+        //Play the card
+        dragAndDrop.PlayCard(cleareanceCard,"", false);
+    }   
+
+    private void InstantiateIncrementCard(Card.IncrementCard incrementCard, string range, Player player)
+    {
+        bool added = true;
+        string rangeAux = range;
+        if (range.Contains("M") && board.increment_section[player.ID][0] == null) { board.climate_section[0] = incrementCard;     rangeAux = "M";}
+        else if (range.Contains("R") && board.increment_section[player.ID][1] == null) {board.climate_section[1] = incrementCard; rangeAux = "R";}
+        else if (range.Contains("S") && board.increment_section[player.ID][2] == null) {board.climate_section[2] = incrementCard; rangeAux = "S"; }
+        else // nothing was added
+            added = false;
+
+        if (!added) return;
+
+        Dictionary<(string, string), Transform> relateDropZone = new Dictionary<(string, string), Transform>()
+        {
+            {("M", "player1"), IncrementMeleePlayer1},
+            {("R", "player1"), IncrementRangePlayer1},
+            {("S", "player1"), IncrementSiegePlayer1},
+            {("M", "player2"), IncrementMeleePlayer2},
+            {("R", "player2"), IncrementRangePlayer2},
+            {("S", "player2"), IncrementSiegePlayer2},
+        };
+
+        Transform DropZone = relateDropZone[(rangeAux, player.ID)];
+
+        InstantiateIn(incrementCard, DropZone , player);
+
+        //Play the card
+        dragAndDrop.PlayCard(incrementCard, rangeAux, false);
+    }
+
+    private void InstantiateClimateCard(Card.ClimateCard climateCard, string range, Player player)
+    {
+        bool added = true;
+        if (range.Contains("M") && board.climate_section[0] == null) { board.climate_section[0] = climateCard;     range = "M";}
+        else if (range.Contains("R") && board.climate_section[1] == null) {board.climate_section[1] = climateCard; range = "R";}
+        else if (range.Contains("S") && board.climate_section[2] == null) {board.climate_section[2] = climateCard; range = "S"; }
+        else // nothing was added
+            added = false;
+
+        if (!added) return;
+
+        InstantiateIn(climateCard, ClimateZone, player);
+
+        //Play the card
+        dragAndDrop.PlayCard(climateCard, range, false);
+    }
+
+    void InstantiateUnityCard(Card.UnityCard unityCard, Player player)
+    {
+        string range = null;
+        foreach (string rangeSection in board.sections[player.ID].Keys)
+        {
+            if (unityCard.Range.Contains(rangeSection))
+            {
+                range = rangeSection;
+                board.sections[player.ID][range].Add(unityCard);
+                break;
+            }
+        }
+
+        Dictionary<(string, string), Transform> relateDropZone = new Dictionary<(string, string), Transform>()
+        {
+            {("M", "player1"), MeleePlayer1},
+            {("R", "player1"), RangePlayer1},
+            {("S", "player1"), SiegePlayer1},
+            {("M", "player2"), MeleePlayer2},
+            {("R", "player2"), RangePlayer2},
+            {("S", "player2"), SiegePlayer2},
+        };
+
+        //Range is not null here
+        Transform dropZone = relateDropZone[(range, player.ID)];
+
+        InstantiateIn(unityCard, dropZone, player);
+        //Play the card
+        dragAndDrop.PlayCard(unityCard, range, false);
+    }
+
+    private void InstantiateIn(Card card, Transform dropZone, Player owner)
+    {
+        //Crate new instance of the card on the playerhand
+        GameObject CardInstance = Instantiate(cardPrefab, dropZone);
+        //Get the DisplayCard component of the new Card
+        disp = CardInstance.GetComponent<DisplayCard>();
+        //Assign the card to it
+        disp.card = card;
+        //Assign owner of the card
+        card.Owner = owner;
+        //Assign tag to Instance of the card for decoy effect implementation
+        CardInstance.tag = owner.ID;
+        //Assign the cardPrefab to the card
+        card.CardPrefab = CardInstance;
+        //Set that the card hasnt been played
+        card.IsPlayed = false;
+        //Display card
+        disp.ShowCard();
     }
 }

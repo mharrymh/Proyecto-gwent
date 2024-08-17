@@ -58,6 +58,7 @@ public class Scope : IScope
             {TokenType.Bool, IdType.Boolean}
         };
         //Cant exist two effects with the same name
+        //TODO: Lanzar excepcion
         if (DefinedActions.Actions.ContainsKey(name)) return false;
         //Create the new effect with its params
         DefinedActions.Actions.Add(name, new Dictionary<string, IdType>());

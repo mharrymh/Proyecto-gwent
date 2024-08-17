@@ -5,6 +5,8 @@ using UnityEngine;
 using System.Data.Common;
 using System.Linq.Expressions;
 using System;
+using Mono.Cecil;
+using Unity.VisualScripting;
 public class Parser
 {
     // List of tokens to be parsed
@@ -234,6 +236,10 @@ public class Parser
         {
             if (NextToken.Definition == TokenType.For) {
                 statements.Add(ParseForLoop(targets, context));
+            }
+            else if (NextToken.Definition is TokenType.Semicolon)
+            {
+                Consume(NextToken.Definition);
             }
             else if (NextToken.Definition == TokenType.While) {
                 statements.Add(ParseWhileLoop(targets, context));
@@ -498,6 +504,14 @@ public class Parser
         Consume(new List<TokenType> {NextToken.Definition, TokenType.RParen, TokenType.Implication});
         return new Predicate(id, ParseBoolExpression());
     }
+    Predicate ParsePredicateExpression()
+    {
+        Consume(TokenType.LParen);
+        LookAhead(TokenType.Id);
+        Token id = NextToken;
+        Consume(new List<TokenType> {NextToken.Definition, TokenType.RParen, TokenType.Implication});
+        return new Predicate(id, ParseBoolExpression());
+    }
     Expression ParseSingle()
     {
         Consume(new List<TokenType> { TokenType.Single, TokenType.Colon });
@@ -588,12 +602,16 @@ public class Parser
         if (NextToken.Definition is TokenType.LParen)
         {
             Consume(TokenType.LParen);
-            var left = ParseExpression();
+            Expression left = ParseExpression();
             Consume(TokenType.RParen);
             return left;
         }
         else {
-            var left = ParseIdLiteral();
+            if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement)
+            {
+                return ParseUnaryExpressionAtTheStart();
+            }
+            var left = ParseIdExpression();
             List<TokenType> BinOperators = new List<TokenType>
             {
                 TokenType.Plus, TokenType.Minus, TokenType.Multip, TokenType.Division, TokenType.Concatenation,
@@ -612,85 +630,131 @@ public class Parser
                 Consume(NextToken.Definition);
                 left = new BinaryExpression(left, op, ParseExpression());
             }
-            //It is just an if because indexer can be placed after a function
+            return left;
+        }
+
+    }
+    /// <summary>
+    /// Possible function names
+    /// </summary>
+    /// <value></value>
+    readonly HashSet<string> functionNames = new HashSet<string>
+    {
+        "Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle","Add",
+        "HandOfPlayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer"
+    };
+
+    Expression ParseIdExpression()
+    {
+        Token firstId = NextToken;
+        Consume(NextToken.Definition);
+        Expression left = new LiteralExpression(firstId);
+        LookAhead();
+
+        while(NextToken.Definition is TokenType.Point || 
+        NextToken.Definition is TokenType.LParen || 
+        NextToken.Definition is TokenType.LBracket) {
+
+            if (NextToken.Definition is TokenType.Point)
+            {
+                Token op = NextToken;
+                Consume(TokenType.Point);
+                LookAhead();
+                while (NextToken.Definition is TokenType.Id || Utils.PropertiesReservedWords.Contains(NextToken.Definition))
+                {
+                    //Is a function
+                    if (functionNames.Contains(NextToken.Value))
+                    {
+                        Token functionName = NextToken;
+                        Consume(NextToken.Definition);
+                        Consume(TokenType.LParen);
+                        LookAhead();
+                        if (functionName.Value == "Find")
+                        {
+                            left = new FindFunction(left, ParsePredicateExpression());
+                        }
+                        else if (NextToken.Definition is TokenType.RParen)
+                            left = new FunctionCall(left, functionName, null);
+                        else
+                            left = new FunctionCall(left, functionName, ParseExpression());
+                        Consume(TokenType.RParen);
+                        LookAhead();
+                    }
+                    else
+                    {
+                        //Is a property
+                        Token property = NextToken;
+                        LiteralExpression literalExpression = new LiteralExpression(property);
+                        Consume(NextToken.Definition);
+                        left = new BinaryExpression(left, op, literalExpression);
+                        LookAhead();
+                    }
+
+                    if (NextToken.Definition is TokenType.LBracket)
+                    {
+                        Consume(NextToken.Definition);
+                        left = new Indexer(left, ParseNumericExpression());
+                        Consume(TokenType.RBracket);
+                        LookAhead();
+                    }
+
+                    if (NextToken.Definition is TokenType.Point)
+                    {
+                        op = NextToken;
+                        Consume(NextToken.Definition);
+                        LookAhead();
+                    }
+
+                }
+            }
+
+            if (NextToken.Definition is TokenType.LParen)
+            {
+                if (!functionNames.Contains(firstId.Value))
+                {
+                    //TODO: 
+                    throw new Exception("Esta funcion " + firstId.Value + "no existe");
+                }
+
+                //else
+                Consume(NextToken.Definition);
+                LookAhead();
+
+                if (firstId.Value == "Find")
+                {
+                    left = new FindFunction(left, ParsePredicate());
+                }
+                else if (NextToken.Definition is TokenType.RParen)
+                    left = new FunctionCall(left, firstId, null);
+                else
+                    left = new FunctionCall(left, firstId, ParseExpression());
+                Consume(TokenType.RParen);
+                LookAhead();
+            }
+
             if (NextToken.Definition is TokenType.LBracket)
             {
                 Consume(NextToken.Definition);
                 left = new Indexer(left, ParseNumericExpression());
                 Consume(TokenType.RBracket);
+                LookAhead();
             }
-            return left;
         }
 
-    }
-    Expression ParseIdLiteral()
-    {
-        //It is a unary expression
-        if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement)
-        {
-            return ParseUnaryExpressionAtTheStart();
-        }
-
-        var value = NextToken;
-        Consume(NextToken.Definition);
-        LookAhead();
-        Expression left = new LiteralExpression(value);
-        if (NextToken.Definition is TokenType.Point)
-        {
-            Token op = NextToken;
-            Consume(NextToken.Definition);
-            LookAhead();
-            if (Peek().Definition is TokenType.LParen)
-            {
-                return ParseFunctionCall(left);
-            }
-            left = new BinaryExpression(left, op, ParseIdLiteral());
-        }
         return left;
     }
-    /// <summary>
-    /// This function looks ahead for the token next to NextToken
-    /// </summary>
-    /// <returns></returns>
-    private Token Peek()
-    {
-        if (Pos+2 < Tokens.Count)
-            return Tokens[Pos+2];
 
-        //TODO: Error de unexpected end
-        else throw new Exception();
-    }
-
-    Expression ParseFunctionCall(Expression left)
-    {
-        Token FunctionName = NextToken;
-        Consume(NextToken.Definition);
-        Consume(TokenType.LParen);
-        LookAhead();
-        Expression function;
-        if (FunctionName.Value == "Find")
-        {
-            function = new FindFunction(left, ParsePredicate());
-        }
-        else if (NextToken.Definition is TokenType.RParen)
-        {
-            function = new FunctionCall(left, FunctionName, null);
-        }
-        else {
-            var argument = ParseIdLiteral();
-            function = new FunctionCall(left, FunctionName, argument);
-        }
-        Consume(TokenType.RParen);
-        return function;
-    }
 
     Expression ParseUnaryExpressionAtTheStart()
     {
         Token oper = NextToken;
         Consume(NextToken.Definition);
-        Expression id = ParseIdLiteral();
+        Expression id = ParseIdExpression();
         //TODO: Probar testeando con expresiones como ++++i o ++i++
         return new UnaryExpression((LiteralExpression)id, oper, false);
+
+
+        //TODO: HACER LOOK AHEAD Y SI LO QUE SIGUE SIGUE SIENDO EXPRESIONES BINARIAS LLAMAR A PARSEAR EXPRESION
     }
 
     Expression ParseBoolExpression()
@@ -707,10 +771,8 @@ public class Parser
         }
         return left;
     }
-    Expression ParseNumericExpression()
-    {
-        return ParseSumExp();
-    }
+    Expression ParseNumericExpression() => ParseSumExp();
+
     Expression ParseSumExp()
     {
         Expression left = ParseTerm();

@@ -61,7 +61,7 @@ public static class Executer
     #region Context
     public static Dictionary<string, Func<Context, Expression, IExecuteScope, object>> ContextFunctions = new()
     {
-        {"HandOfPLayer", Hand},
+        {"HandOfPlayer", Hand},
         {"FieldOfPlayer", Field},
         {"GraveyardOfPlayer", Graveyard},
         {"DeckOfPlayer", Deck},

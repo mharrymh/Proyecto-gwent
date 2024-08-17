@@ -1,4 +1,3 @@
-
 effect {
     Name: "Draw",
     Action: (targets, context) => {
