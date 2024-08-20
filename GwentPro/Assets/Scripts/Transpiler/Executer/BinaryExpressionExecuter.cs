@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Android;
 
@@ -246,7 +247,14 @@ public static class BinaryExpressionExecuter
 
     private static object EqualExp(BinaryExpression expression, IExecuteScope scope)
     {
-        return expression.Left.Execute(scope) == expression.Right.Execute(scope);
+        object left = expression.Left.Execute(scope);
+        object right = expression.Right.Execute(scope);
+        //Dont compare them by refernce
+        if (left is string && right is string)
+        {
+            return left.Equals(right);
+        }
+        return left == right;
     }
 
     private static object MoreExp(BinaryExpression expression, IExecuteScope scope)

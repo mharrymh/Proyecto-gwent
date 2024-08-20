@@ -12,9 +12,9 @@ public static class Utils {
     ///</summary>
     public static Dictionary<IdType, HashSet<string>> ValidAccess = new Dictionary<IdType, HashSet<string>>
     {
-        {IdType.Context, new HashSet<string>{"TriggerPlayer", "BoardCards", "Hand", "HandOfPLayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Find", "Enemy"}},
+        {IdType.Context, new HashSet<string>{"TriggerPlayer", "BoardCards", "Hand", "HandOfPlayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Find", "Enemy"}},
         {IdType.Card, new HashSet<string>{"Owner", "Power", "Faction", "Name", "Type"}},
-        {IdType.CardCollection, new HashSet<string>{"Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add"}}
+        {IdType.CardCollection, new HashSet<string>{"Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add", "Clear"}}
     };
     ///<summary>
     ///Relate the functions with the types of the arguments 
@@ -27,6 +27,7 @@ public static class Utils {
         {"Remove", IdType.Card},
         {"Shuffle", null},
         {"Add", IdType.Card},
+        {"Clear", null},
 
         {"HandOfPlayer", IdType.Player},
         {"FieldOfPlayer", IdType.Player},
@@ -45,6 +46,7 @@ public static class Utils {
         {"Remove", IdType.Null},
         {"Shuffle", IdType.Null},
         {"Add", IdType.Null},
+        {"Clear", IdType.Null},
 
         {"HandOfPlayer", IdType.CardCollection},
         {"FieldOfPlayer", IdType.CardCollection},
@@ -85,7 +87,7 @@ public static class Utils {
         {
             pointer = binary.Left;
         }
-        if (pointer is UnaryExpression unary) return unary.ID.Value;
+        if (pointer is UnaryExpression unary) return unary.Op;
         else if (pointer is LiteralExpression literal) return literal.Value;
         else if (pointer is Indexer indexer) return GetErrorToken(indexer.Body);
         else if (pointer is FunctionCall functionCall) return functionCall.FunctionName;

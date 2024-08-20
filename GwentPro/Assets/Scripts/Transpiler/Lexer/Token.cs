@@ -19,7 +19,7 @@ public struct Token {
     ///Return the column of the value in the input
     ///</summary>
     public int Column {get;}
-    public Token(string value, TokenType definition, int line, int column)
+    public Token(string value, TokenType definition, int line = 0, int column= 0)
     {
         this.Value = value;
         this.Definition = definition;

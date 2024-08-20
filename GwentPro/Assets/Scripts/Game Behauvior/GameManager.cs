@@ -77,8 +77,7 @@ public class GameManager : MonoBehaviour
     public TMP_Text TurnOfText;
     public TMP_Text AuxText;
 
-    //References
-    readonly CardDatabase cartas = new CardDatabase();
+
     DragAndDrop dragAndDrop;
     readonly Board board = Board.Instance;
     DisplayCard disp;
@@ -90,7 +89,7 @@ public class GameManager : MonoBehaviour
     {
         //Start the round at 1
         Round = 1;
-        
+
         // Instantiate the players
         player1 = new Player(PlayerData.FactionPlayer1, "player1", PlayerData.Player1Name, Graveyard1);
         player2 = new Player(PlayerData.FactionPlayer2, "player2", PlayerData.Player2Name, Graveyard2);
@@ -138,7 +137,7 @@ public class GameManager : MonoBehaviour
             {
                 Instanciar(player);
                 player.PlayerDeck.RemoveAt(0);
-                yield return new WaitForSeconds(0.2f); // Wait .2 seconds before instantiate the new card
+                //yield return
             }
             else
             {
@@ -152,6 +151,9 @@ public class GameManager : MonoBehaviour
             }
         }
         GivingCards = false;
+
+
+        yield return new WaitForSeconds(0.2f); // Wait .2 seconds before instantiate the new card
     }
 
     public void Instanciar(Player player)
@@ -165,7 +167,7 @@ public class GameManager : MonoBehaviour
             disp = CardInstance.GetComponent<DisplayCard>();
             //Assign the card to it
             disp.card = card;
-            //Add card to player hand
+            //Add card to player hand (Adding the card remove it from its parent source)
             player.Hand.Add(card);
             //Assign owner of the card
             card.Owner = player;
@@ -738,6 +740,8 @@ public class GameManager : MonoBehaviour
         Transform dropZone = relateDropZone[(range, player.ID)];
 
         InstantiateIn(unityCard, dropZone, player);
+        if (unityCard == null) Debug.Log("es nulo");
+        else Debug.Log("no es nulo");
         //Play the card
         dragAndDrop.PlayCard(unityCard, range, false);
     }
@@ -757,7 +761,8 @@ public class GameManager : MonoBehaviour
         //Assign the cardPrefab to the card
         card.CardPrefab = CardInstance;
         //Set that the card hasnt been played
-        card.IsPlayed = false;
+        if (dropZone == HandPanel)
+            card.IsPlayed = false;
         //Display card
         disp.ShowCard();
     }

@@ -1,37 +1,11 @@
-
 effect {
-    Name: "Draw",
-    Action: (targets, context) => {
-        topCard = context.Deck.Pop();
-        context.Hand.Add(topCard);
-        context.Hand.Shuffle();
-    }
-}
-effect {
-    Name: "Dam" @ "age",
+    Name: "Prueba_1",
     Params: {
-        Amount: Number
+        Cantidad: Number
     },
-    Action: (targets, context) => {
-        for target in targets {
-            i = 0;
-            while (i++ < Amount) 
-                target.Power*=1;
-        };
-    }
-}
-
-effect {
-    Name: "ReturnToDeck",
-    Action: (targets, context) => {
-        for target in targets {
-            context.BoardCards.Remove(target);
-            owner = target.Owner;
-            deck = context.DeckOfPlayer(owner);
-            deck.Shuffle();
-            deck.Push(target);
-            deck.Shuffle();
-        };
+    Action: (listas, contexto) => {
+        carta = contexto.Hand.Pop();
+        contexto.Field.Push(carta);
     }
 }
 
@@ -39,30 +13,18 @@ card {
     Type: "Gold",
     Name: "Beluga",
     Faction: "Light",
-    Power: 5 / (1),
+    Power: 4,
     Range: ["Melee", "Ranged"],
     OnActivation: [
         {
             Effect: {
-                Name: "Damage",
-                Amount: 5,
+                Name: "Prueba_1",
+                Cantidad: 3-1-2,
             },
             Selector: {
                 Source: "hand",
-                Single: false,
                 Predicate: (unit) => unit.Power > 0
             },
-            PostAction: {
-                Effect: "ReturnToDeck",
-                Selector: {
-                    Source: "parent",
-                    Single: 3 == 5,
-                    Predicate: (unit) => unit.Power < 6
-                },
-            },
-            {
-                Effect: "Draw"
-            }
         }
     ]
 }

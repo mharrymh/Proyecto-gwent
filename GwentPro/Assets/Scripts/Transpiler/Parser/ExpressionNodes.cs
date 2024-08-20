@@ -179,10 +179,10 @@ public class LiteralExpression : Expression
 
 public class UnaryExpression : Expression
 {
-    public LiteralExpression ID { get; }
-    Token Op {get; }
+    public Expression ID { get; }
+    public Token Op {get; }
     bool AtTheEnd { get; }
-    public UnaryExpression(LiteralExpression id, Token op, bool atTheEnd) {
+    public UnaryExpression(Expression id, Token op, bool atTheEnd) {
         this.ID = id;
         this.Op = op;
         this.AtTheEnd = atTheEnd;
@@ -205,7 +205,18 @@ public class UnaryExpression : Expression
         //Save the variable value
         int varValue = (int)ID.Execute(scope);
         //Redefine its value without changing the value of varValue
-        scope.Define(ID.Value.Value, varValue + 1);
+        BinaryExpression binaryExpression; 
+        //Define with the new variable value, transforming the unary expression in a binary expression
+        if (Op.Definition == TokenType.Increment) {
+            binaryExpression = 
+            new BinaryExpression(ID, new Token("+=", TokenType.MoreAssign), new LiteralExpression(new Token("1", TokenType.Num)));
+        }
+        else {
+            binaryExpression = 
+            new BinaryExpression(ID, new Token("-=", TokenType.MinusAssign), new LiteralExpression(new Token("1", TokenType.Num)));
+        }
+
+        binaryExpression.Execute(scope);
         if (!AtTheEnd)
         {
             //Change the varValue

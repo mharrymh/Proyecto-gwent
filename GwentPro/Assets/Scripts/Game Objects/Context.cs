@@ -50,16 +50,12 @@ public class Context
                     if (arr[i] != null) aux.Add(arr[i]);
                 }
             }
-            // aux.Shuffle();
             return aux;
         }
     }
 
     public CardCollection HandOfPlayer(Player player) {
-        CardCollection hand = player.Hand;
-        hand.GameListName = "hand";
-        hand.Player = player;
-        return hand;
+        return player.Hand;
     }
 
     public CardCollection Hand {
@@ -69,10 +65,7 @@ public class Context
     }
 
     public CardCollection FieldOfPlayer(Player player) {
-        CardCollection field = player.Field;
-        field.GameListName = "field";
-        field.Player = player;
-        return field;
+        return player.Field;
     }
 
     public CardCollection Field {
@@ -83,10 +76,7 @@ public class Context
 
     public CardCollection GraveyardOfPlayer(Player player)
     {
-        CardCollection graveyard = player.GraveYard;
-        graveyard.GameListName = "graveyard";
-        graveyard.Player = player;
-        return graveyard;
+        return player.GraveYard;
     }
 
     public CardCollection Graveyard {
@@ -98,10 +88,7 @@ public class Context
 
     public CardCollection DeckOfPlayer(Player player)
     {
-        CardCollection deck = player.PlayerDeck;
-        deck.GameListName = "deck";
-        deck.Player = player;
-        return deck;
+        return player.PlayerDeck;
     }
 
     public CardCollection Deck {

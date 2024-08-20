@@ -279,7 +279,7 @@ public class Parser
         Token iterator = NextToken;
         Consume(new List<TokenType> { TokenType.Id, TokenType.In });
         LookAhead(TokenType.Id);
-        LiteralExpression collection = (LiteralExpression)ParseExpression();
+        Expression collection = ParseExpression();
         //TODO:
         if (collection == null) throw new Exception();
 
@@ -622,7 +622,7 @@ public class Parser
             if (NextToken.Definition is TokenType.Increment || NextToken.Definition is TokenType.Decrement) {
                 Token op = NextToken;
                 Consume(NextToken.Definition);
-                left = new UnaryExpression((LiteralExpression)left, op, true);
+                left = new UnaryExpression(left, op, true);
             }
             else if(BinOperators.Contains(NextToken.Definition)) {
                 //Save the id operator and continue parsing the right part of the expression
@@ -641,7 +641,7 @@ public class Parser
     readonly HashSet<string> functionNames = new HashSet<string>
     {
         "Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle","Add",
-        "HandOfPlayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer"
+        "HandOfPlayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Clear"
     };
 
     Expression ParseIdExpression()
@@ -704,6 +704,7 @@ public class Parser
                         Consume(NextToken.Definition);
                         LookAhead();
                     }
+                    else break;
 
                 }
             }
@@ -777,12 +778,13 @@ public class Parser
     {
         Expression left = ParseTerm();
         LookAhead();
-        if (NextToken.Definition is TokenType.Plus || NextToken.Definition is TokenType.Minus)
+        while (NextToken.Definition is TokenType.Plus || NextToken.Definition is TokenType.Minus)
         {
             Token op = NextToken;
             Consume(NextToken.Definition);
-            Expression right = ParseSumExp();
+            Expression right = ParseTerm();
             left = new BinaryExpression(left, op, right);
+            LookAhead();
         }
         return left;
     }
@@ -790,24 +792,26 @@ public class Parser
     {
         Expression left = ParsePow();
         LookAhead();
-        if (NextToken.Definition is TokenType.Multip || NextToken.Definition is TokenType.Division)
+        while (NextToken.Definition is TokenType.Multip || NextToken.Definition is TokenType.Division)
         {
             Token op = NextToken;
             Consume(NextToken.Definition);
-            Expression right = ParseTerm();
+            Expression right = ParsePow();
             left = new BinaryExpression(left, op, right);
+            LookAhead();
         }
         return left;
     }
     Expression ParsePow() {
         Expression left = ParseFactor();
         LookAhead();
-        if (NextToken.Definition is TokenType.Pow)
+        while (NextToken.Definition is TokenType.Pow)
         {
             Token op = NextToken;
             Consume(NextToken.Definition);
-            Expression right = ParsePow();
+            Expression right = ParseFactor();
             left = new BinaryExpression(left, op, right);
+            LookAhead();
         }
         return left;
     }

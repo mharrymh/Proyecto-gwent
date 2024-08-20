@@ -29,7 +29,7 @@ public class DisplayCard : MonoBehaviour
         NameText.text = card.Name;
         DescriptionText.text = card.Description;
 
-        if (card.Faction is CardFaction.Light) FactionImage.sprite = Resources.Load<Sprite>("Light");
+        if (card.CardFaction is CardFaction.Light) FactionImage.sprite = Resources.Load<Sprite>("Light");
         else FactionImage.sprite = Resources.Load<Sprite>("Dark");
 
         //Assign power if card is unity card type

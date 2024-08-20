@@ -286,7 +286,7 @@ public class Card_Object : DSL_Object
                 exp.CheckType(scope, IdType.String);
             }
         }
-        
+    
         foreach(EffectAllocation effect in Activation)
         {
             effect.Validate(scope.CreateChildContext());
@@ -296,6 +296,26 @@ public class Card_Object : DSL_Object
         Faction.ValidateAndCheck(scope, IdType.String);
         //It calls the validate function only if power is not null
         Power?.ValidateAndCheck(scope, IdType.Number);
+        
+        //Throw errors
+        string type = (string)Type.Evaluate();
+        if (Range == null)
+        {
+            if (!type.Equals("Leader") && !type.Equals("Cleareance") && !type.Equals("Decoy"))
+            {
+                //TODO: 
+                throw new Exception("La carta de tipo: type tiene que tener rango definido");
+            }
+        }
+
+        if (Power == null)
+        {
+            if (type.Equals("Gold") || type.Equals("Silver"))
+            {
+                //TODO: 
+                throw new Exception("La carta de tipo: type tiene que tener poder definido");
+            }
+        }
     }
     /// <summary>
     /// It evaluates each property of the card and save it in an MyCardObject
@@ -514,7 +534,11 @@ public class Selector : DSL_Object
 
     public EffectSelector Evaluate()
     { 
-        bool single = (bool)Single.Evaluate();
+        bool single = false;
+        if (Single != null)
+        {
+            single = (bool)Single.Evaluate();
+        }
         string source = (string)Source.Evaluate();
         return new EffectSelector(source, single, Predicate);
     }
@@ -545,8 +569,8 @@ public class Predicate : DSL_Object
     public bool Execute(Card card, IExecuteScope scope)
     {
         scope.Define(Id.Value, card);
-
-        return (bool)BoolExp.Execute(scope);
+        bool value =  (bool)BoolExp.Execute(scope);
+        return value;
     }
 }   
 public class PostActionBlock : DSL_Object

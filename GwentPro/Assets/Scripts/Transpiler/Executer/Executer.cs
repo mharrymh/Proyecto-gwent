@@ -16,11 +16,18 @@ public static class Executer
         {"Remove", Remove},
         {"Shuffle", Shuffle},
         {"Add", Add},
+        {"Clear", Clear}
     };
+
+    private static object Clear(Expression? expression, CardCollection collection, IExecuteScope scope)
+    {
+        collection.Clear(true);
+        return null;
+    }
 
     private static object Add(Expression? expression, CardCollection collection, IExecuteScope scope)
     {
-        collection.Add((Card)expression.Execute(scope));
+        collection.Add((Card)expression.Execute(scope), true);
         //It return null cause add is a void function
         return null;
     }
@@ -34,26 +41,26 @@ public static class Executer
 
     private static object Remove(Expression? expression, CardCollection collection, IExecuteScope scope)
     {
-        collection.Remove((Card)expression.Execute(scope));
+        collection.Remove((Card)expression.Execute(scope), true);
         //It return null cause remove is a void function
         return null;
     }
 
     private static object Pop(Expression? expression, CardCollection collection, IExecuteScope scope)
     {
-        return collection.Pop();
+        return collection.Pop(true);
     }
 
     private static object SendBottom(Expression? expression, CardCollection collection, IExecuteScope scope)
     {
-        collection.SendBottom((Card)expression.Execute(scope));
+        collection.SendBottom((Card)expression.Execute(scope), true);
         //It return null cause sendbottom is a void function
         return null;
     }
 
     private static object Push(Expression? expression, CardCollection collection, IExecuteScope scope)
     {
-        collection.Push((Card)expression.Execute(scope));
+        collection.Push((Card)expression.Execute(scope), true);
         //It return null cause push is a void function
         return null;
     }

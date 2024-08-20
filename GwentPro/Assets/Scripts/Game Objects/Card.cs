@@ -43,9 +43,15 @@ public class Card : ScriptableObject
     };
 
     public Sprite CardImage {get; }
-    public string Description { get; private set;}
+    public string? Description { get; private set;}
     public string Name { get;}
-    public CardFaction Faction { get;}
+    public CardFaction CardFaction { get;}
+    public string Faction {
+        get {
+            Debug.Log(CardFaction.ToString());
+            return CardFaction.ToString();
+        }
+    }
     /// <summary>
     /// Card effect
     /// </summary>
@@ -73,14 +79,16 @@ public class Card : ScriptableObject
     public List<DeclaredEffect>? UserCardEffects {get;}
 
     public string Source { get
-        {
+        {  
             if (Owner.PlayerDeck.Contains(this)) return "deck";
-            if (Owner.GraveYard.Contains(this)) return "graveyard";
-            if (Owner.Hand.Contains(this)) return "hand";
-            if (Owner.Field.Contains(this)) return "field";
+            else if (Owner.GraveYard.Contains(this)) return "graveyard";
+            else if (Owner.Hand.Contains(this)) return "hand";
+            else if (Owner.Field.Contains(this)) return "field";
             else return "board";
         }
     }
+
+    public string Type {get; private set;}
 
     
     /// <summary>
@@ -93,13 +101,18 @@ public class Card : ScriptableObject
     public Card(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null)
     {
         Name = name;
-        Faction = cardFaction;
+        CardFaction = cardFaction;
         this.EffectType = effectType;
         this.CardImage = CardImage;
 
         //Set description of the card
         if (effectType != null && effectDescriptions.ContainsKey(effectType.ToString())) {
             Description = effectDescriptions[effectType.ToString()];
+        }
+        else if (userCardEffects != null)
+        {
+            //Declare it null so it will be modified in the child constructor
+            Description = null;
         }
         else Description = "Sin efecto";
 
@@ -110,40 +123,40 @@ public class Card : ScriptableObject
         if (this is GoldCard goldCard)
         {
             return new GoldCard
-            (goldCard.Name, goldCard.Faction, goldCard.EffectType, 
+            (goldCard.Name, goldCard.CardFaction, goldCard.EffectType, 
             goldCard.Range, goldCard.Power, goldCard.CardImage, goldCard.UserCardEffects);
         }
         if (this is SilverCard silverCard)
         {
             return new SilverCard
-            (silverCard.Name, silverCard.Faction, silverCard.EffectType, 
+            (silverCard.Name, silverCard.CardFaction, silverCard.EffectType, 
             silverCard.Range, silverCard.Power, silverCard.CardImage, silverCard.UserCardEffects);
         }
         if (this is DecoyCard decoyCard)
         {
             return new DecoyCard
-            (decoyCard.Name, decoyCard.Faction, decoyCard.EffectType, decoyCard.CardImage, decoyCard.UserCardEffects);
+            (decoyCard.Name, decoyCard.CardFaction, decoyCard.EffectType, decoyCard.CardImage, decoyCard.UserCardEffects);
         }
         if (this is CleareanceCard cleareanceCard)
         {
             return new CleareanceCard
-            (cleareanceCard.Name, cleareanceCard.Faction, cleareanceCard.EffectType, cleareanceCard.CardImage, cleareanceCard.UserCardEffects);
+            (cleareanceCard.Name, cleareanceCard.CardFaction, cleareanceCard.EffectType, cleareanceCard.CardImage, cleareanceCard.UserCardEffects);
         }
         if (this is IncrementCard incrementCard)
         {
             return new IncrementCard
-            (incrementCard.Name, incrementCard.Faction, incrementCard.EffectType, incrementCard.CardImage, incrementCard.Range, incrementCard.UserCardEffects);
+            (incrementCard.Name, incrementCard.CardFaction, incrementCard.EffectType, incrementCard.CardImage, incrementCard.Range, incrementCard.UserCardEffects);
         }
         if (this is ClimateCard climateCard)
         {
             return new ClimateCard
-            (climateCard.Name, climateCard.Faction, climateCard.EffectType, climateCard.CardImage, climateCard.Range, climateCard.UserCardEffects);
+            (climateCard.Name, climateCard.CardFaction, climateCard.EffectType, climateCard.CardImage, climateCard.Range, climateCard.UserCardEffects);
         }
         else
         {
             LeaderCard leader = (LeaderCard)this;
             return new LeaderCard
-            (leader.Name, leader.Faction, leader.EffectType, leader.CardImage, leader.UserCardEffects);
+            (leader.Name, leader.CardFaction, leader.EffectType, leader.CardImage, leader.UserCardEffects);
         }
     }
 
@@ -177,6 +190,9 @@ public class Card : ScriptableObject
         {
             //Set the IsPlayed property to true cause it wont interact with de event triggers
             IsPlayed = true;
+            this.Type = "Leader";
+            //This is the user card created in the dsl
+            Description ??= "Your leader card";
         }
     }
     #region Special Cards
@@ -198,6 +214,9 @@ public class Card : ScriptableObject
         : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
             this.Range = range;
+            this.Type = "Climate";
+            //This is the user card created in the dsl
+            Description ??= "Your climate card";
         }
     }
     /// <summary>
@@ -210,6 +229,9 @@ public class Card : ScriptableObject
         : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
             this.Range = range;
+            this.Type = "Increment";
+            //This is the user card created in the dsl
+            Description ??= "Your increment card";
         }
     }
 
@@ -221,6 +243,9 @@ public class Card : ScriptableObject
         public CleareanceCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null) 
         : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
+            this.Type = "Cleareance";
+            //This is the user card created in the dsl
+            Description ??= "Your cleareance card";
         }
     }
     /// <summary>
@@ -232,6 +257,9 @@ public class Card : ScriptableObject
         : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
             this.Description = "Carta señuelo, colocala sobre una de tus cartas para que esta vuelva a tu mano";
+            this.Type = "Decoy";
+            //This is the user card created in the dsl
+            Description ??= "Your decoy card";
         }
     }
     #endregion
@@ -262,6 +290,9 @@ public class Card : ScriptableObject
         int power, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null) 
         : base(name, cardFaction, effectType, Range, power, CardImage, userCardEffects)
         {
+            this.Type = "Silver";
+            //This is the user card created in the dsl
+            Description ??= "Your silver card";
         }
     }
     /// <summary>
@@ -273,6 +304,9 @@ public class Card : ScriptableObject
         int power, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null) 
         : base(name, cardFaction, effectType, Range, power, CardImage, userCardEffects)
         {
+            this.Type = "Gold";
+            //This is the user card created in the dsl
+            Description ??= "Your gold card";
         }
     }
 

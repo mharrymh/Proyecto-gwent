@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,18 +9,19 @@ public class Player
 {
     readonly Board board = Board.Instance;
     
-    public string PlayerName { get; set; }
+    public string PlayerName { get;}
     public string ID { get; set; }
     public CardFaction Faction { get; set; }
-    public CardCollection PlayerDeck { get; set; }
-    public CardCollection Hand { get; set; }
+    public CardCollection PlayerDeck { get; private set;}
+    public CardCollection Hand {get; }
     public int Score { get; set; }
     public Card.LeaderCard Leader { get; set; }
-    public CardCollection GraveYard { get; set; }
+    public CardCollection GraveYard {get; }
+    
     public CardCollection Field {
         get {
             //Get all the cards in the player board
-            CardCollection field = new();
+            CardCollection field = new("field", this);
             foreach (CardCollection cards in board.sections[this.ID].Values)
             {
                 foreach (Card card in cards)
@@ -48,12 +50,12 @@ public class Player
         this.ID = ID;
         Score = 0;
         RoundsWon = 0;
-        Hand = new();
-        GraveYard = new();
+        Hand = new("hand", this);
+        GraveYard = new("graveyard", this);
         HasPlayed = false;
         Changes = 0;
         PlayerName = name;
-        this.GraveyardObj = graveyard;
+        GraveyardObj = graveyard;
     }
 
     readonly CardDatabase cards = new CardDatabase();
@@ -73,8 +75,22 @@ public class Player
         //Add user cards
         foreach (Card card in CardConverter.myCardsPerFactions[Faction])
         {
-            PlayerDeck.Add(card.Duplicate());
+            if (card is Card.LeaderCard leader)
+            {
+                //TODO: Decirlo visualmente
+                OverwriteLeader(leader.Duplicate());
+            }
+            else PlayerDeck.Add(card.Duplicate());
         }
+        //Set owner to all cards
+        foreach (Card card in PlayerDeck)
+        {
+            card.Owner = this;
+        }
+
+        //Assign properties to cardCollection
+        PlayerDeck.GameListName = "deck";
+        PlayerDeck.Player = this;
 
         //Assign Leader property
         for (int i = 0; i < PlayerDeck.Count; i++)
@@ -87,5 +103,16 @@ public class Player
             }
         }
     }
-    
+
+    void OverwriteLeader(Card newLeader)
+    {
+        for (int i = 0; i < PlayerDeck.Count; i++)
+        {   
+            if (PlayerDeck[i] is Card.LeaderCard oldLeader)
+            {
+                PlayerDeck[i] = newLeader;
+                return;
+            }
+        }
+    }
 }

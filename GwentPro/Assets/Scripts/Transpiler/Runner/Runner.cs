@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+
 public class Runner : MonoBehaviour
 {
     /// <summary>
@@ -10,7 +11,11 @@ public class Runner : MonoBehaviour
     /// </summary>
     public void OnClickSaveButton()
     {
-        string fileContent = File.ReadAllText(Application.persistentDataPath + "/Assets/Utils/miArchivo.txt");
+
+        string relativePath = "Utils/transpiler.txt";
+        string filePath = Path.Combine(Application.dataPath, relativePath);
+
+        string fileContent = File.ReadAllText(filePath);
 
         if (string.IsNullOrEmpty(fileContent))
         {

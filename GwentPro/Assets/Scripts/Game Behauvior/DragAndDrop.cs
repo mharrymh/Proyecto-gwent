@@ -130,7 +130,7 @@ public class DragAndDrop : MonoBehaviour
 
     //FIXME: Create validate method
     void DropCard(Card card)
-    {        
+    {   
         if (DropZone.name.Contains("Deck") && gm.Round == 1)
         {
             if (DropZone.name.Contains("1") && gm.currentPlayer == gm.player1 && !gm.player1.HasPlayed && gm.player1.Changes < 2
@@ -396,7 +396,7 @@ public class DragAndDrop : MonoBehaviour
     private void ApplyEffect(Card card)
     {
         //Apply effect
-        if (!(card.EffectType == null) && card.EffectType is IActiveEffect effect)
+        if (card.EffectType != null && card.EffectType is IActiveEffect effect)
         {
             effect.Invoke(card);
         }
