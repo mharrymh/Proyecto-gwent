@@ -132,7 +132,7 @@ public static class SemantycBinaryExpression {
     };
 
     private static void AccessExpression(BinaryExpression expression, IScope scope)
-     {
+    {
         //Get the left part that is a literal expression
         LiteralExpression left = (LiteralExpression)expression.Left;
         IdType leftType = left.GetType(scope);

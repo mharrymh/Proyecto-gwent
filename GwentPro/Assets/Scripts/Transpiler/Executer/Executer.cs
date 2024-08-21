@@ -14,10 +14,17 @@ public static class Executer
         {"SendBottom", SendBottom},
         {"Pop", Pop},
         {"Remove", Remove},
+        {"RemoveAt", RemoveAt},
         {"Shuffle", Shuffle},
         {"Add", Add},
         {"Clear", Clear}
     };
+
+    private static object RemoveAt(Expression? expression, CardCollection collection, IExecuteScope scope)
+    {
+        collection.RemoveAt((int)expression.Execute(scope), true);
+        return null;
+    }
 
     private static object Clear(Expression? expression, CardCollection collection, IExecuteScope scope)
     {

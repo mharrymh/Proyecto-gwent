@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime;
 using Unity.VisualScripting;
+using UnityEditor.Timeline.Actions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
@@ -260,7 +261,7 @@ public class DragAndDrop : MonoBehaviour
             transform.position = startPosition;
         }
     }
-    public void PlayCard(Card card,  string range = "", bool dropped = true)
+    private void PlayCard(Card card,  string range = "")
     {
         //Play a sound when a card is dropped
         soundM.PlayCardSound();
@@ -285,10 +286,21 @@ public class DragAndDrop : MonoBehaviour
         
 
         //Add card in backend
-        //FIXME:  CREAR UN DICCIONARIO
+        ApplyChangesToCard(card, range);
+        
+
+        //Update the power
+        gm.SetPower();
+        //Change turn
+        gm.ChangeTurn();      
+    }
+
+    private void ApplyChangesToCard(Card card, string range, bool alreadyAdded = false)
+    {
         if (card is Card.UnityCard unity_card)
         {
-            board.sections[unity_card.Owner.ID][range].Add(unity_card);
+            if (!alreadyAdded) //Add it in the backend
+                board.sections[unity_card.Owner.ID][range].Add(unity_card);
             //Check if there are special cards on the board
             if (range == "M")
             {
@@ -316,6 +328,7 @@ public class DragAndDrop : MonoBehaviour
             int value;
             if (relateClimateSection.TryGetValue(key, out value))
             {
+                if (!alreadyAdded) //Add it in backend
                 board.climate_section[value] = climate_card;
             }
 
@@ -330,6 +343,7 @@ public class DragAndDrop : MonoBehaviour
             string key = range;
             if (relateClimateSection.TryGetValue(key, out int value))
             {
+                if (!alreadyAdded)
                 board.increment_section[increment_card.Owner.ID][value] = increment_card;
             }
 
@@ -384,13 +398,6 @@ public class DragAndDrop : MonoBehaviour
             //Move the card to the player hand 
             CardToMove.transform.SetParent(gm.HandPanel.transform, false);
         }
-
-        //Update the power
-        gm.SetPower();
-        //Cards that were not dropped will not make the turn to change 
-        if (dropped)
-            //Change turn
-            gm.ChangeTurn();      
     }
 
     private void ApplyEffect(Card card)
@@ -407,6 +414,39 @@ public class DragAndDrop : MonoBehaviour
                 eff.Execute();
             }
         }
+    }
+
+    public void PlayCardFromEffect(Card card, string range, Transform dropZone = null)
+    {
+        //Set that owner already played
+        card.Owner.HasPlayed = true;
+
+        //Set the card to played so that it 
+        //wont interact anymore with the drag and drop
+        card.IsPlayed = true;
+
+        //Drop card
+        if (dropZone != null)
+            transform.SetParent(dropZone, false);
+
+        //Apply effect
+        ApplyEffect(card);
+        //Apply context changes to played card
+        ApplyChangesToCard(card, range, true);
+        //Set power
+        gm.SetPower();
+    }
+
+    public void ApplyLeaderEffect(Card.LeaderCard card)
+    {
+        //Set that owner already played
+        card.Owner.HasPlayed = true;
+
+        //Apply effect
+        ApplyEffect(card);
+
+        gm.SetPower();
+        gm.ChangeTurn();
     }
 }
 

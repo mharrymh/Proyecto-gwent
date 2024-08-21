@@ -14,7 +14,7 @@ public static class Utils {
     {
         {IdType.Context, new HashSet<string>{"TriggerPlayer", "BoardCards", "Hand", "HandOfPlayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Find", "Enemy"}},
         {IdType.Card, new HashSet<string>{"Owner", "Power", "Faction", "Name", "Type"}},
-        {IdType.CardCollection, new HashSet<string>{"Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add", "Clear"}}
+        {IdType.CardCollection, new HashSet<string>{"Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add", "Clear", "RemoveAt"}}
     };
     ///<summary>
     ///Relate the functions with the types of the arguments 
@@ -28,6 +28,7 @@ public static class Utils {
         {"Shuffle", null},
         {"Add", IdType.Card},
         {"Clear", null},
+        {"RemoveAt", IdType.Number},
 
         {"HandOfPlayer", IdType.Player},
         {"FieldOfPlayer", IdType.Player},
@@ -47,6 +48,7 @@ public static class Utils {
         {"Shuffle", IdType.Null},
         {"Add", IdType.Null},
         {"Clear", IdType.Null},
+        {"RemoveAt", IdType.Null},
 
         {"HandOfPlayer", IdType.CardCollection},
         {"FieldOfPlayer", IdType.CardCollection},
@@ -62,6 +64,7 @@ public static class Utils {
         {"Hand", IdType.CardCollection},
         {"Field", IdType.CardCollection},
         {"Graveyard", IdType.CardCollection},
+        {"Count", IdType.Number},
 
 
         {"Power", IdType.Number},

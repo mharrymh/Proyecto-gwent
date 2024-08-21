@@ -265,7 +265,7 @@ public class Parser
             Consume(TokenType.LCurly);
             var instruction = ParseInstruction(targets, context);
             Consume(TokenType.RCurly);
-            return new WhileLoop(exp, ParseInstruction(targets, context));
+            return new WhileLoop(exp, instruction);
         }
         //Parse the instruction line
         return new WhileLoop(exp, ParseOneInstruction(targets, context));
@@ -641,7 +641,7 @@ public class Parser
     readonly HashSet<string> functionNames = new HashSet<string>
     {
         "Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle","Add",
-        "HandOfPlayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Clear"
+        "HandOfPlayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Clear", "RemoveAt"
     };
 
     Expression ParseIdExpression()
@@ -760,13 +760,24 @@ public class Parser
 
     Expression ParseBoolExpression()
     {
-        var left = ParseExpression();
+        Expression left;
+        LookAhead();
+        if (NextToken.Definition is TokenType.LParen)
+        {
+            Consume(NextToken.Definition); LookAhead();
+            left = ParseBoolExpression();
+            Consume(TokenType.RParen);
+        }
+        else {
+            left = ParseExpression();
+        }
         var expected = new List<TokenType> { TokenType.And, TokenType.Or, TokenType.Equal, TokenType.Less, TokenType.LessEq, TokenType.More, TokenType.MoreEq };
         LookAhead();
         if (expected.Contains(NextToken.Definition))
         {
             Token op = NextToken;
             Consume(NextToken.Definition);
+            LookAhead();
             var right = ParseBoolExpression();
             left = new BinaryExpression(left, op, right);
         }

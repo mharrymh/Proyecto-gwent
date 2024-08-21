@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using TMPro;
+using Unity.VisualScripting;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -42,7 +44,9 @@ public class GameManager : MonoBehaviour
     public Transform ClimateZone;
     //The leader panels
     public Transform LeaderPlayer1;
+    public GameObject LeaderButtonPlayer1;
     public Transform LeaderPlayer2;
+    public GameObject LeaderButtonPlayer2;
 
     //Initialize the card counter
     public int Round;
@@ -90,6 +94,11 @@ public class GameManager : MonoBehaviour
         //Start the round at 1
         Round = 1;
 
+        #region Debug region //Eliminar
+        Runner runner = new Runner();
+        runner.OnClickSaveButton();
+        #endregion
+
         // Instantiate the players
         player1 = new Player(PlayerData.FactionPlayer1, "player1", PlayerData.Player1Name, Graveyard1);
         player2 = new Player(PlayerData.FactionPlayer2, "player2", PlayerData.Player2Name, Graveyard2);
@@ -123,7 +132,8 @@ public class GameManager : MonoBehaviour
     IEnumerator InstanciarCartas(int drawAmount, Player player)
     {
         //Leader effect
-        if (player.Leader.EffectType.ToString() == "DrawExtraCard" && Round > 1) drawAmount++;
+        if (player.Leader.EffectType != null && player.Leader.EffectType.ToString() == "DrawExtraCard" && Round > 1) 
+            drawAmount++;
 
         player.Ready = true;
         if (player.PlayerDeck.Count < drawAmount) drawAmount = player.PlayerDeck.Count;
@@ -137,7 +147,7 @@ public class GameManager : MonoBehaviour
             {
                 Instanciar(player);
                 player.PlayerDeck.RemoveAt(0);
-                //yield return
+                yield return new WaitForSeconds(0.2f); // Wait .2 seconds before instantiate the new card
             }
             else
             {
@@ -151,9 +161,6 @@ public class GameManager : MonoBehaviour
             }
         }
         GivingCards = false;
-
-
-        yield return new WaitForSeconds(0.2f); // Wait .2 seconds before instantiate the new card
     }
 
     public void Instanciar(Player player)
@@ -187,6 +194,17 @@ public class GameManager : MonoBehaviour
                 disp.card = player.Leader;
                 disp.ShowCard();
                 player.LeaderPlayed = true;
+                player.Leader.CardPrefab = CardInstance;
+                //Show the apply effect button of the leader
+                if (player.Leader.UserCardEffects != null) {
+                    Dictionary<Player, GameObject> leaderButtons = new Dictionary<Player, GameObject>
+                    {
+                        {player1, LeaderButtonPlayer1},
+                        {player2, LeaderButtonPlayer2}
+                    };
+
+                    leaderButtons[player].SetActive(true);
+                }
             }
         }
     }
@@ -314,9 +332,25 @@ public class GameManager : MonoBehaviour
         if (GivingCards) return;
 
         Player perspective = currentPlayer;
+
+
+        Dictionary<Player, GameObject> leaderButtons = new Dictionary<Player, GameObject>
+        {
+            {player1, LeaderButtonPlayer1},
+            {player2, LeaderButtonPlayer2}
+        };
+        //Set inactive the not current player leader effect
+        if (currentPlayer.Leader.UserCardEffects != null && !currentPlayer.Leader.Played)
+            leaderButtons[currentPlayer].SetActive(false);
+
+
         //Change the current player
-        if (currentPlayer == player1) currentPlayer = player2;
-        else currentPlayer = player1;
+        currentPlayer = (currentPlayer == player1)? player2 : player1; 
+
+        //Set active the apply effect button
+        if (currentPlayer.Leader.UserCardEffects != null && !currentPlayer.Leader.Played)
+            leaderButtons[currentPlayer].SetActive(true);
+
 
         //End the round if both of the players passed
         if (player1.Passed && player2.Passed)
@@ -429,6 +463,7 @@ public class GameManager : MonoBehaviour
         {
             RotateObject(child.gameObject);
         }
+
     }
     public void RotateObject(GameObject objectToRotate)
     {
@@ -663,7 +698,7 @@ public class GameManager : MonoBehaviour
     private void InstantiateClearanceCard(Card.CleareanceCard cleareanceCard, Player player)
     {
         //Play the card
-        dragAndDrop.PlayCard(cleareanceCard,"", false);
+        dragAndDrop.PlayCardFromEffect(cleareanceCard,"");
     }   
 
     private void InstantiateIncrementCard(Card.IncrementCard incrementCard, string range, Player player)
@@ -693,7 +728,7 @@ public class GameManager : MonoBehaviour
         InstantiateIn(incrementCard, DropZone , player);
 
         //Play the card
-        dragAndDrop.PlayCard(incrementCard, rangeAux, false);
+        dragAndDrop.PlayCardFromEffect(incrementCard, rangeAux, DropZone);
     }
 
     private void InstantiateClimateCard(Card.ClimateCard climateCard, string range, Player player)
@@ -710,18 +745,18 @@ public class GameManager : MonoBehaviour
         InstantiateIn(climateCard, ClimateZone, player);
 
         //Play the card
-        dragAndDrop.PlayCard(climateCard, range, false);
+        dragAndDrop.PlayCardFromEffect(climateCard, range, ClimateZone);
     }
 
     void InstantiateUnityCard(Card.UnityCard unityCard, Player player)
-    {
+    {        
         string range = null;
         foreach (string rangeSection in board.sections[player.ID].Keys)
         {
             if (unityCard.Range.Contains(rangeSection))
             {
                 range = rangeSection;
-                board.sections[player.ID][range].Add(unityCard);
+                board.sections[player.ID][range].Cards.Add(unityCard);
                 break;
             }
         }
@@ -740,10 +775,11 @@ public class GameManager : MonoBehaviour
         Transform dropZone = relateDropZone[(range, player.ID)];
 
         InstantiateIn(unityCard, dropZone, player);
-        if (unityCard == null) Debug.Log("es nulo");
-        else Debug.Log("no es nulo");
+
+        //set drag and drop instance
+        dragAndDrop = unityCard.CardPrefab.GetComponent<DragAndDrop>();
         //Play the card
-        dragAndDrop.PlayCard(unityCard, range, false);
+        dragAndDrop.PlayCardFromEffect(unityCard, range, dropZone);
     }
 
     private void InstantiateIn(Card card, Transform dropZone, Player owner)
@@ -754,16 +790,40 @@ public class GameManager : MonoBehaviour
         disp = CardInstance.GetComponent<DisplayCard>();
         //Assign the card to it
         disp.card = card;
-        //Assign owner of the card
+        //Assign owner
         card.Owner = owner;
         //Assign tag to Instance of the card for decoy effect implementation
         CardInstance.tag = owner.ID;
         //Assign the cardPrefab to the card
         card.CardPrefab = CardInstance;
+        
+        if (player1.Field.Count > 0 && player1.Field[0].CardPrefab == null)
+        {
+            Debug.Log("es nulo " + player1.ID);
+            Debug.Log("InstantiateIn");
+        }
+        if (player2.Field.Count > 0 && player2.Field[0].CardPrefab == null)
+        {
+            Debug.Log("es nulo " + player2.ID);
+            Debug.Log("InstantiateIn");
+        }
         //Set that the card hasnt been played
         if (dropZone == HandPanel)
             card.IsPlayed = false;
         //Display card
         disp.ShowCard();
+    }
+    /// <summary>
+    /// This is called by pressing the button under the leader cardof player 1 (if the leader card is a customized one)
+    /// </summary>
+    public void ApplyLeaderEffect()
+    {
+        Card.LeaderCard leader = currentPlayer.Leader;
+        //Set drag and drop instance
+        dragAndDrop = leader.CardPrefab.GetComponent<DragAndDrop>();
+        //Apply effects of leader card
+        dragAndDrop.ApplyLeaderEffect(leader);
+        //The leader has been played 
+        leader.Played = true;
     }
 }

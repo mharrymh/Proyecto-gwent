@@ -21,12 +21,16 @@ public class FactionMenuManager : MonoBehaviour
     }
     public void SavePlayer1Name()
     {
-        PlayerData.Player1Name = InputField1.text;
+        PlayerData.Player1Name = "a"; //InputField1.text;
+
+        //TODO: lEliminar
+        LightFactionPlayer1();
+        DarkFactionPlayer2();
     }
 
     public void SavePlayer2Name()
     {
-        PlayerData.Player2Name = InputField2.text;
+        PlayerData.Player2Name = "a"; //InputField2.text;
     }
 
     public void LightFactionPlayer1()

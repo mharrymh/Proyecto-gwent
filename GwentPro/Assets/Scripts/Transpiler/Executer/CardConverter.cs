@@ -71,7 +71,8 @@ public static class CardConverter
 
     private static Card LeaderCard(ICard card)
     {
-        throw new NotImplementedException();
+        Sprite CardImage = Utils.DefaultCardImage;
+        return new Card.LeaderCard(card.Name, card.Faction, null, CardImage, card.Effects);
     }
 
     private static Card SilverCard(ICard card)
@@ -85,9 +86,6 @@ public static class CardConverter
 
         List<DeclaredEffect> cardEffects = card.Effects;
         
-
-
-        //TODO: 
         Sprite CardImage = Utils.DefaultCardImage;
 
         return new Card.SilverCard(name, faction, effect, range, power, CardImage, cardEffects);

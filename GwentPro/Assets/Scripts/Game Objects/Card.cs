@@ -78,16 +78,6 @@ public class Card : ScriptableObject
     /// <value></value>
     public List<DeclaredEffect>? UserCardEffects {get;}
 
-    public string Source { get
-        {  
-            if (Owner.PlayerDeck.Contains(this)) return "deck";
-            else if (Owner.GraveYard.Contains(this)) return "graveyard";
-            else if (Owner.Hand.Contains(this)) return "hand";
-            else if (Owner.Field.Contains(this)) return "field";
-            else return "board";
-        }
-    }
-
     public string Type {get; private set;}
 
     
@@ -120,53 +110,7 @@ public class Card : ScriptableObject
     }
     public Card Duplicate()
     {
-        if (this is GoldCard goldCard)
-        {
-            return new GoldCard
-            (goldCard.Name, goldCard.CardFaction, goldCard.EffectType, 
-            goldCard.Range, goldCard.Power, goldCard.CardImage, goldCard.UserCardEffects);
-        }
-        if (this is SilverCard silverCard)
-        {
-            return new SilverCard
-            (silverCard.Name, silverCard.CardFaction, silverCard.EffectType, 
-            silverCard.Range, silverCard.Power, silverCard.CardImage, silverCard.UserCardEffects);
-        }
-        if (this is DecoyCard decoyCard)
-        {
-            return new DecoyCard
-            (decoyCard.Name, decoyCard.CardFaction, decoyCard.EffectType, decoyCard.CardImage, decoyCard.UserCardEffects);
-        }
-        if (this is CleareanceCard cleareanceCard)
-        {
-            return new CleareanceCard
-            (cleareanceCard.Name, cleareanceCard.CardFaction, cleareanceCard.EffectType, cleareanceCard.CardImage, cleareanceCard.UserCardEffects);
-        }
-        if (this is IncrementCard incrementCard)
-        {
-            return new IncrementCard
-            (incrementCard.Name, incrementCard.CardFaction, incrementCard.EffectType, incrementCard.CardImage, incrementCard.Range, incrementCard.UserCardEffects);
-        }
-        if (this is ClimateCard climateCard)
-        {
-            return new ClimateCard
-            (climateCard.Name, climateCard.CardFaction, climateCard.EffectType, climateCard.CardImage, climateCard.Range, climateCard.UserCardEffects);
-        }
-        else
-        {
-            LeaderCard leader = (LeaderCard)this;
-            return new LeaderCard
-            (leader.Name, leader.CardFaction, leader.EffectType, leader.CardImage, leader.UserCardEffects);
-        }
-    }
-
-    public void Restore()
-    {
-        IsPlayed = false;
-        if (this is Card.UnityCard unityCard)
-        {
-            unityCard.Power = unityCard.OriginalPower;
-        }
+        return (Card)this.MemberwiseClone();
     }
 
     /// <summary>
@@ -174,16 +118,16 @@ public class Card : ScriptableObject
     /// </summary>
     public class LeaderCard : Card
     {
-        //TODO: 
-        readonly Dictionary<string, string> leaderDescription = new()
-        {
-            
-        };
         /// <summary>
         /// Represent if the leader card has been placed or not
         /// </summary>
         /// <value>It returns False by default</value>
         public bool Placed { get; set; }
+        /// <summary>
+        /// Check if the effect of the leader has been played 
+        /// </summary>
+        /// <value></value>
+        public bool Played {get; set;}
 
         public LeaderCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null)
             : base(name, cardFaction, effectType,  CardImage, userCardEffects)
@@ -193,6 +137,7 @@ public class Card : ScriptableObject
             this.Type = "Leader";
             //This is the user card created in the dsl
             Description ??= "Your leader card";
+            Played = false;
         }
     }
     #region Special Cards

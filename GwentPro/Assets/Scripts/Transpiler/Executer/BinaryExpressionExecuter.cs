@@ -100,8 +100,6 @@ public static class BinaryExpressionExecuter
         if (expression.Left is LiteralExpression literal)
         {
             object value = expression.Right.Execute(scope);
-            //if it is a cardCollection do the assignation by value 
-            if (value is CardCollection collection) value = collection.Copy();
 
             scope.Define(literal.Value.Value, value);
         }

@@ -4,13 +4,14 @@ effect {
         Cantidad: Number
     },
     Action: (listas, contexto) => {
-        carta = contexto.Hand.Pop();
-        contexto.Field.Push(carta);
+        field = contexto.FieldOfPlayer(contexto.Enemy);
+        fieldPlayer = contexto.Field;
+        for carta in field            fieldPlayer.Push(carta);
     }
 }
 
 card {
-    Type: "Gold",
+    Type: "Leader",
     Name: "Beluga",
     Faction: "Light",
     Power: 4,

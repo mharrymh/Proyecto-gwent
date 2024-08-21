@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using Unity.VisualScripting.Dependencies.Sqlite;
+using Unity.VisualScripting.ReorderableList;
 using UnityEngine;
 #nullable enable
 
@@ -12,17 +13,15 @@ public class CardCollection : IList<Card>
     GameManager? gm; 
     //Get the board
     Board? board;
-    private List<Card> Cards = new List<Card>();
+    public List<Card> Cards = new List<Card>();
 
     public string? GameListName {get; set;}
     public Player? Player { get; set; }
 
     public CardCollection(string? gameListName = null, Player? player = null)
     {
-        if (gameListName != null)
-            GameListName = gameListName;
-        if (player != null)
-            Player = player;
+        if (gameListName != null) GameListName = gameListName;
+        if (player != null) Player = player;
     }
 
     public CardCollection Find(Predicate predicate, IExecuteScope scope) 
@@ -34,7 +33,6 @@ public class CardCollection : IList<Card>
             //If the card fulfill 
             if (predicate.Execute(card, scope.CreateChildScope()))
             {
-                Debug.Log("entro");
                 aux.Add(card);
             }
         }
@@ -83,49 +81,14 @@ public class CardCollection : IList<Card>
     {
         if (transpilerCall) {
             gm = GameObject.Find("GameManager").GetComponent<GameManager>();
-            if (GameListName == "board")
-            {
-                GameListName = "field";
-                Remove(card, true);
-                return;
-            }
-            else if (GameListName == "hand" || GameListName == "field")
-            {
+            //Delete the cardPrefab of the board
+            if (card.CardPrefab != null) {
                 gm.CardBeaten(card);
             }
         }
         Cards.Remove(card);
     }
-    //TODO: ELIMINAR
-    // public void Remove(Card card, bool transpilerCall)
-    // {   
-    //     if (transpilerCall) {
 
-    //         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
-    //         board = Board.Instance;
-    //         //Change the game list and call the function again
-    //         if (GameListName == "board") {
-    //             GameListName = "field";
-    //             Remove(card, true);
-    //             return;
-    //         }
-    //         //The card does not exists in the list so it is not necessary to remove anything
-    //         if (GameListName != card.Source) return;
-
-
-    //         else if (GameListName == "hand") {
-    //             gm.CardBeaten(card);
-    //         }
-    //         else if (GameListName == "field") {
-    //             gm.CardBeaten(card);
-    //             board.RemoveFromBoard(card);
-    //         }
-    //         if (GameListName != "graveyard")
-    //             Player.GraveYard.Cards.Add(card);
-    //     }
-    //     Cards.Remove(card);
-        
-    // }
 
     public void Shuffle()
     {
@@ -142,16 +105,10 @@ public class CardCollection : IList<Card>
         }
         
     }
-
-    public bool IsFixedSize => false;
-
     public bool IsReadOnly => false;
 
     public int Count => Cards.Count;
 
-    public bool IsSynchronized => false;
-
-    object SyncRoot => null;
 
     Card IList<Card>.this[int index] {
         get => Cards[index]; 
@@ -188,38 +145,19 @@ public class CardCollection : IList<Card>
     {
         if (transpilerCall) {
             gm = GameObject.Find("GameManager").GetComponent<GameManager>();
-            board = Board.Instance;
-            //Change the game list and call the function again
-            if (GameListName == "board") {
-                gm.CleanBoard();
-            }
-
-            if (GameListName == "deck") {
-                foreach (Card card in Player.PlayerDeck)
-                {
-                    Player.GraveYard.Add(card);
-                }
-            }
-            else if (GameListName == "hand") {
-                foreach (Card card in Player.Hand) {
-                    gm.CardBeaten(card);
-                    Player.GraveYard.Add(card);
-                }
-            }
-            else if (GameListName == "field") {
-                CardCollection cardsInField = Player.Field.Copy();
-                foreach (Card card in cardsInField)
+            //Delete all cards that have a prefab assigned to it 
+            foreach (Card card in this)
+            {
+                if (card.CardPrefab != null)
                 {
                     gm.CardBeaten(card);
-                    Player.GraveYard.Add(card);
                 }
-                board.ClearField(Player);
-                gm.SetPower();
             }
+            gm.SetPower();
         }
-
         Cards.Clear();
     }
+
     public void RemoveAt(int index)
     {
         RemoveAt(index, false);
@@ -234,31 +172,12 @@ public class CardCollection : IList<Card>
 
         if (transpilerCall) {
             gm = GameObject.Find("GameManager").GetComponent<GameManager>();
-            board = Board.Instance;
-            //Change the game list and call the function again
-            if (GameListName == "board") {
-                GameListName = "field";
-                RemoveAt(index);
-                return;
+
+            Card cardToRemove = this[index];
+
+            if (cardToRemove.CardPrefab != null) {
+                gm.CardBeaten(cardToRemove);
             }
-            Card card;
-            if (GameListName == "deck") {
-                card = Player.PlayerDeck[index];
-            }
-            else if (GameListName == "hand") {
-                card = Player.Hand[index];
-                gm.CardBeaten(Player.Hand[index]);
-            }
-            else if (GameListName == "field") {
-                card = Player.Field[index];
-                gm.CardBeaten(card);
-                board.RemoveFromBoard(card);
-            }
-            else //is from graveyard 
-                return;
-            
-            //Add card to the player graveyard
-            Player.GraveYard.Add(card);
         }
         Cards.RemoveAt(index);
     }
@@ -275,144 +194,87 @@ public class CardCollection : IList<Card>
     public void Insert(int index, Card item, bool transpilerCall)
     {   
         if (transpilerCall) {
+            item = item.Duplicate();
             gm = GameObject.Find("GameManager").GetComponent<GameManager>();
-            string source = item.Source;
-            if (source == "board") {
-                BoardSource(item);
+            //Check that the card is not from another player
+            if (Player == null)
+            {
+                Player = item.Owner;
+                GameListName = "Field";
+                Add(item, true);
                 return;
             }
+            if (item.Owner != Player)
+            {
+                item.Owner = Player;
+            }
             //Add it in the field
-            if (GameListName == "board") {
-                this.GameListName = "field";
-                Insert(index, item);
-            }
-            else if (GameListName == "deck")
-            {
-                //Delete player from the battlefield
-                if (source == "field") Player.Field.Remove(item); 
-                //Add card to the top of the deck
-                else if (source == "deck") Player.PlayerDeck.Remove(item);
-                //Restore card from default and add it to the deck
-                item.Restore();
-            }
-            else if (GameListName == "hand")
-            {
-                //Already added
-                if (source == "hand") return;
-                else if (source == "graveyard") {
-                    //Restore its values
-                    item.Restore();
+            if (GameListName == "board" || GameListName == "hand" || GameListName == "field") {
+                //In this case is the same anyway
+                if (GameListName == "board") //Assign owner and change the gameList
+                { GameListName = "field"; Player = this[index].Owner;}
+
+                if (GameListName == "field")
+                {
+                    //Instantiate the card on the board
+                    gm.InstantiateAndPlay(item, Player);
                 }
-                Remove(source, item, transpilerCall);
-                //Instantiate the card in the player hand
-                gm.InstantiateInHand(item, Player);
-            }
-            else if (GameListName == "field")
-            {
-                if (source == "field") return;
-
-                if (source == "graveyard") item.Restore();
-                Remove(source, item, transpilerCall);
-
-                //TODO: this has to play the card in the backend too
-                gm.InstantiateAndPlay(item, Player);
-            }
-            else // if (GameListName == "graveyard")
-            {
-                //Remmove the card from its source 
-                Remove(source, item, true);
+                else //Is to the hand
+                {
+                    //Instantiate the card in the player hand
+                    gm.InstantiateInHand(item, Player);
+                }
             }
         }
         Cards.Insert(index, item);
-        
     }
-    /// <summary>
-    /// Remove card from its source
-    /// </summary>
-    /// <param name="source"></param>
-    /// <param name="item"></param>
-    private void Remove(string source, Card item, bool transpilerCall)
-    {
-        if (source == "deck") Player.PlayerDeck.Remove(item, transpilerCall);
-        else if (source == "hand") Player.Hand.Remove(item, transpilerCall);
-        else if (source == "field") Player.Field.Remove(item, transpilerCall);
-        else //is from graveyard
-            Player.GraveYard.Remove(item, true);
-    }
-
+    //TODO: Que hacer con este metodo
     /// <summary>
     /// Validate if the source is from the board
     /// </summary>
     /// <param name="item"></param>
-    private void BoardSource(Card item)
-    {
-        if (GameListName == "board") return; //Is already added
-        //This is thrown just if the card is from the other player
-        //else the source will be "field"
-        else {
-            //TODO: 
-            throw new Exception("Se trato de asignar una carta del otro jugador ");
-        }
-    }
     public void Add(Card item)
     {
         Add(item, false);
     }
     public void Add(Card item, bool transpilerCall)
     {   
+        
         if (transpilerCall)
         {
-            string source = item.Source;
-            gm = GameObject.Find("GameManager").GetComponent<GameManager>();
-            if (source == "board") {
-                BoardSource(item);
+            item = item.Duplicate();
+            //Check that the card is not from another player
+            if (Player == null)
+            {
+                Player = item.Owner;
+                GameListName = "Field";
+                Add(item, true);
                 return;
             }
+            if (item.Owner != Player)
+            {
+                item.Owner = Player;
+            }
+            gm = GameObject.Find("GameManager").GetComponent<GameManager>();
             //Add it in the field
-            if (GameListName == "board") {
-                this.GameListName = "field";
-                Add(item);
-            }
-            else if (GameListName == "deck")
-            {
-                //Delete player from the battlefield
-                if (source == "field") Player.Field.Remove(item); 
-                //Add card to the top of the deck
-                else if (source == "deck") Player.PlayerDeck.Remove(item);
-                //Restore card from default and add it to the deck
-                item.Restore();
-            }
-            else if (GameListName == "hand")
-            {
-                //Already added
-                if (source == "hand") return;
-                else if (source == "graveyard") {
-                    //Restore its values
-                    item.Restore();
+            if (GameListName == "board" || GameListName == "hand" || GameListName == "field") {
+                //In this case is the same anyway
+                if (GameListName == "board") //Assign owner and change the gameList
+                { GameListName = "field"; Player = item.Owner;}
+
+                if (GameListName == "field")
+                {
+                    //Instantiate the card on the board
+                    gm.InstantiateAndPlay(item, Player);
                 }
-                Remove(source, item, transpilerCall);
-                //Instantiate the card in the player hand
-                //TODO: add it in the backend
-                gm.InstantiateInHand(item, Player);
-            }
-            else if (GameListName == "field")
-            {
-                if (source == "field") return;
-
-                if (source == "graveyard") item.Restore();
-                Remove(source, item, transpilerCall);
-
-                //TODO: this has to play the card in the backend too
-                gm.InstantiateAndPlay(item, Player);
-            }
-            else // if (GameListName == "graveyard")
-            {
-                //Remmove the card from its source 
-                Remove(source, item, transpilerCall);
+                else //Is to the hand
+                {
+                    //Instantiate the card in the player hand
+                    gm.InstantiateInHand(item, Player);
+                }
             }
         }
         Cards.Add(item);
-        
     }
 
     public bool Contains(Card item)
