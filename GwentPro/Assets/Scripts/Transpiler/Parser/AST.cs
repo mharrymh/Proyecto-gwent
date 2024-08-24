@@ -77,18 +77,28 @@ public class DecBlock : DSL_Object
 /// </summary>
 public class Effect_Object : DSL_Object
 {
-    Expression Name {get;}
+    //Line where the effect starts (just for exceptions handling)
+    int Line {get;}
+    Expression? Name {get;}
     Dictionary<Token, Token>? Param {get; }
-    InstructionBlock Action {get; }
-    public Effect_Object(Expression name, Dictionary<Token, Token>? param, InstructionBlock action)
+    InstructionBlock? Action {get; }
+    public Effect_Object(Expression? name, Dictionary<Token, Token>? param, InstructionBlock? action, int line)
     {
         this.Name = name;
         this.Param = param;
         this.Action = action;
+        Line = line;
     }
 
     public override void Validate(IScope scope)
     {
+        if (Name == null || Action == null)
+        {
+            string NullBlock = (Name == null)? "Name" : "Action";
+            CompilationError NotDeclaredBlockOfEffect = new NotDeclaredBlockOfEffect(Line, NullBlock);
+            throw NotDeclaredBlockOfEffect;
+        }
+
         Name.ValidateAndCheck(scope, IdType.String);
         
         if (Param != null) scope.DefineParams((string)Name.Evaluate(), Param);
@@ -153,9 +163,15 @@ public class InstructionBlock : DSL_Object
 
     public void Execute(IExecuteScope scope)
     {
-        foreach (Statement statement in Statements)
-        {
-            statement.Execute(scope);
+        try {
+            foreach (Statement statement in Statements)
+            {
+                statement.Execute(scope);            
+            }
+        }
+        catch (ExecutionError ex) {
+            GameManager gm = GameObject.Find("GameManager").GetComponent<GameManager>();
+            gm.SetAuxText(ex.Message);
         }
     }
 
@@ -177,6 +193,8 @@ public abstract class Statement : DSL_Object {
 /// </summary>
 public class ForLoop : Statement
 {
+    //Error handling purposes
+    int Line {get;}
     /// <summary>
     /// The iterator of a for loop can be any name but it always represents a card
     /// </summary>
@@ -184,11 +202,12 @@ public class ForLoop : Statement
     Token Iterator {get; }
     Expression Collection {get;}
     InstructionBlock Instructions {get; }
-    public ForLoop(InstructionBlock instructions, Token iterator, Expression collection)
+    public ForLoop(InstructionBlock instructions, Token iterator, Expression collection, int line)
     {
         this.Instructions = instructions;
         this.Iterator = iterator;
         this.Collection = collection;
+        Line = line;
     }
     public override void Validate(IScope scope)
     {
@@ -210,10 +229,17 @@ public class ForLoop : Statement
     public override object Execute(IExecuteScope scope)
     {
         CardCollection cardCollection = (CardCollection)Collection.Execute(scope);
-        foreach (Card card in cardCollection)
+        //Keep counter for stack overflow errors
+        int count = 0;
+        for (int i = 0; i < cardCollection.Count; i++)
         {
-            scope.Define(Iterator.Value, card);
+            scope.Define(Iterator.Value, cardCollection[i]);
             Instructions.Execute(scope);
+            if (count++ >= 500)
+            {
+                ExecutionError OverflowError = new OverflowError(Line);
+                throw OverflowError;
+            }
         }
         return null;
     }
@@ -223,13 +249,16 @@ public class ForLoop : Statement
 /// </summary>
 public class WhileLoop : Statement
 {
+    //Error handling purposes 
+    int Line {get;}
     Expression BoolExpression {get; }
     InstructionBlock Instructions {get; }
 
-    public WhileLoop(Expression boolExpression, InstructionBlock instructions)
+    public WhileLoop(Expression boolExpression, InstructionBlock instructions, int line)
     {
         this.BoolExpression = boolExpression;
         this.Instructions = instructions;
+        Line = line;
     }
     public override void Validate(IScope scope)
     {
@@ -242,9 +271,15 @@ public class WhileLoop : Statement
 
     public override object Execute(IExecuteScope scope)
     {
+        int count = 0;
         while((bool)BoolExpression.Execute(scope))
         {
             Instructions.Execute(scope);
+            if (count++ >= 500)
+            {
+                ExecutionError OverflowError = new OverflowError(Line);
+                throw OverflowError;
+            }
         }
         return null;
     }
@@ -256,17 +291,19 @@ public class WhileLoop : Statement
 /// </summary>
 public class Card_Object : DSL_Object
 {
-    Expression Name {get; }
-    Expression Type {get; }
-    Expression Faction {get; }
+    //Error handling purposes
+    int Line {get;}
+    Expression? Name {get; }
+    Expression? Type {get; }
+    Expression? Faction {get; }
     //Power can be null for cards that doesn't have power
     Expression? Power {get; }
     //Range can be null for leader cards or another especial cards
     List<Expression>? Range {get; }
-    List<EffectAllocation> Activation {get; }
+    List<EffectAllocation>? Activation {get; }
 
-    public Card_Object(Expression name, Expression type, Expression faction, Expression? power,
-    List<Expression>? range, List<EffectAllocation> activation)
+    public Card_Object(Expression? name, Expression? type, Expression? faction, Expression? power,
+    List<Expression>? range, List<EffectAllocation>? activation, int line)
     {
         this.Name = name;
         this.Type = type;
@@ -274,10 +311,18 @@ public class Card_Object : DSL_Object
         this.Power = power;
         this.Range = range;
         this.Activation = activation;
+        Line = line;
     }
 
     public override void Validate(IScope scope)
     {
+        if (Name == null || Faction == null || Type == null || Activation == null)
+        {
+            string NullBlock = (Name != null)? (Faction != null)? (Type != null)? "OnActivation" : "Type" : "Faction" : "Name";
+            CompilationError NotDeclaredBlockOfCard = new NotDeclaredBlockOfCard(Line, NullBlock);
+            throw NotDeclaredBlockOfCard;
+        }
+
         if (Range != null) {
             foreach(Expression exp in Range)
             {
@@ -303,8 +348,8 @@ public class Card_Object : DSL_Object
         {
             if (!type.Equals("Leader") && !type.Equals("Cleareance") && !type.Equals("Decoy"))
             {
-                //TODO: 
-                throw new Exception("La carta de tipo: type tiene que tener rango definido");
+                CompilationError RangeNotDeclared = new RangeNotDeclared(Line, type.ToString());
+                throw RangeNotDeclared;
             }
         }
 
@@ -312,8 +357,8 @@ public class Card_Object : DSL_Object
         {
             if (type.Equals("Gold") || type.Equals("Silver"))
             {
-                //TODO: 
-                throw new Exception("La carta de tipo: type tiene que tener poder definido");
+                CompilationError PowerNotDeclared = new PowerNotDeclared(Line, type.ToString());
+                throw PowerNotDeclared;
             }
         }
     }
@@ -328,8 +373,8 @@ public class Card_Object : DSL_Object
         //Check that the type is valid
         if (!CardConverter.relateType.ContainsKey(type))
         {
-            //TODO: THROW NEW EXCEPTION, ESE TYPE NO ESTA PERMITIDO
-            throw new Exception();
+            CompilationError TypeNotAvailable = new TypeNotAvailable(Line, type);
+            throw TypeNotAvailable;
         }
         string faction_string = (string)Faction.Evaluate();
         //This convert the string of the faction to an actual faction as an enum
@@ -338,6 +383,12 @@ public class Card_Object : DSL_Object
         int power = (Power == null)? 0 : (int)Power.Evaluate();
         //If range is null it is an empty string
         string range = (Range == null)? "" : ChangeFormatOfRange(Range);
+
+        if ((type == "Climate" || type == "Increment") && range.Length > 1)
+        {
+            CompilationError SpecialCardOnlyOneRange = new SpecialCardOnlyOneRange(Line, range.Length, type);
+            throw SpecialCardOnlyOneRange;
+        }
         
         List<DeclaredEffect> effects = new List<DeclaredEffect>();
         //Fill the card effects
@@ -367,8 +418,10 @@ public class Card_Object : DSL_Object
                 //Remove it so it cant be ranges repeated 
                 ValidRanges.Remove(rangeString[i]);
             }
-            //TODO: Rango no valido
-            else throw new Exception("");
+            else {
+                CompilationError RangeNotAvailable = new RangeNotAvailable(Line, rangeString[i]);
+                throw RangeNotAvailable;
+            }
         }
         return correctFormatRange;
     }
@@ -390,8 +443,10 @@ public class Card_Object : DSL_Object
         {
             return relate_faction[faction_string];
         }
-        //TODO: LANZAR EXCEPCION DE QUE ESA FACCION NO EXISTE EN EL JUEGO O NO ES VALIDA
-        else throw new Exception();
+        else {
+            CompilationError FactionNotAvailable = new FactionNotAvailable(Line, faction_string);
+            throw FactionNotAvailable;
+        }
     }
 }
 /// <summary>
@@ -399,34 +454,65 @@ public class Card_Object : DSL_Object
 /// </summary>
 public class EffectAllocation : DSL_Object
 {
-    Allocation Allocation {get; }
+    //Effect names that has been allocated in this card
+    HashSet<string> EffectNamesAllocated {get; set;}
+    public bool HasParent {get; set;} 
+    int Line {get; }
+    Allocation? Allocation {get; }
     Selector? Selector{get; }
     PostActionBlock? PostAction {get; }
 
-    public EffectAllocation(Allocation allocation, Selector? selector, PostActionBlock? postAction)
+    public EffectAllocation(Allocation? allocation, Selector? selector, PostActionBlock? postAction, int line)
     {
         this.Allocation = allocation;
         this.Selector = selector;
         this.PostAction = postAction;
+        Line = line;
+        EffectNamesAllocated = new HashSet<string>();
     }
-
     public override void Validate(IScope scope)
     {
+        if (Allocation == null)
+        {
+            CompilationError NotDeclaredBlockOfEffectAllocation = new NotDeclaredBlockOfEffectAllocation(Line);
+            throw NotDeclaredBlockOfEffectAllocation;
+        }
         Allocation.Validate(scope);
         Selector?.Validate(scope);
         PostAction?.Validate(scope);
+
+        if (Selector != null && Selector.SourceIsParent() && !HasParent)
+        {
+            CompilationError NotPostEffect = new NotPostEffect(Allocation.GetName());
+            throw NotPostEffect;
+        }
     }
     /// <summary>
     /// It returns an DeclaredEffect with the evaluated effect
     /// </summary>
     /// <param name="PostEffect">It represents if the effect is a postAction decared effect or not</param>
     /// <returns>The completed effect</returns>
-    public DeclaredEffect Evaluate(DeclaredEffect? parent = null)
+    public DeclaredEffect Evaluate(DeclaredEffect? parent = null, HashSet<string> effectsAllocated = null)
     {
+        if (effectsAllocated != null)
+        {
+            EffectNamesAllocated = effectsAllocated;
+        }
+
+
         (string name, Dictionary<string, object> paramsDeclared) = Allocation.Evaluate();
 
+        DeclaredEffect usedEffect;
         //Find the effect with that name and fill its parameters
-        DeclaredEffect usedEffect = DeclaredEffects.Find(name);
+        if (!EffectNamesAllocated.Contains(name)) {
+            EffectNamesAllocated.Add(name);
+            usedEffect = DeclaredEffects.Find(name);
+        }
+        else { //Throw an error if the effect has been allocated in this card before
+            CompilationError EffectAllocatedTwice = new EffectAllocatedTwice(name);
+            throw EffectAllocatedTwice;
+        }
+        
         //Fill the values of the effect
         usedEffect.FillParamsValues(paramsDeclared);
 
@@ -434,14 +520,14 @@ public class EffectAllocation : DSL_Object
         if (parent == null && Selector == null)
         {
             //targets is an empty list
-            usedEffect.Targets = new EffectSelector("null", false, null, true);
+            usedEffect.Targets = new EffectSelector("null", false, null, name, true);
         }
 
         CardCollection effectTargets = new CardCollection();
         if (Selector != null)
         {
             //Get the cards that match the selector
-            usedEffect.Targets = Selector.Evaluate();
+            usedEffect.Targets = Selector.Evaluate(name);
         }
         else //It is a post action effect
         {
@@ -451,7 +537,7 @@ public class EffectAllocation : DSL_Object
         //Fill the post effect
         if (PostAction != null)
         {
-            usedEffect.PostEffect = PostAction.Evaluate(usedEffect);
+            usedEffect.PostEffect = PostAction.Evaluate(usedEffect, EffectNamesAllocated);
             //Set the post effect parent
             usedEffect.PostEffect.Parent = usedEffect;
         }
@@ -464,18 +550,25 @@ public class EffectAllocation : DSL_Object
 /// </summary>
 public class Allocation : DSL_Object
 {
-    Expression Name {get; }
+    int Line {get;}
+    Expression? Name {get; }
     Dictionary<Token, Expression>? VarAllocation {get; }
-    public Allocation(Expression name, Dictionary<Token, Expression>? varAllocation)
+    public Allocation(Expression? name, Dictionary<Token, Expression>? varAllocation, int line)
     {
         this.Name = name;
         this.VarAllocation = varAllocation;
+        Line = line;
     }
 
     public override void Validate(IScope scope)
     {
+        if (Name == null)
+        {
+            CompilationError NotDeclaredBlockOfEffectAllocation = new NotDeclaredBlockOfEffectAllocation(Line);
+            throw NotDeclaredBlockOfEffectAllocation;
+        }
         Name.ValidateAndCheck(scope, IdType.String);
-        DefinedActions.CheckValidParameters((string)Name.Evaluate(), VarAllocation, scope);
+        DefinedActions.CheckValidParameters((string)Name.Evaluate(), VarAllocation, scope, Line);
     }
     /// <summary>
     /// It returns the name as string and the declared params with the name and the expression
@@ -498,17 +591,23 @@ public class Allocation : DSL_Object
 
         return (name, paramsDeclared);
     }
+
+    public string GetName()
+    {
+        return (string)Name.Evaluate();
+    }
 }
 /// <summary>
 /// Assign the card collection that will be affected by the effect activation
 /// </summary>
 public class Selector : DSL_Object 
 {
+    int Line{get;}
     /// <summary>
     /// Card collection from where the cards are get 
     /// </summary>
     /// <value></value>
-    Expression Source {get; }
+    Expression? Source {get; }
     /// <summary>
     /// Represent if we only affect a single card in the collection or all of them
     /// </summary>
@@ -518,21 +617,34 @@ public class Selector : DSL_Object
     /// Predicate used to restrict source even more
     /// </summary>
     /// <value></value>
-    Predicate Predicate {get; }
-    public Selector(Expression source, Expression? single, Predicate predicate)
+    Predicate? Predicate {get; }
+    public Selector(Expression? source, Expression? single, Predicate? predicate, int line)
     {
         this.Source = source;
         this.Single = single;
         this.Predicate = predicate;
+        Line = line;
     }
     public override void Validate(IScope scope)
     {
+        if (Source == null || Predicate == null)
+        {
+            string nullBlock = (Source == null)? "Source" : "Predicate";
+            CompilationError NotDeclaredBlockOfAllocation = new NotDeclaredBlockOfAllocation(Line, nullBlock);
+            throw NotDeclaredBlockOfAllocation;
+        }
+
         Source.ValidateAndCheck(scope, IdType.String);
         Single?.ValidateAndCheck(scope, IdType.Boolean);
         Predicate.Validate(scope);
     }
 
-    public EffectSelector Evaluate()
+    public bool SourceIsParent()
+    {
+        return Source != null && ((string)Source.Evaluate()).Equals("parent");
+    }
+
+    public EffectSelector Evaluate(string Name)
     { 
         bool single = false;
         if (Single != null)
@@ -540,7 +652,7 @@ public class Selector : DSL_Object
             single = (bool)Single.Evaluate();
         }
         string source = (string)Source.Evaluate();
-        return new EffectSelector(source, single, Predicate);
+        return new EffectSelector(source, single, Predicate, Name);
     }
 }
 
@@ -579,6 +691,7 @@ public class PostActionBlock : DSL_Object
     public PostActionBlock(EffectAllocation effectBlock)
     {
         this.EffectBlock = effectBlock;
+        EffectBlock.HasParent = true;
     }
 
     public override void Validate(IScope scope)
@@ -586,9 +699,9 @@ public class PostActionBlock : DSL_Object
         EffectBlock.Validate(scope);
     }
 
-    public DeclaredEffect Evaluate(DeclaredEffect parent)
+    public DeclaredEffect Evaluate(DeclaredEffect parent, HashSet<string> effectsAllocatedOfParent)
     {
-        return EffectBlock.Evaluate(parent);
+        return EffectBlock.Evaluate(parent, effectsAllocatedOfParent);
     }
 }
 #endregion

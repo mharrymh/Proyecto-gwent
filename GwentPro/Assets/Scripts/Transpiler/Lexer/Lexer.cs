@@ -109,8 +109,8 @@ public class Lexer {
             //A token didn't match with any of the regular expresions
             if (!matchFound) {
                 //Throw error
-                Error invalidToken = new InvalidSyntaxError(actualLine, actualColumn, remainingInput[0]);
-                throw new Exception(invalidToken.ToString());
+                CompilationError LexicalError = new LexicalError(actualLine, actualColumn, remainingInput[0]);
+                throw LexicalError;
             }
         }
         //Return the list

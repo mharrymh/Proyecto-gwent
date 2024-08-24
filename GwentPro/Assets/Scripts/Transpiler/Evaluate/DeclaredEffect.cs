@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Linq;
 using Mono.Cecil.Cil;
 using UnityEditor.PackageManager.Requests;
+using UnityEngine.Playables;
 #nullable enable
 
 
@@ -71,7 +72,8 @@ public class DeclaredEffect
 
 public static class DeclaredEffects
 {
-    public static HashSet<DeclaredEffect> declaredEffects = new HashSet<DeclaredEffect>();
+    static HashSet<DeclaredEffect> declaredEffects = new HashSet<DeclaredEffect>();
+    
     public static void AddEffect(DeclaredEffect effect)
     {
         declaredEffects.Add(effect);

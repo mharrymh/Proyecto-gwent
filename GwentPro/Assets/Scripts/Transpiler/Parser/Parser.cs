@@ -28,8 +28,8 @@ public class Parser
         {
             // If we've reached the end of the token list, throw an exception
             Token last = Tokens[^1];
-            UnexpectedEndOfInput error = new UnexpectedEndOfInput(last.Line, last.Column, last);
-            throw new Exception(error.ToString());
+            CompilationError UnexpectedEndOfInput = new UnexpectedEndOfInput(last);
+            throw UnexpectedEndOfInput;
         }
 
         if(expected == null) 
@@ -45,8 +45,8 @@ public class Parser
         {
             // If the next token doesn't match any of the expected types, throw an exception
             Token token = Tokens[Pos+1];
-            UnexpectedToken error = new UnexpectedToken(token.Line, token.Column, token, expected[0]);
-            throw new Exception(error.ToString());
+            CompilationError UnexpectedToken = new UnexpectedToken(token, expected[0].ToString());
+            throw UnexpectedToken;
         }
     }
     void Consume(List<TokenType> tokenTypes)
@@ -64,8 +64,8 @@ public class Parser
         else {
             // If the next token doesn't match the expected type, throw an exception
             Token token = Tokens[Pos+1];
-            UnexpectedToken error = new UnexpectedToken(token.Line, token.Column, token, tokenType);
-            throw new Exception(error.ToString());
+            CompilationError UnexpectedToken = new UnexpectedToken(token, tokenType.ToString());
+            throw UnexpectedToken;
         }
     }
 
@@ -111,6 +111,9 @@ public class Parser
     // Parse a single effect declaration
     Effect_Object ParseEffect()
     {
+        LookAhead(TokenType.Effect);
+        //Save the line for exceptions handling
+        int line = NextToken.Line;
         Consume(new List<TokenType> { TokenType.Effect, TokenType.LCurly });
 
         Expression? name = null;
@@ -145,12 +148,7 @@ public class Parser
             LookAhead(expected);
         }
         Consume(TokenType.RCurly);
-        if (name != null && action != null)
-        {
-            return new Effect_Object(name, param, action);
-        }
-        //FIXME:
-        throw new Exception("Implementar excepcion"); //name y action no pueden ser nulos
+        return new Effect_Object(name, param, action, line); 
     }
 
     Expression ParseName()
@@ -254,6 +252,8 @@ public class Parser
     }
     WhileLoop ParseWhileLoop(Token targets, Token context)
     {
+        LookAhead(TokenType.While);
+        int line = NextToken.Line;
         Consume(new List<TokenType> { TokenType.While, TokenType.LParen });
         var exp = ParseBoolExpression();
         Consume(TokenType.RParen);
@@ -265,42 +265,40 @@ public class Parser
             Consume(TokenType.LCurly);
             var instruction = ParseInstruction(targets, context);
             Consume(TokenType.RCurly);
-            return new WhileLoop(exp, instruction);
+            return new WhileLoop(exp, instruction, line);
         }
         //Parse the instruction line
-        return new WhileLoop(exp, ParseOneInstruction(targets, context));
+        return new WhileLoop(exp, ParseOneInstruction(targets, context), line);
     }
 
     ForLoop ParseForLoop(Token targets, Token context)
     {
         Consume(TokenType.For);
         LookAhead(TokenType.Id);
+        int line = NextToken.Line;
         //Saves the iterator and the collection
         Token iterator = NextToken;
         Consume(new List<TokenType> { TokenType.Id, TokenType.In });
         LookAhead(TokenType.Id);
         Expression collection = ParseExpression();
-        //TODO:
-        if (collection == null) throw new Exception();
-
 
         LookAhead();
         if (NextToken.Definition is not TokenType.LCurly)
         {
-            return new ForLoop(ParseOneInstruction(targets, context), iterator, collection);
+            return new ForLoop(ParseOneInstruction(targets, context), iterator, collection, line);
         }
         Consume(TokenType.LCurly);
         var instruction = ParseInstruction(targets, context);
         Consume(TokenType.RCurly);
-        return new ForLoop(instruction, iterator, collection);
+        return new ForLoop(instruction, iterator, collection, line);
     }
     
     #endregion
     #region CardNodes
     List<Card_Object> ParseCardDecBlock()
     {
-        var cards = new List<Card_Object>();
-        cards.Add(ParseCard());
+        //Create the list
+        List<Card_Object> cards = new List<Card_Object>{ ParseCard() };
         while(Pos + 1 < Tokens.Count)
         {
             LookAhead(TokenType.Card);
@@ -310,8 +308,10 @@ public class Parser
     }
     Card_Object ParseCard()
     {
+        LookAhead(TokenType.Card);
+        //Save line for exception handling purposes
+        int line = NextToken.Line;
         Consume(new List<TokenType> { TokenType.Card, TokenType.LCurly });
-
         Expression? name = null;
         Expression? type = null;
         Expression? faction = null;
@@ -332,7 +332,7 @@ public class Parser
             else if (tokenType is TokenType.Faction) faction = ParseFaction();
             else if (tokenType is TokenType.Power) power = ParsePower();
             else if (tokenType is TokenType.Range) range = ParseRange();
-            else activation = ParseActivation();
+            else activation = ParseActivation(line);
             
             LookAhead(colons);
             if (NextToken.Definition is TokenType.Comma) Consume(TokenType.Comma);
@@ -341,40 +341,28 @@ public class Parser
             LookAhead(expected);
         }
         Consume(TokenType.RCurly);
-
-        if (name != null && faction != null && type != null && activation != null)
-        {
-            return new Card_Object(name, type, faction, power, range, activation);
-        }
-        List<NotNullableObj> notNullableObjs= new List<NotNullableObj>{
-            new NotNullableObj("Name", name),
-            new NotNullableObj("Type", type),
-            new NotNullableObj("Faction", faction)
-        };
-        if (activation == null) notNullableObjs.Add(new NotNullableObj("OnActivation", null));
-        Error error = new ParameterUnknown(NextToken.Column, NextToken.Line, NextToken, notNullableObjs);
-        throw new Exception(error.ToString());
+        return new Card_Object(name, type, faction, power, range, activation, line);
     }
 
-    List<EffectAllocation> ParseActivation()
+    List<EffectAllocation> ParseActivation(int line)
     {
         Consume(new List<TokenType> { TokenType.OnActivation, TokenType.Colon, TokenType.LBracket });
-        var effBlock = ParseEffBlock();
+        var effBlock = ParseEffBlock(line);
         Consume(TokenType.RBracket);
         return effBlock;
     }
 
-    List<EffectAllocation> ParseEffBlock()
+    List<EffectAllocation> ParseEffBlock(int line)
     {
         Consume(TokenType.LCurly);
         var effects = new List<EffectAllocation>();
-        effects.Add(ParseEffAllocation());
+        effects.Add(ParseEffAllocation(line));
         Consume(TokenType.RCurly);
         LookAhead(new List<TokenType> { TokenType.Comma, TokenType.RCurly, TokenType.RBracket });
         while (NextToken.Definition is TokenType.Comma)
         {
             Consume(new List<TokenType> { TokenType.Comma, TokenType.LCurly });
-            effects.Add(ParseEffAllocation());
+            effects.Add(ParseEffAllocation(line));
             Consume(TokenType.RCurly);
         }
         if (NextToken.Definition is TokenType.RCurly)
@@ -382,7 +370,7 @@ public class Parser
         return effects;
     }
 
-    EffectAllocation ParseEffAllocation()
+    EffectAllocation ParseEffAllocation(int line)
     {
         Allocation? allocation = null;
         Selector? selector = null;
@@ -396,9 +384,9 @@ public class Parser
             TokenType tokenType = NextToken.Definition;
             //Check nextToken
             //Break if it is a RCurly
-            if (tokenType is TokenType.C_Effect) allocation = ParseAllocation();
-            else if (tokenType is TokenType.Selector) selector = ParseSelector();
-            else if(tokenType is TokenType.PostAction) postAction = ParsePostAction();
+            if (tokenType is TokenType.C_Effect) allocation = ParseAllocation(line);
+            else if (tokenType is TokenType.Selector) selector = ParseSelector(line);
+            else if(tokenType is TokenType.PostAction) postAction = ParsePostAction(line);
             else break;
 
             LookAhead(colons);
@@ -407,16 +395,7 @@ public class Parser
             expected.Remove(tokenType);
             LookAhead(expected);
         }
-        if (allocation != null)
-        {
-            return new EffectAllocation(allocation, selector, postAction);
-        }
-        //Name hasnt been declared
-        List<NotNullableObj> notNullableObjs= new List<NotNullableObj>{
-            new NotNullableObj("Name", allocation),
-        };
-        Error error = new ParameterUnknown(NextToken.Column, NextToken.Line, NextToken, notNullableObjs);
-        throw new Exception(error.ToString());
+        return new EffectAllocation(allocation, selector, postAction, line);
     }
     Expression ParseType()
     {
@@ -453,12 +432,12 @@ public class Parser
         Consume(TokenType.RBracket);
         return ranges;
     }
-    PostActionBlock ParsePostAction()
+    PostActionBlock ParsePostAction(int line)
     {
         Consume(new List<TokenType> { TokenType.PostAction, TokenType.Colon, TokenType.LCurly });
-        return new PostActionBlock(ParseEffAllocation());
+        return new PostActionBlock(ParseEffAllocation(line));
     }
-    Selector ParseSelector()
+    Selector ParseSelector(int line)
     {
         Consume(new List<TokenType> { TokenType.Selector, TokenType.Colon, TokenType.LCurly });
 
@@ -485,16 +464,7 @@ public class Parser
             LookAhead(expected);
         }
         Consume(TokenType.RCurly);
-        if (source != null && predicate != null)
-        {
-            return new Selector(source, single, predicate);
-        }
-        List<NotNullableObj> notNullableObjs= new List<NotNullableObj>{
-            new NotNullableObj("Source", source),
-            new NotNullableObj("Predicate", predicate),
-        };
-        Error error = new ParameterUnknown(NextToken.Column, NextToken.Line, NextToken, notNullableObjs);
-        throw new Exception(error.ToString());
+        return new Selector(source, single, predicate, line);          
     }
     Predicate ParsePredicate()
     {
@@ -523,13 +493,13 @@ public class Parser
         LookAhead(TokenType.String);
         return ParseStringExpression();
     }
-    Allocation ParseAllocation()
+    Allocation ParseAllocation(int line)
     {
         Consume(new List<TokenType> { TokenType.C_Effect, TokenType.Colon });
         LookAhead(new List<TokenType>{TokenType.String, TokenType.LCurly});
         if (NextToken.Definition is TokenType.String)
         {
-            return new Allocation(ParseStringExpression(), null);
+            return new Allocation(ParseStringExpression(), null, line);
         }
         Expression? name = null;
         Dictionary<Token, Expression>? varAllocation = null; 
@@ -552,17 +522,7 @@ public class Parser
             LookAhead(expected);
         }
         Consume(TokenType.RCurly);
-        if (name != null)
-        {
-            return new Allocation(name, varAllocation);
-        }
-        //Throw an error
-        //Name cant be null
-        List<NotNullableObj> notNullableObjs= new List<NotNullableObj>{
-            new NotNullableObj("Name", name),
-        };
-        Error error = new ParameterUnknown(NextToken.Column, NextToken.Line, NextToken, notNullableObjs);
-        throw new Exception(error.ToString());
+        return new Allocation(name, varAllocation, line);
     }
     Dictionary<Token, Expression> ParseVarAllocation()
     {
@@ -688,6 +648,12 @@ public class Parser
                         Consume(NextToken.Definition);
                         left = new BinaryExpression(left, op, literalExpression);
                         LookAhead();
+
+                        if (NextToken.Definition is TokenType.LParen) //it was an unvalid function name
+                        {
+                            CompilationError NotAvailableFunction = new NotAvailableFunction(property);
+                            throw NotAvailableFunction;
+                        }
                     }
 
                     if (NextToken.Definition is TokenType.LBracket)
@@ -709,12 +675,12 @@ public class Parser
                 }
             }
 
-            if (NextToken.Definition is TokenType.LParen)
+            else if (NextToken.Definition is TokenType.LParen)
             {
                 if (!functionNames.Contains(firstId.Value))
                 {
-                    //TODO: 
-                    throw new Exception("Esta funcion " + firstId.Value + "no existe");
+                    CompilationError NotAvailableFunction = new NotAvailableFunction(firstId);
+                    throw NotAvailableFunction;
                 }
 
                 //else
@@ -751,11 +717,7 @@ public class Parser
         Token oper = NextToken;
         Consume(NextToken.Definition);
         Expression id = ParseIdExpression();
-        //TODO: Probar testeando con expresiones como ++++i o ++i++
-        return new UnaryExpression((LiteralExpression)id, oper, false);
-
-
-        //TODO: HACER LOOK AHEAD Y SI LO QUE SIGUE SIGUE SIENDO EXPRESIONES BINARIAS LLAMAR A PARSEAR EXPRESION
+        return new UnaryExpression(id, oper, false);
     }
 
     Expression ParseBoolExpression()
@@ -853,8 +815,7 @@ public class Parser
         Token op = NextToken;
         Consume(TokenType.Minus);
         var right = ParseSumExp();
-        //TODO: LINEA Y COLUMNA 0?
-        return new BinaryExpression(new LiteralExpression(new Token("0", TokenType.Num, 0,0)), op, right);
+        return new BinaryExpression(new LiteralExpression(new Token("0", TokenType.Num, op.Line,op.Column)), op, right);
     }
     Expression ParseStringExpression()
     {

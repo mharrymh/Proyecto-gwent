@@ -6,16 +6,21 @@ using UnityEngine;
 
 public class EffectSelector 
 {
+    //Error handling purposes
+    string Name {get;}
+
+
     bool EmptyList {get;}
     string Source {get; }
     bool Single {get; }
     Predicate? Predicate {get; } 
-    public EffectSelector(string source, bool single, Predicate? predicate, bool emptyList = false)
+    public EffectSelector(string source, bool single, Predicate? predicate, string name, bool emptyList = false)
     {
         Source = source;
         Single = single;
         Predicate = predicate;
         EmptyList = emptyList;
+        Name = name;
     }
 
     public CardCollection GetTargets(DeclaredEffect parent)
@@ -49,8 +54,9 @@ public class EffectSelector
         {
             if (parent == null)
             {
-                //TODO: El efecto no es un post efecto
-                throw new Exception("");
+                //Effect is not a post effect
+                CompilationError notPostEffect = new NotPostEffect(Name);
+                throw notPostEffect;
             }
             else
             {

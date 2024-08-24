@@ -8,7 +8,7 @@ using UnityEngine;
 public static class Executer 
 {
     #region CardCollection
-    public static Dictionary<string, Func<Expression?, CardCollection, IExecuteScope, object>> CollectionFunctions = new()
+    public static Dictionary<string, Func<Expression?, CardCollection, IExecuteScope, int, object>> CollectionFunctions = new()
     {
         {"Push", Push},
         {"SendBottom", SendBottom},
@@ -20,52 +20,63 @@ public static class Executer
         {"Clear", Clear}
     };
 
-    private static object RemoveAt(Expression? expression, CardCollection collection, IExecuteScope scope)
+    private static object RemoveAt(Expression expression, CardCollection collection, IExecuteScope scope, int line)
     {
-        collection.RemoveAt((int)expression.Execute(scope), true);
+        int index = (int)expression.Execute(scope);
+        if (index >= collection.Count || index < 0)
+        {
+            ExecutionError indexOutOfRange = new Ex_IndexOutOfRange(line);
+            throw indexOutOfRange;
+        }
+        collection.RemoveAt(index, true);
         return null;
     }
 
-    private static object Clear(Expression? expression, CardCollection collection, IExecuteScope scope)
+    private static object Clear(Expression? expression, CardCollection collection, IExecuteScope scope, int line)
     {
         collection.Clear(true);
         return null;
     }
 
-    private static object Add(Expression? expression, CardCollection collection, IExecuteScope scope)
+    private static object Add(Expression? expression, CardCollection collection, IExecuteScope scope, int line)
     {
         collection.Add((Card)expression.Execute(scope), true);
         //It return null cause add is a void function
         return null;
     }
 
-    private static object Shuffle(Expression? expression, CardCollection collection, IExecuteScope scope)
+    private static object Shuffle(Expression? expression, CardCollection collection, IExecuteScope scope, int line)
     {
         collection.Shuffle();
         //Return null cause shuffle is a void function
         return null;
     }
 
-    private static object Remove(Expression? expression, CardCollection collection, IExecuteScope scope)
+    private static object Remove(Expression? expression, CardCollection collection, IExecuteScope scope, int line)
     {
         collection.Remove((Card)expression.Execute(scope), true);
         //It return null cause remove is a void function
         return null;
     }
 
-    private static object Pop(Expression? expression, CardCollection collection, IExecuteScope scope)
+    private static object Pop(Expression? expression, CardCollection collection, IExecuteScope scope, int line)
     {
+        if (collection.Count == 0)
+        {
+            ExecutionError indexOutOfRange = new Ex_IndexOutOfRange(line);
+            throw indexOutOfRange;
+        }
         return collection.Pop(true);
     }
 
-    private static object SendBottom(Expression? expression, CardCollection collection, IExecuteScope scope)
+    private static object SendBottom(Expression? expression, CardCollection collection, IExecuteScope scope, int line)
     {
         collection.SendBottom((Card)expression.Execute(scope), true);
         //It return null cause sendbottom is a void function
         return null;
     }
 
-    private static object Push(Expression? expression, CardCollection collection, IExecuteScope scope)
+    private static object Push(Expression? expression, CardCollection collection, IExecuteScope scope, int line)
     {
         collection.Push((Card)expression.Execute(scope), true);
         //It return null cause push is a void function

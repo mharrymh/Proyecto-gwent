@@ -41,8 +41,8 @@ public static class EvaluateBinaryExpression {
 
     private static object NotImplemented(BinaryExpression expression)
     {
-        //TODO: This expressions are not meant to be evaluated,  just executed
-        throw new NotImplementedException();
+        //This error is never thrown because i am the only one that evaluates
+        return null;
     }
 
 
@@ -121,9 +121,8 @@ public static class EvaluateBinaryExpression {
         if (divisor != 0)
             return (int)expression.Left.Evaluate() / divisor;
         else {
-            Token token = GetToken(expression).Value;
-            Error DivisionByZero = new DivideByZeroError(token.Line, token.Column);
-            throw new Exception(DivisionByZero.ToString());
+            CompilationError DivisionByZero = new DivideByZeroError(expression.Right.GetLine());
+            throw DivisionByZero;
         }
     }
 

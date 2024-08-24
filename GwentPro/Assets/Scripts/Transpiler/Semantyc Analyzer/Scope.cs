@@ -18,7 +18,7 @@ public interface IScope {
     //Define the id with its name, its token type and its expression value
     bool Define(string idName, IdType type);
     //Returns the type of the id
-    IdType GetIdType(string id);
+    IdType GetIdType(string id, Token token);
     //Creates a subyacent scope
     IScope CreateChildContext();
 }
@@ -58,8 +58,11 @@ public class Scope : IScope
             {TokenType.Bool, IdType.Boolean}
         };
         //Cant exist two effects with the same name
-        //TODO: Lanzar excepcion
-        if (DefinedActions.Actions.ContainsKey(name)) return false;
+        if (DefinedActions.Actions.ContainsKey(name)) 
+        {
+            CompilationError TwoEffectsWithSameName = new TwoEffectsWithSameName(name);
+            throw TwoEffectsWithSameName;
+        }
         //Create the new effect with its params
         DefinedActions.Actions.Add(name, new Dictionary<string, IdType>());
         
@@ -80,7 +83,7 @@ public class Scope : IScope
         return true;
     }
     //Returns the id type using the variables dictionary 
-    public IdType GetIdType(string idName)
+    public IdType GetIdType(string idName, Token token)
     {
         //Get the context in the hierarchy where it is declared the variable
         Scope scopeOf = this;
@@ -90,8 +93,8 @@ public class Scope : IScope
         
 
         //Throw error of use of unasigned variable
-        Error unasignedVariable = new UnasignedVariable(idName);
-        throw new Exception(unasignedVariable.ToString());
+        CompilationError unasignedVariable = new NotDefinedVariable(token);
+        throw unasignedVariable;
     }
     public bool IsDefinedInContext(string idName, ref Scope scopeOf) {
         scopeOf = this;

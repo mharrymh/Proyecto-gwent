@@ -29,6 +29,15 @@ public class Player
                     field.Add(card);
                 }
             }
+            foreach (Card.ClimateCard climate_card in board.climate_section)
+            {
+                field.Add(climate_card);
+            }
+            foreach (Card.IncrementCard increment_card in board.increment_section[this.ID])
+            {
+                field.Add(increment_card);
+            }
+            field.Shuffle();
             return field;
         }
     }

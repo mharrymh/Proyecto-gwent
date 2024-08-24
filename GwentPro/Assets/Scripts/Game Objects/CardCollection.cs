@@ -11,9 +11,7 @@ public class CardCollection : IList<Card>
 {
     //Get the game manager script
     GameManager? gm; 
-    //Get the board
-    Board? board;
-    public List<Card> Cards = new List<Card>();
+    List<Card> Cards = new List<Card>();
 
     public string? GameListName {get; set;}
     public Player? Player { get; set; }
@@ -62,11 +60,6 @@ public class CardCollection : IList<Card>
 
     public Card Pop(bool transpilerCall)
     {
-        if (Cards.Count == 0)
-        {
-            //TODO:
-            throw new IndexOutOfRangeException();
-        }
         Card last = Cards[^1];
         RemoveAt(Cards.Count-1, transpilerCall);
         
@@ -119,20 +112,10 @@ public class CardCollection : IList<Card>
     {
         get
         {
-            if (index < 0 || index >= Cards.Count)
-            {
-                //TODO: 
-                throw new IndexOutOfRangeException("El índice está fuera de rango.");
-            }
             return Cards[index];
         }
         set
         {
-            if (index < 0 || index >= Cards.Count)
-            {
-                //TODO: 
-                throw new IndexOutOfRangeException("El índice está fuera de rango.");
-            }
             Cards[index] = value;
         }
     }
@@ -164,12 +147,6 @@ public class CardCollection : IList<Card>
     }
     public void RemoveAt(int index, bool transpilerCall)
     {
-        if (index >= Cards.Count)
-        {
-            //TODO:
-            throw new IndexOutOfRangeException();
-        }
-
         if (transpilerCall) {
             gm = GameObject.Find("GameManager").GetComponent<GameManager>();
 
@@ -228,11 +205,7 @@ public class CardCollection : IList<Card>
         }
         Cards.Insert(index, item);
     }
-    //TODO: Que hacer con este metodo
-    /// <summary>
-    /// Validate if the source is from the board
-    /// </summary>
-    /// <param name="item"></param>
+
     public void Add(Card item)
     {
         Add(item, false);

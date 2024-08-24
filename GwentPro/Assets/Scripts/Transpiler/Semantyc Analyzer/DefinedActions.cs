@@ -4,24 +4,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.Serialization;
 using System;
+using System.Linq;
 public static class DefinedActions
 {
-    //Saves the declaration of the params foreach effect
-    //TODO: hacerlo string pero evaluando la expresion 
+    public static void ClearActions() {
+        Actions.Clear();
+    }
     public static Dictionary<string, Dictionary<string, IdType>> Actions = new Dictionary<string, Dictionary<string, IdType>>();
 
     //Check that all declared params were already defined and add them to the variables in the scope
-    public static void CheckValidParameters(string Name, Dictionary<Token, Expression>? allocations, IScope scope)
+    public static void CheckValidParameters(string Name, Dictionary<Token, Expression>? allocations, IScope scope, int line)
     {
         //If the dictionary is null it means actions must not contain any key with the same effect name
         if (allocations == null) {
-            //TODO: Error de que se no se declara un efecto que tiene que ser declarable
-            if (Actions.ContainsKey(Name)) throw new Exception();
-            return;
+            if (Actions.ContainsKey(Name)) {
+                CompilationError MustDeclareParams = new MustDeclareParams(Name, Actions[Name].Keys.ToList(), line);
+                throw MustDeclareParams;
+            }
         }
 
-        //TODO: Error de que un efecto con ese nombre no esta definido
-        if (!Actions.ContainsKey(Name)) throw new Exception();
+        if (!Actions.ContainsKey(Name)) {
+            CompilationError effectNotDefined = new EffectNotDefined(Name, line);
+            throw effectNotDefined;
+        }
  
 
         foreach (Token idName in allocations.Keys) {
@@ -36,8 +41,9 @@ public static class DefinedActions
                     continue;
                 }
             }
-            //TODO:
-            else throw new Exception();
+            //else
+            CompilationError invalidParameter = new InvalidParameter(idName);
+            throw invalidParameter;
         }
     }
 }

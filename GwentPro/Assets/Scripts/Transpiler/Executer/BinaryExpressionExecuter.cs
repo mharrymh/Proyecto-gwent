@@ -217,9 +217,10 @@ public static class BinaryExpressionExecuter
             if (divisor != 0)
                 scope.Define(literal.Value.Value, (int)literal.Execute(scope) / divisor);
 
-            else //TODO: LANZAR EXCEPCION DE DIVISION POR CERO
+            else
             {
-                throw new Exception();
+                ExecutionError DivisionByZero = new Ex_DivisionByZero(expression.Right.GetLine());
+                throw DivisionByZero;
             }
         }
         //Else it is an accesor property
@@ -230,8 +231,8 @@ public static class BinaryExpressionExecuter
             int rightValue = (int)expression.Right.Execute(scope);
             if (rightValue == 0)
             {
-                //TODO: Division por cero
-                throw new Exception();
+                ExecutionError DivisionByZero = new Ex_DivisionByZero(expression.Right.GetLine());
+                throw DivisionByZero;
             }
 
             //Get the expression of the left part of the expression (binary expression)
@@ -248,11 +249,7 @@ public static class BinaryExpressionExecuter
         object left = expression.Left.Execute(scope);
         object right = expression.Right.Execute(scope);
         //Dont compare them by refernce
-        if (left is string && right is string)
-        {
-            return left.Equals(right);
-        }
-        return left == right;
+        return left.Equals(right);
     }
 
     private static object MoreExp(BinaryExpression expression, IExecuteScope scope)
@@ -304,9 +301,9 @@ public static class BinaryExpressionExecuter
         try {
             return (int)Math.Pow((int)expression.Left.Execute(scope), (int)expression.Right.Execute(scope));
         }
-        //TODO: 
         catch(InvalidCastException) {
-            throw new Exception("Index out of range");
+            ExecutionError ExceededInteger = new ExceededInteger(expression.GetLine());
+            throw ExceededInteger;
         }
     }
 
@@ -317,9 +314,8 @@ public static class BinaryExpressionExecuter
             return (int)expression.Left.Execute(scope) / divisor;
         //Throw error of divisionbyZero
         else {
-            Token token = EvaluateBinaryExpression.GetToken(expression).Value;
-            Error DivisionByZero = new DivideByZeroError(token.Line, token.Column);
-            throw new Exception(DivisionByZero.ToString());
+            ExecutionError DivisionByZero = new Ex_DivisionByZero(expression.Right.GetLine());
+            throw DivisionByZero;
         }
     }
 

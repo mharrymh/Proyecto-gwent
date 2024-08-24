@@ -6,9 +6,6 @@ using UnityEngine;
 /// <summary>
 /// It represents the board in the backend
 /// </summary>
-
-
-//TODO: Maybe do it with an static class
 public class Board
 {
     //This is because a design pattern that is known as Singleton, just to make sure 
@@ -36,8 +33,6 @@ public class Board
     ///     Value: Store all cards in that range of that player
     /// </summary>
     
-    //TODO: Change it to an array
-    //So i can delete the bool that count how many cards i put on the section
     public Dictionary<string, Dictionary<string, CardCollection>> sections;
     /// <summary>
     /// Represent with an array of specialCard the climate section
@@ -97,13 +92,5 @@ public class Board
         }
         //Guaranteed that range is not null here
         sections[owner.ID][range].Remove(card);
-    }
-
-    public void ClearField(Player player)
-    {
-        foreach (CardCollection cardCollection in sections[player.ID].Values)
-        {
-            cardCollection.Clear();
-        }
     }
 }

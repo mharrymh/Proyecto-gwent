@@ -27,11 +27,16 @@ public abstract class Expression : Statement {
         IdType type = this.GetType(scope);
         if (type != expected) {
             //Throw error
-            Error differentTypeOfVariable = new DifferentType(type, expected);
-            throw new Exception(differentTypeOfVariable.ToString());
+            CompilationError NotExpectedTypeOfVariable = new NotExpectedTypeOfVariable(GetLine(), type.ToString(), expected.ToString());
+            throw NotExpectedTypeOfVariable;
         }
 
     }
+    /// <summary>
+    /// Returns the line where the expression is for error handling purposes
+    /// </summary>
+    /// <returns></returns>
+    public abstract int GetLine();
     /// <summary>
     /// Validate and check the expression with only one function
     /// </summary>
@@ -92,6 +97,11 @@ public class BinaryExpression : Expression
     {
        return BinaryExpressionExecuter.ExecuteByOp[Op.Definition](this, scope);
     }
+
+    public override int GetLine()
+    {
+        return Op.Line;
+    }
 }
 public class LiteralExpression : Expression
 {
@@ -108,8 +118,15 @@ public class LiteralExpression : Expression
         || Utils.Types.ContainsKey(Value.Value)) {
             return;
         }
-        //TODO: Variable no definida
-        throw new Exception();
+        
+        //Throw error 
+        CompilationError NotDefinedVariable = new NotDefinedVariable(Value);
+        throw NotDefinedVariable;
+    }
+
+    public override int GetLine()
+    {
+        return Value.Line;
     }
 
     public override IdType GetType(IScope? scope)
@@ -123,7 +140,7 @@ public class LiteralExpression : Expression
                 return value;
             }
             if (Utils.Types.ContainsKey(Value.Value)) return Utils.Types[Value.Value];
-            return scope.GetIdType(Value.Value);
+            return scope.GetIdType(Value.Value, Value);
         }
 
         //Boolean, ints and strings only 
@@ -147,7 +164,7 @@ public class LiteralExpression : Expression
         {
             return int.Parse(Value.Value);
         }
-        return (this.Value.Value == "true")? true : false;
+        return Value.Value == "true";
     }
 
     public override object Execute(IExecuteScope scope)
@@ -186,6 +203,11 @@ public class UnaryExpression : Expression
         this.ID = id;
         this.Op = op;
         this.AtTheEnd = atTheEnd;
+    }
+
+    public override int GetLine()
+    {
+        return Op.Line;
     }
 
     public override void Validate(IScope scope)
@@ -236,6 +258,11 @@ public class FindFunction : Expression {
         this.Predicate = predicate;
     }
 
+    public override int GetLine()
+    {
+        return Body.GetLine();
+    }
+
     public override IdType GetType(IScope scope)
     {
         return IdType.CardCollection;
@@ -275,7 +302,10 @@ public class FunctionCall : Expression {
         FunctionName = name;
         Argument = argument;
     }
-
+    public override int GetLine()
+    {
+        return FunctionName.Line;
+    }
     public override IdType GetType(IScope scope)
     {
         //Return the type that the function returns
@@ -285,25 +315,22 @@ public class FunctionCall : Expression {
     public override void Validate(IScope scope)
     {
         IdType leftType = LeftExpression.GetType(scope);
-        if (leftType != IdType.Context && leftType != IdType.CardCollection)
-        {
-            //TODO: LOS UNICOS QUE PUEDEN ACCEDER A FUNCIONES SON CONTEXT Y CARDCOLLECTION
-            throw new Exception();
-        }
         //Check that the left expression match the function name
-        if (!Utils.ValidAccess[leftType].Contains(FunctionName.Value))
+        if (!Utils.ValidAccess.ContainsKey(leftType) || !Utils.ValidAccess[leftType].Contains(FunctionName.Value))
         {
-            //TODO: esta funcion no esta disponible para context o cardCollection
-            throw new Exception();
+            CompilationError NotValidAccessToFunctions = new NotValidAccessToFunctions(leftType.ToString(), FunctionName.Value, GetLine());
+            throw NotValidAccessToFunctions;
         }
         //Check if the functionName match with the arguments
         string body = FunctionName.Value;
-        if (Utils.ValidArguments.TryGetValue(body, out IdType? value) && value == Argument?.GetType(scope))
+        if (!Utils.ValidArguments.TryGetValue(body, out IdType? value) || value != (Argument?.GetType(scope)))
         {
-            return;
+            string Type = Argument.GetType(scope).ToString();
+            string TypeExpected = Utils.ValidArguments[body].ToString();
+
+            CompilationError NotValidArgument = new NotValidArgument(Type, TypeExpected, body, GetLine());
+            throw NotValidArgument;
         }
-        //TODO:
-        throw new Exception();
     }
 
     public override object Execute(IExecuteScope scope)
@@ -311,7 +338,7 @@ public class FunctionCall : Expression {
         object body = LeftExpression.Execute(scope);
         if (body is CardCollection collection)
         {
-            return Executer.CollectionFunctions[FunctionName.Value](Argument, collection, scope);
+            return Executer.CollectionFunctions[FunctionName.Value](Argument, collection, scope, GetLine());
         }
         //It is a context function
         else 
@@ -336,6 +363,11 @@ public class Indexer : Expression {
         return IdType.Card;
     }
 
+    public override int GetLine()
+    {
+        return Body.GetLine();
+    }
+
     public override void Validate(IScope scope)
     {
         Body.CheckType(scope, IdType.CardCollection);
@@ -349,8 +381,8 @@ public class Indexer : Expression {
 
         if (index >= body.Count)
         {
-            //TODO: 
-            throw new IndexOutOfRangeException();
+            ExecutionError IndexOutOfRange = new Ex_IndexOutOfRange(GetLine());
+            throw IndexOutOfRange;
         }
         return body[index];
     }

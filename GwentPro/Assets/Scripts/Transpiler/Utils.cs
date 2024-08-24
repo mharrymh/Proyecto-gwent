@@ -6,20 +6,22 @@ public static class Utils {
     //TODO: Cambiar imagen
     public static Sprite DefaultCardImage = Resources.Load<Sprite>("0");
     //Hash set that save tokentypes that are reserved words but can be used as properties
-    public static HashSet<TokenType> PropertiesReservedWords = new HashSet<TokenType>{TokenType.Faction, TokenType.Name, TokenType.Power, TokenType.Type};
+    public readonly static HashSet<TokenType> PropertiesReservedWords = new HashSet<TokenType>{TokenType.Faction, TokenType.Name, TokenType.Power, TokenType.Type};
     ///<summary>
     ///Relate the types with a hashset of possible properties or functions represented as string 
     ///</summary>
-    public static Dictionary<IdType, HashSet<string>> ValidAccess = new Dictionary<IdType, HashSet<string>>
+    public readonly static Dictionary<IdType, HashSet<string>> ValidAccess = new Dictionary<IdType, HashSet<string>>
     {
-        {IdType.Context, new HashSet<string>{"TriggerPlayer", "BoardCards", "Hand", "HandOfPlayer", "FieldOfPlayer", "GraveyardOfPlayer", "DeckOfPlayer", "Find", "Enemy"}},
-        {IdType.Card, new HashSet<string>{"Owner", "Power", "Faction", "Name", "Type"}},
-        {IdType.CardCollection, new HashSet<string>{"Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add", "Clear", "RemoveAt"}}
+        {IdType.Context, new HashSet<string>{"TriggerPlayer", "BoardCards", "Hand", "HandOfPlayer", "Field", "FieldOfPlayer", "Graveyard","GraveyardOfPlayer","Deck" ,"DeckOfPlayer", "Enemy"}},
+        {IdType.Card, new HashSet<string>{"Power", "Faction", "Name", "Type"}},
+        {IdType.CardCollection, new HashSet<string>{"Find", "Push", "SendBottom", "Pop", "Remove", "Shuffle", "Add", "Clear", "RemoveAt", "Count"}}
     };
+
+
     ///<summary>
     ///Relate the functions with the types of the arguments 
     /// ///</summary>
-    public static Dictionary<string, IdType?> ValidArguments = new Dictionary<string, IdType?>{
+    public readonly static Dictionary<string, IdType?> ValidArguments = new Dictionary<string, IdType?>{
         {"Find", IdType.Predicate},
         {"Push", IdType.Card},
         {"SendBottom", IdType.Card},
@@ -36,9 +38,9 @@ public static class Utils {
         {"DeckOfPlayer", IdType.Player}
     };
     ///<summary>
-    ///Relate the functions with the valid types than can call to it
+    ///Relate the functions with the types that it return
     ///</summary>
-    public static Dictionary<string, IdType> Types = new Dictionary<string, IdType>{
+    public readonly static Dictionary<string, IdType> Types = new Dictionary<string, IdType>{
         //Functions
         {"Find", IdType.CardCollection},
         {"Push", IdType.Null},
@@ -72,28 +74,62 @@ public static class Utils {
         {"Type", IdType.String},
         {"Name", IdType.String}
     };
+    /// <summary>
+    /// Relate the values with the id types that can call to it
+    /// </summary>
+    /// <value></value>
+    public readonly static Dictionary<string, IdType> relateValuesWithTypes = new Dictionary<string, IdType>{
+        //Functions
+        {"Find", IdType.CardCollection},
+        {"Push", IdType.CardCollection},
+        {"SendBottom", IdType.CardCollection},
+        {"Pop", IdType.CardCollection},
+        {"Remove", IdType.CardCollection},
+        {"Shuffle", IdType.CardCollection},
+        {"Add", IdType.CardCollection},
+        {"Clear", IdType.CardCollection},
+        {"RemoveAt", IdType.CardCollection},
 
-    //Get what type can call to another type
-    public static Dictionary<IdType, HashSet<IdType>> RelateTypes = new Dictionary<IdType, HashSet<IdType>>
-    {
-        {IdType.Context, new HashSet<IdType>{IdType.CardCollection, IdType.Player}},
-        {IdType.Card, new HashSet<IdType>{IdType.Number, IdType.Player, IdType.String}},
-        {IdType.CardCollection, new HashSet<IdType>{IdType.Null, IdType.CardCollection, IdType.Card}}
+        {"HandOfPlayer", IdType.Context},
+        {"FieldOfPlayer", IdType.Context},
+        {"GraveyardOfPlayer", IdType.Context},
+        {"DeckOfPlayer", IdType.Context},
+
+        //Properties
+        {"Enemy", IdType.Context},
+        {"TriggerPlayer", IdType.Context},
+        {"BoardCards", IdType.Context},
+        {"Deck", IdType.Context},
+        {"Hand", IdType.Context},
+        {"Field", IdType.Context},
+        {"Graveyard", IdType.Context},
+        {"Count", IdType.Context},
+
+
+        {"Power", IdType.Card},
+        {"Faction", IdType.Card},
+        {"Type", IdType.Card},
+        {"Name", IdType.Card}
     };
-
-
-    internal static Token GetErrorToken(Expression exp)
+    /// <summary>
+    /// Relate funtion names with the types that can call to it
+    /// </summary>
+    /// <value></value>
+    public readonly static Dictionary<string, IdType> relateFunctionsWithTheTypeThatCallToIt = new Dictionary<string, IdType>
     {
-        //Create a pointer to the expression
-        Expression pointer = exp;
-        while (pointer is BinaryExpression binary)
-        {
-            pointer = binary.Left;
-        }
-        if (pointer is UnaryExpression unary) return unary.Op;
-        else if (pointer is LiteralExpression literal) return literal.Value;
-        else if (pointer is Indexer indexer) return GetErrorToken(indexer.Body);
-        else if (pointer is FunctionCall functionCall) return functionCall.FunctionName;
-        else return GetErrorToken(((FindFunction)exp).Body);
-    }
+        {"Find", IdType.CardCollection},
+        {"Push", IdType.CardCollection},
+        {"SendBottom", IdType.CardCollection},
+        {"Pop", IdType.CardCollection},
+        {"Remove", IdType.CardCollection},
+        {"Shuffle", IdType.CardCollection},
+        {"Add", IdType.CardCollection},
+        {"Clear", IdType.CardCollection},
+        {"RemoveAt", IdType.CardCollection},
+
+        {"HandOfPlayer", IdType.Context},
+        {"FieldOfPlayer", IdType.Context},
+        {"GraveyardOfPlayer", IdType.Context},
+        {"DeckOfPlayer", IdType.Context},
+    };
 }

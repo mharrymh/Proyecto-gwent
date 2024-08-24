@@ -40,9 +40,7 @@ public class AssignProm : Effect, IActiveEffect
         int Sum = gm.GetPower(gm.player1) + gm.GetPower(gm.player2);
         //Count the cards on the board calculating the difference of the total number 
         //of cards with the cards that hasn't been played
-        int AmountOfCardsOnBoard = 60 /*Amount of cards*/ - gm.player1.PlayerDeck.Count - gm.player2.PlayerDeck.Count
-            - gm.player1.GraveYard.Count - gm.player2.GraveYard.Count - gm.player1.Hand.Count
-            - gm.player2.Hand.Count - 1 /*Card with the effect*/;
+        int AmountOfCardsOnBoard = gm.GetTotalAmountOfCardsPlayed();
 
         if (AmountOfCardsOnBoard != 0 && Sum != 0)
         {

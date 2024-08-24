@@ -4,28 +4,32 @@ effect {
         Cantidad: Number
     },
     Action: (listas, contexto) => {
-        field = contexto.FieldOfPlayer(contexto.Enemy);
-        fieldPlayer = contexto.Field;
-        for carta in field            fieldPlayer.Push(carta);
+        a = contexto.HandOfPlayer(contexto.Enemy);
+        a.Clear();
+        car = a[0];
+        for carta in listas {
+            carta.Power += Cantidad;
+        };
     }
 }
 
 card {
-    Type: "Leader",
+    Type: "Climate",
     Name: "Beluga",
     Faction: "Light",
     Power: 4,
-    Range: ["Melee", "Ranged"],
+    Range: ["Melee"],
     OnActivation: [
         {
             Effect: {
                 Name: "Prueba_1",
-                Cantidad: 3-1-2,
+                Cantidad: 6,
             },
             Selector: {
-                Source: "hand",
-                Predicate: (unit) => unit.Power > 0
+                Source: "board",
+                Predicate: (unit) => true
             },
         }
     ]
 }
+

@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System;
+using Unity.VisualScripting;
 public static class SemantycBinaryExpression {
     #region Get Type
     public static Dictionary<TokenType, Func<BinaryExpression, IScope, IdType>> GetTypeByOp = new()
@@ -133,34 +134,28 @@ public static class SemantycBinaryExpression {
 
     private static void AccessExpression(BinaryExpression expression, IScope scope)
     {
-        //Get the left part that is a literal expression
-        LiteralExpression left = (LiteralExpression)expression.Left;
+        LiteralExpression right = (LiteralExpression)expression.Right;
+        Expression left = expression.Left;
         IdType leftType = left.GetType(scope);
 
-        Expression pointer = expression.Right;
+        AuxAccessExpression(right, left, leftType, scope);
+    }
 
-        while (pointer is BinaryExpression binaryExpression)
+    private static void AuxAccessExpression(LiteralExpression right, Expression left, IdType leftType, IScope scope)
+    {
+        string value = right.Value.Value;
+        if (!Utils.relateValuesWithTypes.ContainsKey(value) ||  Utils.relateValuesWithTypes[value] != leftType)
         {
-            //Get the left part of the right part
-            LiteralExpression rightLeft = (LiteralExpression)binaryExpression.Left;
-            //Get its type
-            IdType rightLeftType = rightLeft.GetType(scope);
-            if (!Utils.RelateTypes[leftType].Contains(rightLeftType))
-            {
-                //TODO:
-                throw new Exception("El tipo leftType no puedo acceder a una propiedad de tipo rightLeftType");
-            }
-
-            leftType = rightLeftType;
-            pointer = binaryExpression.Right;
+            CompilationError NotValidAccessToProperty = new NotValidAccessToProperty(leftType.ToString(), right.Value.Value, right.GetLine());
+            throw NotValidAccessToProperty;
         }
-        //is a literal expression
-        //Get the type of right part that is a literal expression
-        IdType rightType = pointer.GetType(scope);
-        if (!Utils.RelateTypes.ContainsKey(leftType) || !Utils.RelateTypes[leftType].Contains(rightType))
+        if (left is BinaryExpression binary)
         {
-            //TODO:
-            throw new Exception("El tipo leftType no puedo acceder a una propiedad de tipo rightType");
+            //Check that right value can be called from leftType object
+            right = (LiteralExpression)binary.Right;
+            left = binary.Left;
+            leftType = left.GetType(scope);
+            AuxAccessExpression(right, left, leftType, scope);
         }
     }
 
@@ -197,20 +192,19 @@ public static class SemantycBinaryExpression {
     {
         if (left.GetType(scope) != right.GetType(scope))
         {
-            //TODO:
-            throw new InvalidOperationException("");
+            CompilationError SemantycUnexpectedType = new SemantycUnexpectedType(left.GetType(scope).ToString(), right.GetType(scope).ToString(), left.GetLine());
+            throw SemantycUnexpectedType;
         }
     }
 
     private static void NumericAssignExpression(BinaryExpression expression, IScope scope)
     {
-        //TODO: Expression.left tiene que ser 
         //It has to be a numeric expression
         expression.Left.CheckType(scope, IdType.Number);
         if (expression.Left is LiteralExpression literal && literal.Value.Definition is not TokenType.Id)
         {
-            //TODO: LANZA EXCEPCION DE QUE o es un acceso a propiedad o un id
-            throw new Exception();
+            CompilationError NumericAssignError = new NumericAssignError(expression.Op.Line, literal.GetType().ToString());
+            throw NumericAssignError;
         }
         expression.Right.CheckType(scope, IdType.Number);    
     }
@@ -227,14 +221,16 @@ public static class SemantycBinaryExpression {
         }
         IdType leftType = expression.Left.GetType(scope);
         IdType rightType = expression.Right.GetType(scope);
-        //TODO: SUPONIENDO QUE PARA SER MODIFICABLE UNA PROPIEDAD SOLO PUEDE SER NUMBER
-        //PORQUE NO TIENE SENTIDO QUE UNA ACCION PUEDA MODIFICARTE OTRA COSA, PREGUNTAR
-        //Puede ser una carta
-        if ((leftType is not IdType.Number && leftType is not IdType.Card) || leftType != rightType)
+      
+        if (leftType is not IdType.Number || leftType != rightType)
         {
-            //TODO: Lanza error de que a la izquierda de una asignacion debe
-            //haber un id para ser asignado o un objeto variable valido
-            throw new Exception();
+            if (leftType != rightType) {
+                CompilationError NotSameType = new SemantycUnexpectedType(leftType.ToString(), rightType.ToString(), expression.Op.Line);
+                throw NotSameType;
+            }
+
+            CompilationError InvalidPropertyAssigned = new InvalidPropertyAssigned(leftType.ToString(), expression.Op.Line);
+            throw InvalidPropertyAssigned;
         }
     }
     #endregion

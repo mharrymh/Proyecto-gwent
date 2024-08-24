@@ -182,15 +182,15 @@ public class DragAndDrop : MonoBehaviour
         }
         else if (card is Card.ClimateCard climate_card && DropZone.name == "ClimateZone")
         {
-            if (climate_card.Range == "M" && board.climate_section[0] == null)
+            if (climate_card.Range.Contains("M") && board.climate_section[0] == null)
             {
                 PlayCard(climate_card, "M");
             }
-            else if (climate_card.Range == "R" && board.climate_section[1] == null)
+            else if (climate_card.Range.Contains("R") && board.climate_section[1] == null)
             {
                 PlayCard(climate_card, "R");
             }
-            else if (climate_card.Range == "S" && board.climate_section[2] == null)
+            else if (climate_card.Range.Contains("S") && board.climate_section[2] == null)
             {
                 PlayCard(climate_card, "S");
             }
@@ -202,37 +202,37 @@ public class DragAndDrop : MonoBehaviour
         }
         else if (card is Card.IncrementCard increment_card)
         {
-            if (increment_card.Range == "M" && increment_card.Owner.ID == "player1"
+            if (increment_card.Range.Contains("M") && increment_card.Owner.ID == "player1"
                 && DropZone.name == "IncrementMeleePlayer1"
                 && board.increment_section[card.Owner.ID][0] == null)
             {
                 PlayCard(increment_card, "M");
             }
-            else if (increment_card.Range == "M" && increment_card.Owner.ID == "player2"
+            else if (increment_card.Range.Contains("M") && increment_card.Owner.ID == "player2"
                 && DropZone.name == "IncrementMeleePlayer2"
                 && board.increment_section[card.Owner.ID][0] == null)
             {
                 PlayCard(increment_card, "M");
             }
-            else if (increment_card.Range == "R" && increment_card.Owner.ID == "player1"
+            else if (increment_card.Range.Contains("R") && increment_card.Owner.ID == "player1"
                 && DropZone.name == "IncrementRangePlayer1"
                 && board.increment_section[card.Owner.ID][1] == null)
             {
                 PlayCard(increment_card, "R");
             }
-            else if (increment_card.Range == "R" && increment_card.Owner.ID == "player2"
+            else if (increment_card.Range.Contains("R") && increment_card.Owner.ID == "player2"
                 && DropZone.name == "IncrementRangePlayer2"
                 && board.increment_section[card.Owner.ID][1] == null)
             {
                 PlayCard(increment_card, "R");
             }
-            else if (increment_card.Range == "S" && increment_card.Owner.ID == "player1"
+            else if (increment_card.Range.Contains("S") && increment_card.Owner.ID == "player1"
                 && DropZone.name == "IncrementSiegePlayer1"
                 && board.increment_section[card.Owner.ID][2] == null)
             {
                 PlayCard(increment_card, "S");
             }
-            else if (increment_card.Range == "S" && increment_card.Owner.ID == "player2"
+            else if (increment_card.Range.Contains("S") && increment_card.Owner.ID == "player2"
                 && DropZone.name == "IncrementSiegePlayer2"
                 && board.increment_section[card.Owner.ID][2] == null)
             {
@@ -245,7 +245,6 @@ public class DragAndDrop : MonoBehaviour
             }
         }
         else if (card is Card.CleareanceCard cleareance
-        //TODO: CREAR UN METODO QUE TE VERIFIQUE EN EL DROPZONE ACTUAL O EN EL DEL PARENT
             && (DropZone.name == "ClimateZone" || DropZone.transform.parent.gameObject.name == "ClimateZone"))
         {
             PlayCard(cleareance);

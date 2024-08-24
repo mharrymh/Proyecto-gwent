@@ -94,11 +94,6 @@ public class GameManager : MonoBehaviour
         //Start the round at 1
         Round = 1;
 
-        #region Debug region //Eliminar
-        Runner runner = new Runner();
-        runner.OnClickSaveButton();
-        #endregion
-
         // Instantiate the players
         player1 = new Player(PlayerData.FactionPlayer1, "player1", PlayerData.Player1Name, Graveyard1);
         player2 = new Player(PlayerData.FactionPlayer2, "player2", PlayerData.Player2Name, Graveyard2);
@@ -368,8 +363,7 @@ public class GameManager : MonoBehaviour
         ChangeHandPanel();
 
         //Set Power for both players
-        SetPower(player1);
-        SetPower(player2);
+        SetPower();
 
         StartCoroutine(VisualTurn());
     }
@@ -398,11 +392,16 @@ public class GameManager : MonoBehaviour
 
         panelAux.SetActive(true);
 
-        yield return new WaitForSeconds(4);
+        yield return new WaitForSeconds(6);
 
         panelAux.SetActive(false);
     }
 
+    public int GetTotalAmountOfCardsPlayed()
+    {
+        Context context = new Context();
+        return context.BoardCards.Count;
+    }
 
     public void ChangeHandPanel()
     {
@@ -687,11 +686,7 @@ public class GameManager : MonoBehaviour
         {
             InstantiateIncrementCard(incrementCard, incrementCard.Range, player);
         }
-        else
-        {
-                //TODO:
-            throw new System.Exception("La carta no se puede jugar sin ser arrastrada");
-        }
+        //TODO: decoy card
 
     }
 
@@ -756,7 +751,7 @@ public class GameManager : MonoBehaviour
             if (unityCard.Range.Contains(rangeSection))
             {
                 range = rangeSection;
-                board.sections[player.ID][range].Cards.Add(unityCard);
+                board.sections[player.ID][range].Add(unityCard);
                 break;
             }
         }

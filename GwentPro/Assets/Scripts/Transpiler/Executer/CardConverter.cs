@@ -58,8 +58,8 @@ public static class CardConverter
 
         //TODO: 
         Sprite CardImage = Utils.DefaultCardImage;
-        //Power is 0
 
+        //Power is 0
         return new Card.DecoyCard(name, faction, null, CardImage, card.Effects);
     }
 
