@@ -193,6 +193,11 @@ public class CardCollection : IList<Card>
 
                 if (GameListName == "field")
                 {
+                    if (item is Card.DecoyCard decoy)
+                    {
+                        ExecutionError DecoyNeedToBeDropped = new DecoyNeedToBeDropped(decoy.Name);
+                        throw DecoyNeedToBeDropped;
+                    }
                     //Instantiate the card on the board
                     gm.InstantiateAndPlay(item, Player);
                 }
@@ -237,6 +242,11 @@ public class CardCollection : IList<Card>
 
                 if (GameListName == "field")
                 {
+                    if (item is Card.DecoyCard decoy)
+                    {
+                        ExecutionError DecoyNeedToBeDropped = new DecoyNeedToBeDropped(decoy.Name);
+                        throw DecoyNeedToBeDropped;
+                    }
                     //Instantiate the card on the board
                     gm.InstantiateAndPlay(item, Player);
                 }

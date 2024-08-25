@@ -54,9 +54,7 @@ public static class CardConverter
     {
         string name = card.Name;
         CardFaction faction = card.Faction;
-        
-
-        //TODO: 
+         
         Sprite CardImage = Utils.DefaultCardImage;
 
         //Power is 0
@@ -102,9 +100,6 @@ public static class CardConverter
 
         List<DeclaredEffect> cardEffects = card.Effects;
         
-
-
-        //TODO: 
         Sprite CardImage = Utils.DefaultCardImage;
 
         return new Card.GoldCard(name, faction, effect, range, power, CardImage, cardEffects);

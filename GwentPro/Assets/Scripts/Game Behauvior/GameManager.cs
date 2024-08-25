@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEditor.SceneManagement;
@@ -11,6 +12,7 @@ using UnityEngine.UIElements;
 
 public class GameManager : MonoBehaviour
 {
+    public VisualManager visualManager;
     public GameObject GameBoard;
     public GameObject CardZones;
     public GameObject PassButton;
@@ -20,6 +22,8 @@ public class GameManager : MonoBehaviour
     public GameObject LivesPlayer2;
     public GameObject Graveyard1;
     public GameObject Graveyard2;
+    //The amount of effects applied in one single turn
+    public int EffectsApplied;
 
 
     public GameObject cardPrefab; // The card prefab
@@ -69,7 +73,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
     public Player winner = null;
     //The points in the UI
     public TMP_Text PowerPlayer1;
@@ -77,11 +80,7 @@ public class GameManager : MonoBehaviour
 
 
     public GameObject panelChangeTurn;
-    public GameObject panelAux;
     public TMP_Text TurnOfText;
-    public TMP_Text AuxText;
-
-
     DragAndDrop dragAndDrop;
     readonly Board board = Board.Instance;
     DisplayCard disp;
@@ -91,6 +90,8 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void Start()
     {
+        EffectsApplied = 0;
+        visualManager = GameObject.Find("VisualManager").GetComponent<VisualManager>();
         //Start the round at 1
         Round = 1;
 
@@ -108,8 +109,8 @@ public class GameManager : MonoBehaviour
         StartCoroutine(InstanciarCartas(StartingAmount, currentPlayer));
 
         //This text will be showed in the game when the game starts
-        StartCoroutine(SetAuxText("Antes de jugar cualquier carta, puedes devolver " +
-            "hasta dos cartas no deseadas y cambiarlas simplemente arrastr�ndolas al deck"));
+        visualManager.Add("Before returning any card, you can return two of them to the player deck and change it.");
+        visualManager.DisplayAuxiliarText();
 
         //Show visually whose the turn is 
         StartCoroutine(VisualTurn());
@@ -121,6 +122,11 @@ public class GameManager : MonoBehaviour
         if (Input.GetKey(KeyCode.Escape))
         {
             Application.Quit();
+        }
+
+        if (visualManager.IsDisplaying && !visualManager.PointerInsideAuxPanel && Input.GetMouseButtonDown(0))
+        {
+            visualManager.CloseAuxPanel();
         }
     }
 
@@ -206,7 +212,6 @@ public class GameManager : MonoBehaviour
 
     public void InstantiateInHand(Card card, Player player)
     {
-        //TODO: REPRESENTAR VISUALMENTE LO QUE SE JUGO
         if (player.Hand.Count <= 10)
         {
             InstantiateIn(card, HandPanel, player);
@@ -229,7 +234,6 @@ public class GameManager : MonoBehaviour
         CardBeaten(card);
 
         //Instantiate new card
-
         InstantiateCard(player.PlayerDeck[0], HandPanel);
         //Add new card to the player hand
         player.Hand.Add(player.PlayerDeck[0]);
@@ -320,9 +324,24 @@ public class GameManager : MonoBehaviour
         int random = UnityEngine.Random.Range(0, 2);
         return (random == 0) ? player2 : player1;
     }
+    public void InstantiateCard(Card card, Transform DropZone)
+    {
+        if (card.Owner == null) card.Owner = currentPlayer;
 
+
+        GameObject CardInstance = Instantiate(cardPrefab, DropZone);
+        disp = CardInstance.GetComponent<DisplayCard>();
+        //Reset the cardPrefab property to the new instance
+        card.CardPrefab = CardInstance;
+        CardInstance.tag = card.Owner.ID;
+        disp.card = card;
+        disp.ShowCard();
+        
+    }
+    #region Change Turn Management
     public void ChangeTurn()
     {
+        EffectsApplied = 0;
         //Don't change cards if the giving cards coroutine is running 
         if (GivingCards) return;
 
@@ -366,6 +385,8 @@ public class GameManager : MonoBehaviour
         SetPower();
 
         StartCoroutine(VisualTurn());
+        //The visual of the effects applied etc
+        visualManager.DisplayAuxiliarText();
     }
 
     IEnumerator VisualTurn()
@@ -377,24 +398,13 @@ public class GameManager : MonoBehaviour
         }
 
 
-        TurnOfText.text = "Turno de " + currentPlayer.PlayerName;
+        TurnOfText.text = "Turn of " + currentPlayer.PlayerName;
         panelChangeTurn.SetActive(true);
 
         //Wait 2 second
         yield return new WaitForSeconds(2);
 
         panelChangeTurn.SetActive(false);
-    }
-
-    public IEnumerator SetAuxText(string text)
-    {
-        AuxText.text = text;
-
-        panelAux.SetActive(true);
-
-        yield return new WaitForSeconds(6);
-
-        panelAux.SetActive(false);
     }
 
     public int GetTotalAmountOfCardsPlayed()
@@ -434,20 +444,6 @@ public class GameManager : MonoBehaviour
         {
             InstantiateCard(card, HandPanel);
         }
-    }
-    public void InstantiateCard(Card card, Transform DropZone)
-    {
-        if (card.Owner == null) card.Owner = currentPlayer;
-
-
-        GameObject CardInstance = Instantiate(cardPrefab, DropZone);
-        disp = CardInstance.GetComponent<DisplayCard>();
-        //Reset the cardPrefab property to the new instance
-        card.CardPrefab = CardInstance;
-        CardInstance.tag = card.Owner.ID;
-        disp.card = card;
-        disp.ShowCard();
-        
     }
 
     public void RotateObjects()
@@ -516,8 +512,8 @@ public class GameManager : MonoBehaviour
 
     IEnumerator VisualSayWinner()
     {
-        if (winner != null) TurnOfText.text = "Gan� " + winner.PlayerName;
-        else TurnOfText.text = "Empate";
+        if (winner != null) TurnOfText.text = $"\"{winner.PlayerName} wins the round.\"";
+        else TurnOfText.text = "Tie";
 
         panelChangeTurn.SetActive(true);
 
@@ -667,7 +663,9 @@ public class GameManager : MonoBehaviour
 
         else return null;
     }
+    #endregion
 
+    #region InstantiateAndPlay
     public void InstantiateAndPlay(Card item, Player player)
     {
         if (item is Card.UnityCard unityCard)
@@ -686,8 +684,7 @@ public class GameManager : MonoBehaviour
         {
             InstantiateIncrementCard(incrementCard, incrementCard.Range, player);
         }
-        //TODO: decoy card
-
+       //Decoy cards cant be instantiated, error thrown before in execution
     }
 
     private void InstantiateClearanceCard(Card.CleareanceCard cleareanceCard, Player player)
@@ -808,8 +805,12 @@ public class GameManager : MonoBehaviour
         //Display card
         disp.ShowCard();
     }
+
+    #endregion
+
+    #region Apply Leader Effect
     /// <summary>
-    /// This is called by pressing the button under the leader cardof player 1 (if the leader card is a customized one)
+    /// This is called by pressing the button under the leader card of player (if the leader card is a customized one)
     /// </summary>
     public void ApplyLeaderEffect()
     {
@@ -821,4 +822,6 @@ public class GameManager : MonoBehaviour
         //The leader has been played 
         leader.Played = true;
     }
+
+    #endregion
 }

@@ -31,10 +31,12 @@ public class Player
             }
             foreach (Card.ClimateCard climate_card in board.climate_section)
             {
+                if (climate_card != null)
                 field.Add(climate_card);
             }
             foreach (Card.IncrementCard increment_card in board.increment_section[this.ID])
             {
+                if (increment_card != null)
                 field.Add(increment_card);
             }
             field.Shuffle();
@@ -86,7 +88,6 @@ public class Player
         {
             if (card is Card.LeaderCard leader)
             {
-                //TODO: Decirlo visualmente
                 OverwriteLeader(leader.Duplicate());
             }
             else PlayerDeck.Add(card.Duplicate());

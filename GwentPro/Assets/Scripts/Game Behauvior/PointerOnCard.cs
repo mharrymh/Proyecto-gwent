@@ -21,8 +21,8 @@ public class PointerOnCard : MonoBehaviour
         if (!Drag.isDragging)
         {
             GreaterInstance = Instantiate(cardPrefab, ShowPanel.transform);
-            Collider2D jeanmanuel = GreaterInstance.GetComponent<Collider2D>();
-            jeanmanuel.enabled = false;
+            Collider2D collider2D = GreaterInstance.GetComponent<Collider2D>();
+            collider2D.enabled = false;
             GreaterInstance.transform.localScale = new Vector2(2.5f, 2.5f);
             disp = GreaterInstance.GetComponent<DisplayCard>();
             disp.ShowCard();

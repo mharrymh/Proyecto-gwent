@@ -22,24 +22,22 @@ public class Card : ScriptableObject
     /// Relate each effect type with a strings that represents the description of the card
     /// </summary>
     /// <value></value>
-    //TODO: Cambiar los strings para que sean en ingles
-    //TODO: Hacerlo con el effect.ToString();
     public readonly Dictionary<string, string> effectDescriptions = new Dictionary<string, string>
     {
-        { "DeleteMostPowerCard", "Elimina la carta plata con m�s poder en el campo" },
-        { "IncrementFile", "Carta incremento (afecta solo a las cartas plata)" },
-        { "DeleteLessPowerCard", "Elimina la carta plata con menos poder en el campo rival" },
-        { "TakeCardFromDeck", "Roba una carta del deck" },
-        { "TakeCardFromGraveYard", "Roba la carta m�s poderosa del cementerio" },
-        { "AssignProm", "Asigna a todas las cartas plata del campo el promedio de poder general" },
-        { "TimesTwins", "Multiplica su da�o por la cantidad de cartas iguales a ella en el campo" },
-        { "CleanFile", "Elimina todas las cartas de la fila con menos cartas del campo" },
-        { "Climate", "Carta clima (afecta solo a las cartas plata)" },
-        { "Clearance", "Carta despeje" },
-        { "Decoy", "(Se�uelo) Se coloca sobre una carta unidad propia para regresarla a la mano" },
-        { "AddClimateCard", "A�ade (si hay espacio, y existe) una carta clima propia al campo" },
-        { "DrawExtraCard", "Este lider te permite robar una carta extra en el resto de rondad" },
-        { "KeepRandomCard", "Este lider te permite mantener una carta del campo entre rondas" },
+        { "DeleteMostPowerCard", "Delete the silver card with most power in the board" },
+        { "IncrementFile", "Affects only silver cards of this file, increase its power by one" },
+        { "DeleteLessPowerCard", "Delete the less powerful silver card of enemy field" },
+        { "TakeCardFromDeck", "Draw a card from deck" },
+        { "TakeCardFromGraveYard", "Draw most powerful card from graveyard" },
+        { "AssignProm", "Assign to all cards on board the promedy of power on board" },
+        { "TimesTwins", "Multiply its damage by all the cards with its same name on board" },
+        { "CleanFile", "Clear all cards from the file with less cards on" },
+        { "Climate", "Affects only silver cards of this range" },
+        { "Clearance", "Clear all climate cards from board" },
+        { "Decoy", "Drop it in a unity card to return it to the hand" },
+        { "AddClimateCard", "Add a climate card" },
+        { "DrawExtraCard", "This leader allows you to draw an extra card between rounds" },
+        { "KeepRandomCard", "This leader allows you to keep a unity card between rounds" },
     };
 
     public Sprite CardImage {get; }
@@ -201,7 +199,6 @@ public class Card : ScriptableObject
         public DecoyCard(string name, CardFaction cardFaction, Effect effectType, Sprite CardImage, List<DeclaredEffect>? userCardEffects = null) 
         : base(name, cardFaction, effectType, CardImage, userCardEffects)
         {
-            this.Description = "Carta señuelo, colocala sobre una de tus cartas para que esta vuelva a tu mano";
             this.Type = "Decoy";
             //This is the user card created in the dsl
             Description ??= "Your decoy card";

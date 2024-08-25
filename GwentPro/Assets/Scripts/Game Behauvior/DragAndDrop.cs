@@ -15,8 +15,6 @@ public class DragAndDrop : MonoBehaviour
     /// Returns true if the object is moving
     /// </summary>
     public bool isDragging = false;
-    //FIXME: Eliminar comentario?
-    // public bool isOverDropZone = false;
 
     //It saves the panel where the card is dropped
     public GameObject DropZone;
@@ -24,7 +22,6 @@ public class DragAndDrop : MonoBehaviour
     public Vector2 startPosition;
     //Gets the card
     public Card MovingCard;
-    //TODO: ELIMINAR ESTO HACIENDOLO CON ARRAYS EN EL BOARD.CS
     //Max amount of cards allowed per range section
     public int max_sections = 6;
 
@@ -38,6 +35,7 @@ public class DragAndDrop : MonoBehaviour
 
     //Gets references
     readonly Board board = Board.Instance;
+    VisualManager visualManager;
     GameManager gm;
     SoundManager soundM;
 
@@ -55,6 +53,7 @@ public class DragAndDrop : MonoBehaviour
         //Get the GameManager and the sound manager script
         gm = GameObject.Find("GameManager").GetComponent<GameManager>();
         soundM = GameObject.Find("AudioSourceEffects").GetComponent<SoundManager>();
+        visualManager = GameObject.Find("VisualManager").GetComponent<VisualManager>();
     }
 
     /// <summary>
@@ -107,18 +106,9 @@ public class DragAndDrop : MonoBehaviour
             // Shoot the event when drag starts
             OnDragStart?.Invoke();
         }
-
-
-        //TODO: Por que necesito guardar la posicion inicial para la carta lider?
-        //Save the start position to the leader card
-        else if (MovingCard is Card.LeaderCard leader)
-        {
-            startPosition = gameObject.transform.position;
-        }
     }
     public void EndDrag()
     {
-        //FIXME: ELIMINAR COMENTARIOS?
         if (!MovingCard.IsPlayed)
         {
             isDragging = false;
@@ -128,8 +118,6 @@ public class DragAndDrop : MonoBehaviour
         }
     }
 
-
-    //FIXME: Create validate method
     void DropCard(Card card)
     {   
         if (DropZone.name.Contains("Deck") && gm.Round == 1)
@@ -262,6 +250,7 @@ public class DragAndDrop : MonoBehaviour
     }
     private void PlayCard(Card card,  string range = "")
     {
+        CheckAndIncreaseEffectsApplied();
         //Play a sound when a card is dropped
         soundM.PlayCardSound();
 
@@ -283,15 +272,13 @@ public class DragAndDrop : MonoBehaviour
         //Apply effect
         ApplyEffect(card);
         
-
         //Add card in backend
         ApplyChangesToCard(card, range);
         
-
         //Update the power
         gm.SetPower();
         //Change turn
-        gm.ChangeTurn();      
+        gm.ChangeTurn();
     }
 
     private void ApplyChangesToCard(Card card, string range, bool alreadyAdded = false)
@@ -324,18 +311,17 @@ public class DragAndDrop : MonoBehaviour
         else if (card is Card.ClimateCard climate_card)
         {
             string key = range;
-            int value;
-            if (relateClimateSection.TryGetValue(key, out value))
+            if (relateClimateSection.TryGetValue(key, out int value))
             {
                 if (!alreadyAdded) //Add it in backend
-                board.climate_section[value] = climate_card;
+                    board.climate_section[value] = climate_card;
             }
 
             if (range == "M") range = "Melee";
             else if (range == "R") range = "Ranged";
             else range = "Siege";
 
-            gm.StartCoroutine(gm.SetAuxText("Se aplic� un clima en la zona " + range));
+            visualManager.Add($"A climate card was added in the {range} zone");
         }
         else if (card is Card.IncrementCard increment_card)
         {
@@ -349,8 +335,7 @@ public class DragAndDrop : MonoBehaviour
             if (range == "M") range = "Melee";
             else if (range == "R") range = "Ranged";
             else range = "Siege";
-
-            gm.StartCoroutine(gm.SetAuxText("Se aplic� un incremento en la zona " + range + " de " + gm.currentPlayer.PlayerName));
+            visualManager.Add($"An increment card was added in the {range} zone of player \"{gm.currentPlayer.PlayerName}\"");
         }
         else if (card is Card.CleareanceCard cleareance )
         {
@@ -411,12 +396,14 @@ public class DragAndDrop : MonoBehaviour
             foreach (DeclaredEffect eff in card.UserCardEffects)
             {
                 eff.Execute();
+                visualManager.Add($"The effect {eff.Name} of your card: {card.Name} was applied successfully");
             }
         }
     }
 
     public void PlayCardFromEffect(Card card, string range, Transform dropZone = null)
     {
+        CheckAndIncreaseEffectsApplied();
         //Set that owner already played
         card.Owner.HasPlayed = true;
 
@@ -436,10 +423,21 @@ public class DragAndDrop : MonoBehaviour
         gm.SetPower();
     }
 
+    private void CheckAndIncreaseEffectsApplied()
+    {
+        if (++gm.EffectsApplied >= 3)
+        {
+            ExecutionError OverEffectsApplied = new OverEffectsApplied();
+            throw OverEffectsApplied;
+        }
+    }
+
     public void ApplyLeaderEffect(Card.LeaderCard card)
     {
         //Set that owner already played
         card.Owner.HasPlayed = true;
+
+        visualManager.Add("A leader effect was applied.");
 
         //Apply effect
         ApplyEffect(card);

@@ -4,9 +4,6 @@ effect {
         Cantidad: Number
     },
     Action: (listas, contexto) => {
-        a = contexto.HandOfPlayer(contexto.Enemy);
-        a.Clear();
-        car = a[0];
         for carta in listas {
             carta.Power += Cantidad;
         };
@@ -14,7 +11,7 @@ effect {
 }
 
 card {
-    Type: "Climate",
+    Type: "Decoy",
     Name: "Beluga",
     Faction: "Light",
     Power: 4,

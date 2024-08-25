@@ -160,18 +160,23 @@ public class InstructionBlock : DSL_Object
             statement.Validate(scope);
         }
     }
-
-    public void Execute(IExecuteScope scope)
+    //Derived means if it is called from the action block or from a loop inside it 
+    public void Execute(IExecuteScope scope, bool derived = false)
     {
         try {
-            foreach (Statement statement in Statements)
-            {
+            foreach (Statement statement in Statements) {
                 statement.Execute(scope);            
             }
         }
         catch (ExecutionError ex) {
-            GameManager gm = GameObject.Find("GameManager").GetComponent<GameManager>();
-            gm.SetAuxText(ex.Message);
+            if (derived) {
+                throw ex;
+            }
+            else {
+                VisualManager visualManager = GameObject.Find("VisualManager").GetComponent<VisualManager>();
+                visualManager.Add(ex.Message);
+                return;
+            }
         }
     }
 
@@ -234,7 +239,7 @@ public class ForLoop : Statement
         for (int i = 0; i < cardCollection.Count; i++)
         {
             scope.Define(Iterator.Value, cardCollection[i]);
-            Instructions.Execute(scope);
+            Instructions.Execute(scope, true);
             if (count++ >= 500)
             {
                 ExecutionError OverflowError = new OverflowError(Line);
@@ -274,7 +279,7 @@ public class WhileLoop : Statement
         int count = 0;
         while((bool)BoolExpression.Execute(scope))
         {
-            Instructions.Execute(scope);
+            Instructions.Execute(scope, true);
             if (count++ >= 500)
             {
                 ExecutionError OverflowError = new OverflowError(Line);

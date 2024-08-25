@@ -20,7 +20,7 @@ public static class Executer
         {"Clear", Clear}
     };
 
-    private static object RemoveAt(Expression expression, CardCollection collection, IExecuteScope scope, int line)
+    private static object RemoveAt(Expression? expression, CardCollection collection, IExecuteScope scope, int line)
     {
         int index = (int)expression.Execute(scope);
         if (index >= collection.Count || index < 0)
@@ -40,7 +40,8 @@ public static class Executer
 
     private static object Add(Expression? expression, CardCollection collection, IExecuteScope scope, int line)
     {
-        collection.Add((Card)expression.Execute(scope), true);
+        Card card = (Card)expression.Execute(scope);
+        collection.Add(card, true);
         //It return null cause add is a void function
         return null;
     }

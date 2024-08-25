@@ -21,6 +21,32 @@ public class OverflowError : ExecutionError
         Line = line;
     }
 }
+public class OverEffectsApplied : ExecutionError
+{
+    public override string Message {
+        get {
+            return $"The execution was stopped because you cant apply more than 3 effects in one turn.";
+        }
+    }
+    public OverEffectsApplied()
+    {
+    }
+}
+
+public class DecoyNeedToBeDropped : ExecutionError
+{
+    string DecoyName {get;}
+    public override string Message {
+        get {
+            return $"A decoy card with the name: \"{DecoyName}\" was tried to be instantiated and decoy cards must be dropped to be played. The execution was stopped.";
+        }
+    }
+
+    public DecoyNeedToBeDropped(string name)
+    {
+        DecoyName = name;
+    }
+}
 public class Ex_DivisionByZero : ExecutionError
 {
     int Line {get;}

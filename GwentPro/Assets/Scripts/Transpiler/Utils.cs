@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Transactions;
 using UnityEngine;
 public static class Utils {
-    //TODO: Cambiar imagen
-    public static Sprite DefaultCardImage = Resources.Load<Sprite>("0");
+    
+    public static Sprite DefaultCardImage = Resources.Load<Sprite>("UserCard");
     //Hash set that save tokentypes that are reserved words but can be used as properties
     public readonly static HashSet<TokenType> PropertiesReservedWords = new HashSet<TokenType>{TokenType.Faction, TokenType.Name, TokenType.Power, TokenType.Type};
     ///<summary>

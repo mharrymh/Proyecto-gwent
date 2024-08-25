@@ -20,6 +20,8 @@ public abstract class Effect {
 
     // Get the board
     public Board board = Board.Instance;
+
+    public VisualManager visualManager = GameObject.Find("VisualManager").GetComponent<VisualManager>();
 };
 
 /// <summary>
@@ -58,10 +60,10 @@ public class AssignProm : Effect, IActiveEffect
                     }
                 }
             }
-            gm.StartCoroutine(gm.SetAuxText("Se le asign� " + Sum / AmountOfCardsOnBoard + " a todas las cartas platas del campo"));
+            visualManager.Add($"The number: {Sum / AmountOfCardsOnBoard} was applied to the power to all silver cards on board.");
         }
-        else gm.StartCoroutine(gm.SetAuxText("No hay cartas en el campo para calcular el promedio "));
-
+        else 
+            visualManager.Add($"There are no cards in board to calculate the promedy.");
 
         //Apply climate and increment effects again
         var IncrementSection = board.increment_section;
@@ -150,8 +152,7 @@ public class CleanFile : Effect, IActiveEffect
                 }
             }
         }
-
-        gm.StartCoroutine(gm.SetAuxText("Se elimin� la fila con menos cartas"));
+        visualManager.Add($"The file with less cards was deleted.");
     }
 }
 /// <summary>
@@ -176,7 +177,7 @@ public class Clearance : Effect, IActiveEffect
                 board.climate_section[i] = null;
             }
         }
-        gm.StartCoroutine(gm.SetAuxText("Se eliminaron todas las cartas clima del campo"));
+        visualManager.Add($"All climate cards was deleted from the board.");
     }
     void CleareanceAux(Card card)
     {
@@ -293,9 +294,9 @@ public class DeleteLessPowerCard : Effect, IActiveEffect
             //Destroy card from frontend board
             gm.CardBeaten(LessPowerfulCard);
 
-            gm.StartCoroutine(gm.SetAuxText("Se elimin�  a " + LessPowerfulCard.Name + " de " + LessPowerfulCard.Owner.PlayerName));
+            visualManager.Add($"The card with the name \"{LessPowerfulCard.Name}\" was deleted from the player: \"{LessPowerfulCard.Owner.PlayerName}\"");
         }
-        else gm.StartCoroutine(gm.SetAuxText("No se eliminaron cartas"));
+        else visualManager.Add($"No cards were deleted because when the effect of: \"{card.Name}\" was applied there weren't silver cards on board.");
     }
 }
 /// <summary>
@@ -342,9 +343,9 @@ public class DeleteMostPowerCard : Effect, IActiveEffect
             gm.CardBeaten(MostPowerfulCard);
 
 
-            gm.StartCoroutine(gm.SetAuxText("Se elimin�  a " + MostPowerfulCard.Name + " de " + MostPowerfulCard.Owner.PlayerName));
+            visualManager.Add($"The card with the name \"{MostPowerfulCard.Name}\" was deleted from the player: \"{MostPowerfulCard.Owner.PlayerName}\"");
         }
-        else gm.StartCoroutine(gm.SetAuxText("No hay cartas plata en el tablero"));
+        else visualManager.Add($"No cards were deleted because when the effect of: \"{card.Name}\" was applied there weren't silver cards on board.");
 
     }
     //Decoy cards
@@ -373,7 +374,7 @@ public class DeleteMostPowerCard : Effect, IActiveEffect
             Taken.Owner.Hand.Add(Taken);
 
             if (Taken is Card.UnityCard unity) unity.Power = unity.OriginalPower; 
-            gm.StartCoroutine(gm.SetAuxText("La carta " + Taken.Name + " regres� a la mano de " + gm.currentPlayer.PlayerName));
+            visualManager.Add($"The card: \"{Taken.Name}\" came back to the hand of: \"{gm.currentPlayer.PlayerName}\"");
         }
     }
 }
@@ -409,10 +410,10 @@ public class TakeCardFromDeck : Effect, IActiveEffect
             //Instantiate the card on HandPanel
             gm.InstantiateCard(DeckCard, gm.HandPanel);
 
-            gm.StartCoroutine(gm.SetAuxText("Se rob� " + DeckCard.Name + " desde el deck de " + gm.currentPlayer.PlayerName));
+            visualManager.Add($"The player \"{gm.currentPlayer.PlayerName}\" draw the card with name: \"{DeckCard.Name}\"");
         }
-        else if (card.Owner.Hand.Count >= 10) gm.StartCoroutine(gm.SetAuxText("La mano est� llena, no se robaron cartas"));
-        else gm.StartCoroutine(gm.SetAuxText("El deck esta vacio, no se robaron cartas"));
+        else if (card.Owner.Hand.Count >= 10) visualManager.Add("The hand is full so no cards were drawn");
+        else visualManager.Add("The deck is empty so no cards were drawn");
     }
 }
 /// <summary>
@@ -452,10 +453,9 @@ public class TakeCardFromGraveYard : Effect, IActiveEffect
 
 
             //Visual
-            gm.StartCoroutine(gm.SetAuxText("Se a�adi� " + MostPowerfulCard.Name + " a la mano de " + gm.currentPlayer.PlayerName
-           + " desde el cementerio"));
+            visualManager.Add($"The card: \"{MostPowerfulCard.Name}\" was added to the hand of: \"{gm.currentPlayer.PlayerName}\" from the graveyard.");
         }
-        else gm.StartCoroutine(gm.SetAuxText("El cementerio est� vac�o, no se robo ninguna carta"));
+        else visualManager.Add("The graveyard is empty so no cards were drawn");
     }
 }
 /// <summary>
@@ -486,8 +486,7 @@ public class TimesTwins : Effect, IActiveEffect
         }
 
         //Visual 
-        gm.StartCoroutine(gm.SetAuxText("Existen " + brothers + " copias de esta carta en el campo" +
-            ". Su poder se multiplic� por " + brothers));
+        visualManager.Add($"There are {brothers} copies of this card on board so its power was multiplied by: {brothers}");
     }
 }
 /// <summary>
@@ -534,6 +533,9 @@ public class AddClimateCard : Effect, IActiveEffect
                     }
                 }
             }
+
+            if (aux == null)
+                visualManager.Add("No climate cards were added.");
         }
 
         void AddClimateAux(int pos, Card.SpecialCard climate, bool IsInHand)
@@ -548,11 +550,11 @@ public class AddClimateCard : Effect, IActiveEffect
                 effect.Invoke(climate); 
 
                 climate.IsPlayed = true;
-                gm.StartCoroutine(gm.SetAuxText("Se a�adi� la carta clima " + climate.Name + " desde la mano de " + gm.currentPlayer.PlayerName));
+                visualManager.Add($"The climate card: \"{climate.Name}\" was added from the hand of: {gm.currentPlayer.PlayerName}");
             }
             else
             {
-                gm.StartCoroutine(gm.SetAuxText("Se a�adi� la carta clima " + climate.Name + " desde el deck de " + gm.currentPlayer.PlayerName));
+                visualManager.Add($"The climate card: \"{climate.Name}\" was added from the deck of: {gm.currentPlayer.PlayerName}");
                 board.climate_section[pos] = climate;
                 gm.InstantiateCard(climate, ClimateZone.transform);
                 climate.Owner.PlayerDeck.Remove(climate);
@@ -596,7 +598,7 @@ public class Decoy : Effect
             Taken.Owner.Hand.Add(Taken);
 
             if (Taken is Card.UnityCard unity) unity.Power = unity.OriginalPower; 
-            gm.StartCoroutine(gm.SetAuxText("La carta " + Taken.Name + " regres� a la mano de " + gm.currentPlayer.PlayerName));
+            visualManager.Add($"The card: {Taken.Name} came back to the hand of: {gm.currentPlayer.PlayerName}");
         }
     }
 }
