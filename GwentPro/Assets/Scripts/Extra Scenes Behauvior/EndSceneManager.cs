@@ -15,11 +15,11 @@ public class EndSceneManager : MonoBehaviour
 
         if (PlayerData.Winner != null)
         {
-            WinnerText.text = "Felicidades!!! Gan� " + PlayerData.Winner;
+            WinnerText.text = $"Congratulations!!! \"{PlayerData.Winner}\" wins the game";
         }
         else
         {
-            WinnerText.text = "Uhhh! Empataron, jueguen de nuevo";
+            WinnerText.text = "Uhhh! It's a tie, play again";
         }
     }
 

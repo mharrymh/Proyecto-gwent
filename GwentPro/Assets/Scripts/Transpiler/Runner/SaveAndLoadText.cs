@@ -6,12 +6,29 @@ using UnityEngine;
 public class SaveAndLoadText : MonoBehaviour
 {
     public TMPro.TMP_InputField inputField;
+    public TMPro.TMP_InputField numberField;
+    public SoundManager soundM;
+
+    public void Start()
+    {
+        soundM = GameObject.Find("AudioSourceEffects").GetComponent<SoundManager>();
+    }
+
+    public void GetValue()
+    {
+        string value = numberField.text;
+        if (int.TryParse(value, out int result) && result >= 0 && result < 30)
+        {
+            Utils.AmountOfCardsOfDeck = result;
+        }
+    }
 
     /// <summary>
     /// This is called when the save button is clicked 
     /// </summary>
     public void SaveTextOnFile()
     {
+        soundM.PlayButtonSound();
         string text = inputField.text;
 
         string relativePath = "Utils/transpiler.txt";

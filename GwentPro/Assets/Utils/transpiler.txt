@@ -1,32 +1,24 @@
 effect {
-    Name: "Prueba_1",
-    Params: {
-        Cantidad: Number
-    },
+    Name: "aaa",
     Action: (listas, contexto) => {
-        for carta in listas {
-            carta.Power += Cantidad;
-        };
+        cartas = contexto.Hand;
+        for carta in cartas{
+            contexto.Field.Add(carta);
+        }
     }
 }
 
 card {
-    Type: "Decoy",
+    Type: "Silver",
     Name: "Beluga",
-    Faction: "Light",
+    Faction: "Dark",
     Power: 4,
-    Range: ["Melee"],
-    OnActivation: [
+    Range: ["Melee", "Ranged"],
+    OnActivation: 
+    [
         {
-            Effect: {
-                Name: "Prueba_1",
-                Cantidad: 6,
-            },
-            Selector: {
-                Source: "board",
-                Predicate: (unit) => true
-            },
-        }
+            Effect: "aaa"
+      }
+        
     ]
 }
-

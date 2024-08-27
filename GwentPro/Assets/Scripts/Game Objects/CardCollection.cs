@@ -215,9 +215,9 @@ public class CardCollection : IList<Card>
     {
         Add(item, false);
     }
+    
     public void Add(Card item, bool transpilerCall)
     {   
-        
         if (transpilerCall)
         {
             item = item.Duplicate();
@@ -225,7 +225,7 @@ public class CardCollection : IList<Card>
             if (Player == null)
             {
                 Player = item.Owner;
-                GameListName = "Field";
+                GameListName = "field";
                 Add(item, true);
                 return;
             }

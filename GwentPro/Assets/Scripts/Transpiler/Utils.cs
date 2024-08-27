@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Transactions;
 using UnityEngine;
 public static class Utils {
+
+    public static int AmountOfCardsOfDeck = 30;
     
     public static Sprite DefaultCardImage = Resources.Load<Sprite>("UserCard");
     //Hash set that save tokentypes that are reserved words but can be used as properties

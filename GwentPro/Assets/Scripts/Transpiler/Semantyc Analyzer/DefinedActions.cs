@@ -23,12 +23,12 @@ public static class DefinedActions
             }
         }
 
-        if (!Actions.ContainsKey(Name)) {
-            CompilationError effectNotDefined = new EffectNotDefined(Name, line);
-            throw effectNotDefined;
-        }
+        // if (!Actions.ContainsKey(Name)) {
+        //     CompilationError effectNotDefined = new EffectNotDefined(Name, line);
+        //     throw effectNotDefined;
+        // }
  
-
+        if (Actions.ContainsKey(Name))
         foreach (Token idName in allocations.Keys) {
             //Check that all defined variables were declared and with the same type
             if (Actions[Name].ContainsKey(idName.Value)) {
@@ -41,9 +41,10 @@ public static class DefinedActions
                     continue;
                 }
             }
-            //else
-            CompilationError invalidParameter = new InvalidParameter(idName);
-            throw invalidParameter;
+            else {
+                CompilationError invalidParameter = new InvalidParameter(idName);
+                throw invalidParameter;
+            }
         }
     }
 }

@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
     public GameObject Graveyard1;
     public GameObject Graveyard2;
     //The amount of effects applied in one single turn
-    public int EffectsApplied;
+    public int CardsInstantiated;
 
 
     public GameObject cardPrefab; // The card prefab
@@ -90,7 +90,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     void Start()
     {
-        EffectsApplied = 0;
+        CardsInstantiated = 0;
         visualManager = GameObject.Find("VisualManager").GetComponent<VisualManager>();
         //Start the round at 1
         Round = 1;
@@ -281,6 +281,13 @@ public class GameManager : MonoBehaviour
                     {
                         sum += unity.Power;
 
+
+                        //Update card power
+                        if (unity.CardPrefab != null)
+                        {
+                            var displayCard = unity.CardPrefab.GetComponent<DisplayCard>();
+                            displayCard.PowerText.text = unity.Power.ToString();
+                        }
                         //If the card power is 0
                         //Destroy it
                         if (unity.Power <= 0)
@@ -341,7 +348,7 @@ public class GameManager : MonoBehaviour
     #region Change Turn Management
     public void ChangeTurn()
     {
-        EffectsApplied = 0;
+        CardsInstantiated = 0;
         //Don't change cards if the giving cards coroutine is running 
         if (GivingCards) return;
 
@@ -506,13 +513,11 @@ public class GameManager : MonoBehaviour
             SetVisualWinner(winner);
             Round++;
         }
-
-       
     }
 
     IEnumerator VisualSayWinner()
     {
-        if (winner != null) TurnOfText.text = $"\"{winner.PlayerName} wins the round.\"";
+        if (winner != null) TurnOfText.text = $"\"{winner.PlayerName}\" wins the round.";
         else TurnOfText.text = "Tie";
 
         panelChangeTurn.SetActive(true);
@@ -554,13 +559,19 @@ public class GameManager : MonoBehaviour
     {
         //Effect of the leader
         //Keep a random card on the board between rounds
-        Player KeepRandomPlayer = GetPlayerWithLeader("KeepRandomCard");
-        Card.UnityCard Keeper = null;
+        List<Player> KeepRandomPlayer = GetPlayerWithLeader("KeepRandomCard");
+        List<Card.UnityCard> Keepers = new List<Card.UnityCard>();
 
-        if (KeepRandomPlayer != null)
+        if (KeepRandomPlayer.Count > 0)
         {
-            Keeper = GetRandomUnityCardOnBoard(KeepRandomPlayer);
-            if (Keeper != null && Keeper) Keeper.Power = Keeper.OriginalPower;
+            foreach (Player player in KeepRandomPlayer)
+            {
+                Keepers.Add(GetRandomUnityCardOnBoard(player)); 
+            }
+            foreach (Card.UnityCard unityCard in Keepers)
+            {
+                unityCard.Power = unityCard.OriginalPower;
+            }
         }
 
 
@@ -574,7 +585,7 @@ public class GameManager : MonoBehaviour
             {
                 for (int i = Cards.Count - 1; i >= 0; i--)
                 {
-                    if (Keeper != Cards[i])
+                    if (Cards[i] is not Card.UnityCard unity || !Keepers.Contains(unity))
                     {
                         //Erase card from board and add it to the player graveyard
                         Cards[i].Owner.GraveYard.Add(Cards[i]);
@@ -656,18 +667,27 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-    Player GetPlayerWithLeader(string keepRandomCard)
+    List<Player> GetPlayerWithLeader(string keepRandomCard)
     {
-        if (player1.Leader.EffectType.ToString() == keepRandomCard) return player1;
-        else if (player2.Leader.EffectType.ToString() == keepRandomCard) return player2;
-
-        else return null;
+        List<Player> players = new List<Player>();
+        if (player1.Leader.EffectType.ToString() == keepRandomCard) players.Add(player1);
+        if (player2.Leader.EffectType.ToString() == keepRandomCard) players.Add(player2);
+        return players;
     }
     #endregion
 
     #region InstantiateAndPlay
+    private void CheckAndIncreaseEffectsApplied()
+    {
+        if (++CardsInstantiated >= 3)
+        {
+            ExecutionError OverCardsApplied = new OverCardsApplied();
+            throw OverCardsApplied;
+        }
+    }
     public void InstantiateAndPlay(Card item, Player player)
     {
+        CheckAndIncreaseEffectsApplied();
         if (item is Card.UnityCard unityCard)
         {
             InstantiateUnityCard(unityCard, player);
@@ -720,6 +740,8 @@ public class GameManager : MonoBehaviour
         InstantiateIn(incrementCard, DropZone , player);
 
         //Play the card
+        //set drag and drop instance
+        dragAndDrop = incrementCard.CardPrefab.GetComponent<DragAndDrop>();
         dragAndDrop.PlayCardFromEffect(incrementCard, rangeAux, DropZone);
     }
 
@@ -737,6 +759,8 @@ public class GameManager : MonoBehaviour
         InstantiateIn(climateCard, ClimateZone, player);
 
         //Play the card
+        //set drag and drop instance
+        dragAndDrop = climateCard.CardPrefab.GetComponent<DragAndDrop>();
         dragAndDrop.PlayCardFromEffect(climateCard, range, ClimateZone);
     }
 

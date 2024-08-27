@@ -112,6 +112,27 @@ public class Player
                 PlayerDeck.RemoveAt(i);
             }
         }
+
+
+        if (Utils.AmountOfCardsOfDeck < 30)
+        {
+            DeleteRandomCardsFromDeck(30-Utils.AmountOfCardsOfDeck);
+        }
+    }
+
+    private void DeleteRandomCardsFromDeck(int amountToDelete)
+    {
+        int amountDeleted = 0;
+        PlayerDeck.Shuffle();
+        for (int i = 0; amountDeleted < amountToDelete; i++)
+        {
+            if (PlayerDeck[i].UserCardEffects == null)
+            {
+                amountDeleted++;
+                PlayerDeck.RemoveAt(i);
+                i--;
+            }
+        }
     }
 
     void OverwriteLeader(Card newLeader)

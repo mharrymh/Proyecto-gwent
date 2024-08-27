@@ -6,7 +6,13 @@ using UnityEngine;
 
 
 public class Runner : MonoBehaviour
-{
+{   
+    public SoundManager soundM;
+
+    public void Start()
+    {
+        soundM = GameObject.Find("AudioSourceEffects").GetComponent<SoundManager>();
+    }
     /// <summary>
     /// The error text field
     /// </summary>
@@ -16,7 +22,7 @@ public class Runner : MonoBehaviour
     /// </summary>
     public void OnClickSaveButton()
     {
-
+        soundM.PlayButtonSound();
         string relativePath = "Utils/transpiler.txt";
         string filePath = Path.Combine(Application.dataPath, relativePath);
 

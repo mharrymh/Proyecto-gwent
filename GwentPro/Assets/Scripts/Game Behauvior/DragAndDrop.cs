@@ -250,7 +250,6 @@ public class DragAndDrop : MonoBehaviour
     }
     private void PlayCard(Card card,  string range = "")
     {
-        CheckAndIncreaseEffectsApplied();
         //Play a sound when a card is dropped
         soundM.PlayCardSound();
 
@@ -403,7 +402,6 @@ public class DragAndDrop : MonoBehaviour
 
     public void PlayCardFromEffect(Card card, string range, Transform dropZone = null)
     {
-        CheckAndIncreaseEffectsApplied();
         //Set that owner already played
         card.Owner.HasPlayed = true;
 
@@ -421,15 +419,6 @@ public class DragAndDrop : MonoBehaviour
         ApplyChangesToCard(card, range, true);
         //Set power
         gm.SetPower();
-    }
-
-    private void CheckAndIncreaseEffectsApplied()
-    {
-        if (++gm.EffectsApplied >= 3)
-        {
-            ExecutionError OverEffectsApplied = new OverEffectsApplied();
-            throw OverEffectsApplied;
-        }
     }
 
     public void ApplyLeaderEffect(Card.LeaderCard card)

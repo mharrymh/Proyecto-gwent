@@ -14,7 +14,7 @@ public class PointerOnCard : MonoBehaviour
     public void Start()
     {
         ShowPanel = GameObject.Find("ShowPanel");
-        Drag = GetComponent<DragAndDrop>();
+        Drag = cardPrefab.GetComponent<DragAndDrop>();
     }
     public void OnPointerEnter()
     {
@@ -24,7 +24,7 @@ public class PointerOnCard : MonoBehaviour
             Collider2D collider2D = GreaterInstance.GetComponent<Collider2D>();
             collider2D.enabled = false;
             GreaterInstance.transform.localScale = new Vector2(2.5f, 2.5f);
-            disp = GreaterInstance.GetComponent<DisplayCard>();
+            disp = cardPrefab.GetComponent<DisplayCard>();
             disp.ShowCard();
 
             // Start listening the drag event
