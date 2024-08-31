@@ -3896,7 +3896,7 @@ GameObject:
   - component: {fileID: 1375087286}
   - component: {fileID: 1375087285}
   m_Layer: 5
-  m_Name: InputField (TMP)
+  m_Name: InputField
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4743,6 +4743,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   soundM: {fileID: 0}
+  inputField: {fileID: 0}
   ErrorText: {fileID: 1885437964}
 --- !u!114 &1602294537
 MonoBehaviour:
@@ -6122,7 +6123,6 @@ GameObject:
   - component: {fileID: 1986530598}
   - component: {fileID: 1986530597}
   - component: {fileID: 1986530596}
-  - component: {fileID: 1986530599}
   - component: {fileID: 1986530600}
   m_Layer: 5
   m_Name: SaveButton
@@ -6196,18 +6196,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1602294537}
-        m_TargetAssemblyTypeName: SaveText, Assembly-CSharp
-        m_MethodName: SaveTextOnFile
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 1602294536}
         m_TargetAssemblyTypeName: Runner, Assembly-CSharp
         m_MethodName: OnClickSaveButton
@@ -6258,21 +6246,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1986530594}
   m_CullTransparentMesh: 1
---- !u!114 &1986530599
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1986530594}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f8fee75ab7e70a4ebb62f804508b74c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  inputField: {fileID: 1375087287}
-  numberField: {fileID: 0}
-  soundM: {fileID: 0}
 --- !u!114 &1986530600
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6286,7 +6259,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   soundM: {fileID: 0}
-  ErrorText: {fileID: 0}
+  inputField: {fileID: 1375087287}
+  ErrorText: {fileID: 1885437964}
 --- !u!1 &2115725722
 GameObject:
   m_ObjectHideFlags: 0

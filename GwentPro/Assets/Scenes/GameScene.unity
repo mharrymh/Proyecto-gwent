@@ -177,6 +177,7 @@ MonoBehaviour:
   LivesPlayer2: {fileID: 170825494}
   Graveyard1: {fileID: 1972588938}
   Graveyard2: {fileID: 504129342}
+  CardsInstantiated: 0
   cardPrefab: {fileID: 9194607509127826207, guid: 67de988592b8ab14eac30269c9b76737, type: 3}
   HandPanel: {fileID: 645684548}
   MeleePlayer1: {fileID: 1851342252}
@@ -799,7 +800,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Apply Effect
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -4571,7 +4572,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: Apply Effect
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

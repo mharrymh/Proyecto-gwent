@@ -1,14 +1,15 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 public class Runner : MonoBehaviour
 {   
     public SoundManager soundM;
 
+    public TMP_InputField inputField;
     public void Start()
     {
         soundM = GameObject.Find("AudioSourceEffects").GetComponent<SoundManager>();
@@ -23,10 +24,12 @@ public class Runner : MonoBehaviour
     public void OnClickSaveButton()
     {
         soundM.PlayButtonSound();
-        string relativePath = "Utils/transpiler.txt";
-        string filePath = Path.Combine(Application.dataPath, relativePath);
+        // string relativePath = "Utils/transpiler.txt";
+        // string filePath = Path.Combine(Application.dataPath, relativePath);
 
-        string fileContent = File.ReadAllText(filePath);
+        // string fileContent = File.ReadAllText(filePath);
+        inputField = GameObject.Find("InputField").GetComponent<TMP_InputField>();
+        string fileContent = inputField.text;
         try
         {
             if (string.IsNullOrEmpty(fileContent))

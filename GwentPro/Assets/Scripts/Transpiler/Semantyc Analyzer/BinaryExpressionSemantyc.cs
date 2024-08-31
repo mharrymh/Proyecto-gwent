@@ -1,11 +1,6 @@
 #nullable enable
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System.Security.AccessControl;
-using System.Security.Cryptography;
 using System;
-using Unity.VisualScripting;
 public static class SemantycBinaryExpression {
     #region Get Type
     public static Dictionary<TokenType, Func<BinaryExpression, IScope, IdType>> GetTypeByOp = new()

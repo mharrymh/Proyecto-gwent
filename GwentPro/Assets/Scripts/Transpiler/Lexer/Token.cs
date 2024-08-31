@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 //Struct that represent a token
 public struct Token {
     ///<summary>

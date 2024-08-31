@@ -1,12 +1,5 @@
 #nullable enable
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System.Data.Common;
-using System.Linq.Expressions;
-using System;
-using Mono.Cecil;
-using Unity.VisualScripting;
 public class Parser
 {
     // List of tokens to be parsed

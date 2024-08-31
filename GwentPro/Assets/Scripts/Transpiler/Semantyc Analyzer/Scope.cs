@@ -1,11 +1,5 @@
 #nullable enable
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq.Expressions;
-using System;
 public interface IScope {
     //Actions
     //Receives the effect name and the dictionary with the tokens and the types declared

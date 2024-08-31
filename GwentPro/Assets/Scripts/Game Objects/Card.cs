@@ -1,7 +1,4 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 #nullable enable
 [System.Serializable] 
@@ -102,7 +99,7 @@ public class Card : ScriptableObject
             //Declare it null so it will be modified in the child constructor
             Description = null;
         }
-        else Description = "Sin efecto";
+        else Description = "No effect";
 
         this.UserCardEffects = userCardEffects;
     }
