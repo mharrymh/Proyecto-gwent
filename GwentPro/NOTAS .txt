@@ -1,4 +1,0 @@
-NOTAS: 
-
-
--No esta funcionando el incremento
