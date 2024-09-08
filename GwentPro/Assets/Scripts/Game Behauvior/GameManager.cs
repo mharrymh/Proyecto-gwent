@@ -564,6 +564,7 @@ public class GameManager : MonoBehaviour
             }
             foreach (Card.UnityCard unityCard in Keepers)
             {
+                if (unityCard != null)
                 unityCard.Power = unityCard.OriginalPower;
             }
         }
@@ -664,8 +665,8 @@ public class GameManager : MonoBehaviour
     List<Player> GetPlayerWithLeader(string keepRandomCard)
     {
         List<Player> players = new List<Player>();
-        if (player1.Leader.EffectType.ToString() == keepRandomCard) players.Add(player1);
-        if (player2.Leader.EffectType.ToString() == keepRandomCard) players.Add(player2);
+        if (player1.Leader.EffectType != null && player1.Leader.EffectType.ToString() == keepRandomCard) players.Add(player1);
+        if (player2.Leader.EffectType != null && player2.Leader.EffectType.ToString() == keepRandomCard) players.Add(player2);
         return players;
     }
     #endregion
